@@ -1,0 +1,18 @@
+<!doctype html>
+<head>
+  <script src="lib/traceur.js"></script>
+  <script src="lib/es6-module-loader-dev.js"></script>
+</head>
+<body>
+  <script type="module">
+    import DataSet from 'src/dataset.js'
+    window.DS = DataSet //new DataSet(2, 3, [0,1,2,3,4,5])
+    window.ds = new DataSet(2, 3, [0,1,2,3,4,5])
+    console.log(ds)
+    // es6 syntax
+    var a, b
+    [a, b] = [1, 2]
+    console.log(a, b); // -> 1 2
+  </script>
+</body>
+</html>
