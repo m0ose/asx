@@ -5,6 +5,10 @@
   "main": "src/app.js",
   "author": "Owen Densmore",
   "license": "GPLv3",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/backspaces/asx.git"
+  },
 
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
