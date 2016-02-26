@@ -1,0 +1,15 @@
+{
+  "name": "asx",
+  "version": "0.1.0",
+  "description": "eXperimental modules for AgentScript, 2nd Edition",
+  "main": "src/app.js",
+  "author": "Owen Densmore",
+  "license": "GPLv3",
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+
+  "devDependencies": {
+  }
+}

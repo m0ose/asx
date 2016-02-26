@@ -1,18 +1,22 @@
-<!doctype html>
+<html>
 <head>
+  <title>as2</title>
   <script src="lib/traceur.js"></script>
   <script src="lib/es6-module-loader-dev.js"></script>
 </head>
 <body>
+  <!-- <script>
+    System.traceurOptions = { arrowFunctions: false, blockBinding: false, classes: false, computedPropertyNames: false, defaultParameters: false, destructuring: false, forOf: false, generators: false, numericLiterals: false, propertyMethods: false, propertyNameShorthand: false, restParameters: false, spread: false, symbols: false, templateLiterals: false, unicodeEscapeSequences: false, unicodeExpressions: false }
+  </script> -->
   <script type="module">
-    import DataSet from 'src/dataset.js'
-    window.DS = DataSet //new DataSet(2, 3, [0,1,2,3,4,5])
-    window.ds = new DataSet(2, 3, [0,1,2,3,4,5])
-    console.log(ds)
-    // es6 syntax
-    var a, b
-    [a, b] = [1, 2]
-    console.log(a, b); // -> 1 2
+    import main from 'src/main.js'
+    main()
+    // import DataSet from 'src/test.js'
+    // let ds = new DataSet(2, 3, [0,1,2,3,4,5])
+    // console.log(ds)
+    // let a, b
+    // [a, b] = [1, 2]
+    // console.log(a, b)
   </script>
 </body>
 </html>
