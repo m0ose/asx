@@ -4,16 +4,25 @@
   "description": "eXperimental modules for AgentScript, 2nd Edition",
   "main": "src/app.js",
   "author": "Owen Densmore",
-  "license": "GPLv3",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/backspaces/asx.git"
   },
-
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel src -d lib",
+    "watch": "babel src -d lib -watch"
   },
-
+  "dependencies": {
+    "systemjs": "^0.19.23"
+  },
   "devDependencies": {
+    "babel-cli": "^6.6.0",
+    "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0"
+  },
+  "babel": {
+    "plugins": [
+      "transform-es2015-modules-systemjs"
+    ]
   }
 }

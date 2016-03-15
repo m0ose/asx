@@ -1,16 +1,31 @@
-{
+{  // global: eslint, eslint-config-airbnb, eslint-plugin-react
     "env": {
         "browser": true,
-        "es6": true
+        "es6":     true
     },
-    "extends": "eslint:recommended",
+    "extends":  "airbnb",
     "parserOptions": {
         "sourceType": "module"
     },
     "rules": {
-        "indent": [ 2, 2 ],
-        "linebreak-style": [ 2, "unix" ],
-        "quotes": [ 2, "single" ],
-        "semi": [ 2,  "never" ]
+        "semi":  [ 2, "never" ],
+        "curly": [ 0 ],
+        "no-throw-literal": 0,
+        "no-param-reassign": [2, {"props": false}]
     }
 }
+
+// eslint allows comments in this file, yay!
+//
+// forces no curly for single line if/else/while etc. Disabled for simplicity.
+//    "curly": [ 2, "multi", "consistent" ],
+//
+//    "quotes": [ 2, "single" ], // airbnb default: single, eslint double
+//    "indent": [ 2, 2 ], // airbnb default: 2, eslint 4
+//    "linebreak-style": [ 2, "unix" ] // airbnb/eslint: no default
+//
+//     "extends": "eslint:recommended",
+//         "guard-for-in": 0,
+//         "no-param-reassign": 0,
+//
+//    "no-param-reassign": [2, {"props": false}] .. can reasign arg.prop
