@@ -1,21 +1,43 @@
+/* eslint no-console: 0 */
+
+// Import the lib/ mmodules
+
+import OofA from 'lib/OofA.js'
 import DataSet from 'lib/DataSet.js'
 import util from 'lib/util.js'
+import LZMA from 'node_modules/lzma/src/lzma_worker.js'
 
-const ds = new DataSet(2, 3, [0, 1, 2, 3, 4, 5])
-console.log(ds) // eslint-disable-line
+// Tests for lib/ modules. Replace eventually with testing libraries.
 
-const ctx = window.ctx = ds.toContext()
-const id = window.id = util.ctxToImageData(ctx)
-console.log(`id ${id.data}`) // eslint-disable-line
+const ds = new DataSet(2, 3, new Uint8Array([0, 1, 2, 3, 4, 5]))
+console.log('ds', ds, 'data', ds.data)
 
-const du = window.du = util.ctxToDataUrl(ctx)
-const ctx1 = window.ctx1 = util.createCtx(ctx.canvas.width, ctx.canvas.height)
+const ctx = ds.toContext()
+const id = util.ctxToImageData(ctx)
+console.log('to context image data', id.data)
+
+const du = util.ctxToDataUrl(ctx)
+const ctx1 = util.createCtx(ctx.canvas.width, ctx.canvas.height)
 ctx1.drawImage(ctx.canvas, 0, 0)
-const du1 = window.du1 = util.ctxToDataUrl(ctx1)
-console.log(`du === du1 ${du === du1}`) // eslint-disable-line
+const du1 = util.ctxToDataUrl(ctx1)
+console.log('du === du1', du === du1)
+
+const ds22 = new DataSet(2, 2, [20, 21, 22, 23])
+console.log('ds22', ds22.data)
+const ds33 = new DataSet(3, 3, [30, 31, 32, 33, 34, 35, 36, 37, 38])
+console.log('ds33', ds33.data)
+const [dseast, dssouth] = [ds.concatEast(ds33), ds.concatSouth(ds22)]
+console.log('ds.concatEast(ds33)', dseast)
+console.log('ds.concatSouth(ds22)', dssouth)
+
+const ds10f = ds.resample(10, 10, false, Float32Array)
+console.log('resample ds', util.fixedArray(ds10f.data))
+
+const tile = ds.resample(256, 256, false, Float32Array)
+console.log('tile', tile)
 
 
-// Debug
-window.ds = ds
-window.DataSet = DataSet
-window.util = util
+// Debug by adding to window global. Use these in console for testing.
+util.mergeObject(window, { DataSet, util, OofA, LZMA })
+util.mergeObject(window,
+  { ds, du, ctx, ds22, ds33, dseast, dssouth, ds10f, tile })

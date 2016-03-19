@@ -1,13 +1,34 @@
-// arraySpecs:
-//    name: arrayType - name is a simple array of given type
-//      equivalent to [arrayType, 1]
-//    name: [arrayType, num] - name is an array of arrays of num elements
-//      arrayType has to be a typed array. If Array is to contain arrays,
-//      they should be array objects of size num, not num elements from array.
-//    name: [value, 0] - name is a constant value, not an array of values.
+// OofA = Object of Arrays.
+//
+// Generally arrays of objects (AofO) are used for homogeneous data instances.
+//
+// OofA is an alternative that uses a single Object who's values represent  a
+// single variable's values. This quirky idea is usefull for drasticly reduced
+// memory footprint, and for being WebGL-friendly.
+//
+// This is an experimental module implementing OofA as a class
 
 class OofA {
+  // The constructor has three parameters:
+  //
+  // arraySpecs: Define the Object's data arrays.
+  // The arrays can be TypedArrays, standard JavaScript Arrays, or constants.
+  //
+  // initSize: the initial size used for [TypedArrays](https://goo.gl/3OOQzy)
+  //
+  // sizeDelta: how much to grow the TypedArrays when they overflow.
   constructor(arraySpecs, initSize = 100, sizeDelta = 100) {
+    // arraySpec details: Three forms are used.
+    //
+    // The "key" is the name of the array. The values are brackets specifying
+    // formats for the Object's arrays.
+    // * key: [arrayType, 1] - key is a simple array of given type.
+    //   A shortcut is key: arrayType .. w/o the brackets.
+    // * key: [arrayType, num] - name is an array of arrays of num elements
+    //   arrayType has to be a typed array. If Array is to contain arrays,
+    //   they should be array objects of size num, not num elements from array.
+    // * key: [value, 0] - name is a constant value, not an array of values.
+
     this.length = 0
     this.size = 0
     this.specs = {}
@@ -33,6 +54,8 @@ class OofA {
     }
     this.size = this.initSize
   }
+
+  // Grow the TypedArrays by sizeDelta
   extendArrays() {
     this.size += this.sizeDelta
     for (const key in this.arrays) { // eslint-disable-line guard-for-in
@@ -48,8 +71,11 @@ class OofA {
       }
     }
   }
+
+  // Return the array names, the Object's keys.
   arrayNames() { return Object.keys(this.arrays) }
 
+  // Get a subarray at the position ix for the array of arrays of the key
   getSubArrayAt(ix, key) {
     const array = this.arrays[key]
     const { elements } = this.specs[key]
@@ -59,6 +85,8 @@ class OofA {
     const end = start + elements
     return array.subarray(start, end)
   }
+
+  // Set for the above.
   setSubArrayAt(ix, key, val) {
     const array = this.arrays[key]
     const { elements } = this.specs[key]
@@ -68,6 +96,9 @@ class OofA {
       throw `setSubArrayAt: value not an array of ${elements} elements`
     array.set(val, ix * elements)
   }
+
+  // Get/Set values at ix for a given key. Can be constant, simple array,
+  // or array of subarrays.
   getValueAt(ix, key) {
     const { elements } = this.specs[key]
     const array = this.arrays[key]
@@ -83,6 +114,9 @@ class OofA {
     this.setSubArrayAt(ix, key, val)
   }
 
+  // Get/Set/push all the values at a given index, ix, as an object.
+  // The arrayValues object uses the OofA keys. This is a "slice"
+  // of the OofA as an instance object
   getValuesAt(ix) {
     const ret = {}
     for (const key in this.arrays) // eslint-disable-line guard-for-in
@@ -99,6 +133,11 @@ class OofA {
     this.length++
   }
 
+  // An alternative technique for get/set values at a given indes.
+  // The getterSetter is an object using an index, ix, and getter/setters
+  // for each of the keys in the OofA.
+  //
+  // This makes the OofA mimic an AofO.
   getterSetter() {
     const obj = { ix: 0 }
     const arrays = this.arrays
