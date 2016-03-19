@@ -21,7 +21,8 @@
     "babel-cli": "^6.6.0",
     "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0",
     "docco": "^0.7.0",
-    "lzma": "^2.3.0"
+    "lzma": "^2.3.0",
+    "pako": "^1.0.0"
   },
   "babel": {
     "plugins": [

@@ -6,6 +6,7 @@ import OofA from 'lib/OofA.js'
 import DataSet from 'lib/DataSet.js'
 import util from 'lib/util.js'
 import LZMA from 'node_modules/lzma/src/lzma_worker.js'
+import pako from 'node_modules/pako/dist/pako.js'
 
 // Tests for lib/ modules. Replace eventually with testing libraries.
 
@@ -32,12 +33,27 @@ console.log('ds.concatSouth(ds22)', dssouth)
 
 const ds10f = ds.resample(10, 10, false, Float32Array)
 console.log('resample ds', util.fixedArray(ds10f.data))
+const ds10i = new Uint8Array(ds10f.data.buffer)
 
-const tile = ds.resample(256, 256, false, Float32Array)
-console.log('tile', tile)
+const deflate = new pako.Deflate({ level: 3 })
+deflate.push(ds10i, true)
+const ds10d = deflate.result
+const inflate = new pako.Inflate({ level: 3 })
+inflate.push(ds10d, true)
+const ds10di = inflate.result
+
+
+const tilef = ds.resample(256, 256, false, Float32Array)
+console.log('tilef', tilef)
+const tilei = new Uint8Array(tilef.data.buffer)
+console.log('tilei', tilei)
+// const tc = LZMA.compress(tilei.buffer)
+const tc = LZMA.compress(tilei.buffer)
 
 
 // Debug by adding to window global. Use these in console for testing.
-util.mergeObject(window, { DataSet, util, OofA, LZMA })
+util.mergeObject(window, { DataSet, util, OofA })
 util.mergeObject(window,
-  { ds, du, ctx, ds22, ds33, dseast, dssouth, ds10f, tile })
+  { ds, du, ctx, ds22, ds33, dseast, dssouth, ds10f, ds10i })
+util.mergeObject(window, { tilef, tilei, tc })
+util.mergeObject(window, { pako, ds10d, ds10di })
