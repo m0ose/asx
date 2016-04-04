@@ -1,4 +1,4 @@
-import u from 'lib/util.js'
+import u from './util.js'
 
 // A **DataSet** is an object with width/height and an array
 // whose length = width * height
@@ -127,9 +127,7 @@ class DataSet {
 
   // Return new (empty) dataset of this type
   emptyDataSet(width, height) {
-    // const Type = this.type()
-    // return new DataSet(width, height, new Type(width * height))
-    return DataSet.emptyDataSet(width, height, this.type())
+    return DataSet.emptyDataSet(width, height, this.type()) // see statics above
   }
 
   // Return new (empty) array of this type
@@ -223,20 +221,6 @@ class DataSet {
         ds1.setXY(x + w, y, ds.getXY(x, y))
     return ds1
   }
-  // concatEast0(ds) {
-  //   const [type, w, h, data] = [this.type(), this.width, this.height, this.data]
-  //   const [type1, w1, h1, data1] = [ds.type(), ds.width, ds.height, ds.data]
-  //   if (h !== h1)
-  //     throw `concatEast: heights not equal ${h}, ${h1}`
-  //   const ds1 = this.emptyDataSet((w + w1) * h)
-  //   for (let x = 0; x < h; x++) // copy this into new dataset
-  //     for (let y = 0; y < w; y++)
-  //       ds1.setXY(x, y, this.getXY(x, y))
-  //   for (let x = 0; x < h1; x++) // copy ds to the left side
-  //     for (let y = 0; y < w1; y++)
-  //       ds1.setXY(x + w, y, ds.getXY(x, y))
-  //   return ds1
-  // }
 
   // Concatinate a dataset of equal width to my south, returning new DataSet.
   // New DataSet is of same type as this.

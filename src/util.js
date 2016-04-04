@@ -39,7 +39,7 @@ const util = {
   distance: (x, y) => Math.sqrt(x * x + y * y),
 
   // Trims decimal digits of float to reduce size.
-  fixed(n, digits = 2) {
+  fixed(n, digits = 4) {
     const p = Math.pow(10, digits)
     return Math.round(n * p) / p
   },
@@ -58,15 +58,32 @@ const util = {
   // Liner interpolation .. scale in [0-1]. Lerp a standard name.
   lerp: (num1, num2, scale) => num1 * (1 - scale) + num2 * scale,
 
-  // ### Arrays and Objects ###
+  // ### Arrays and Objects and Iteration ###
+
+  // Execute fcn for all own member of an obj or array (typed OK).
+  // - Unlike forEach, does not skip undefines.
+  // - Like map, forEach, etc, fcn = fcn(item, key/index, obj).
+  forAll(arrayOrObj, fcn) {
+    if (arrayOrObj.slice) // typed & std arrays
+      for (let i = 0, len = arrayOrObj.length; i < len; i++)
+        fcn(arrayOrObj[i], i, arrayOrObj)
+    else
+      Object.keys(arrayOrObj).forEach(k => fcn(arrayOrObj[k], k, arrayOrObj))
+    return arrayOrObj
+  },
+
+  // Repeat function f(i) n times, n in 0, i-1
+  repeat(n, f) {for (let i = 0; i < n; i++) f(i)},
 
   // Return a new JavaScript Array of floats to a given precision.
   // Fails for Float32Array due to float64->32 artifiacts, thus Array conversion
   fixedArray(array, digits = 4) {
-    const a = (array.constructor === Array) ?
-      array : Array.prototype.slice.call(array) // see https://goo.gl/UcIrGZ
-    return a.map(n => util.fixed(n, digits))
+    // const a = (array.constructor === Array) ?
+    //   array : Array.prototype.slice.call(array) // see https://goo.gl/UcIrGZ
+    // return a.map(n => util.fixed(n, digits))
+    return array.map(n => util.fixed(n, digits))
   },
+
   // Shallow clome of obj or array
   clone(obj) {
     if (obj.slice) return obj.slice(0) // ok for TypedArrays
@@ -74,14 +91,61 @@ const util = {
     Object.keys(obj).forEach(k => {result[k] = obj[k]})
     return result
   },
+
   // [Deep clone](http://goo.gl/MIaTxU) an obj or array. Clever!
   deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
+
   // Compare objects or arrays via JSON string. TypedArrays !== Arrays
   objectsEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+
   // Merge from's key/val pairs into to
-  mergeObject(toObj, fromObj) {
+  copyTo(toObj, fromObj) {
     Object.keys(fromObj).forEach(k => {toObj[k] = fromObj[k]})
   },
+
+  // Returns new array (of this type) of unique elements in this *sorted* array.
+  // Sort or clone & sort if needed.
+  uniq(array) {
+    const f = (ai, i, a) => ai !== a[i - 1] // a[-1] ok, is undefined, no error
+    return array.filter(f)
+  },
+
+  // Create random array of floats between min/max.
+  // Array Type allows conversion to integers (Int32Array etc)
+  randomArray(length, min = 0, max = 1, Type = Array) {
+    const a = new Type(length)
+    for (let i = 0; i < length; i++) { a[i] = this.randomFloat2(min, max) }
+    return a
+  },
+
+  // Create an array of properties from an array of objects
+  propArray: (array, propName) => array.map(a => a[propName]),
+
+  // Create a histogram, given an array, a bin size, and a
+  // min bin defaulting to min of of the array.
+  // Return an object with:
+  // - min/maxBin: the first/last bin with data
+  // - min/maxVal: the min/max values in the array
+  // - bins: the number of bins
+  // - hist: the array of bins
+  histogram(array, bin = 1, min = Math.floor(this.aMin(array))) {
+    const hist = []
+    let [minBin, maxBin] = [Number.MAX_VALUE, Number.MIN_VALUE]
+    let [minVal, maxVal] = [Number.MAX_VALUE, Number.MIN_VALUE]
+    for (const a of array) {
+      const i = Math.floor(a / bin) - min
+      hist[i] = (hist[i] === undefined) ? 1 : hist[i] + 1
+      minBin = Math.min(minBin, i)
+      maxBin = Math.max(maxBin, i)
+      minVal = Math.min(minVal, a)
+      maxVal = Math.max(maxVal, a)
+    }
+    for (const i in hist)
+      if (hist[i] === undefined) { hist[i] = 0 }
+    const bins = maxBin - minBin + 1
+    return { bins, minBin, maxBin, minVal, maxVal, hist }
+  },
+
 
   // Return scalar max/min/sum/avg of numeric array.
   // Works with es6 TypedArrays
@@ -89,6 +153,12 @@ const util = {
   aMin: (array) => array.reduce((a, b) => Math.min(a, b)),
   aSum: (array) => array.reduce((a, b) => a + b),
   aAvg: (array) => util.aSum(array) / array.length,
+
+  // You'd think this wasn't necessary, and I always forget. Damn.
+  // Note this, like sort, sorts in place. Clone array if needed.
+  sortNums(array, ascending = true) {
+    return array.sort((a, b) => ascending ? a - b : b - a)
+  },
 
   // Return array composed of f(a1i, a2i) called pairwise on both arrays
   aPairwise: (a1, a2, f) => a1.map((val, i) => f(val, a2[i])),
@@ -114,8 +184,8 @@ const util = {
 
   // ### Async ###
 
-  // Return Promise for getting an image. Use:
-  // imagePromise('./path/to/img.xx').then(img => imageFcn(img))
+  // Return Promise for getting an image.
+  // - use: imagePromise('./path/to/img').then(img => imageFcn(img))
   imagePromise(url) {
     return new Promise((resolve, reject) => {
       const img = new Image()
@@ -125,19 +195,49 @@ const util = {
       img.src = url
     })
   },
-  // Return Promise for ajax/xhr use.
-  // type: 'arraybuffer', 'blob', 'document', 'json', 'text'.
-  // method: 'GET', 'POSt'
+  // Return Promise for ajax/xhr data.
+  // - type: 'arraybuffer', 'blob', 'document', 'json', 'text'.
+  // - method: 'GET', 'POST'
+  // - use: xhrPromise('./path/to/data').then(data => dataFcn(data))
   xhrPromise(url, type = 'text', method = 'GET') {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
-      xhr.open(method, name) // POST mainly for security and large files
+      xhr.open(method, url) // POST mainly for security and large files
       xhr.responseType = type
       xhr.onload = () => resolve(xhr.response)
       xhr.onerror = () => reject(xhr.responseText)
       xhr.send()
     })
   },
+
+  // An [async/await](https://davidwalsh.name/async-generators)
+  // implementation using generators returning promises.
+  //
+  // runGenerator runs a generator which yields promises,
+  // returning the promise results when they complete.
+  // Amazingly enough, the returned promise result replaces the
+  // promise initially yielded by the generator function.
+  runGenerator(g) {
+    const it = g()
+    ;(function iterate(val) { // asynchronously iterate over generator
+      const ret = it.next(val)
+      if (!ret.done) {
+        ret.value.then(iterate) // wait on the promise
+      }
+    }())
+  },
+  // Used like this, main() is entirely sync:
+  // ```
+  // function* main() {
+  //   var path = 'http://s3.amazonaws.com/backspaces/'
+  //   var val1 = yield util.xhrPromise(path + 'lorem1.txt')
+  //   console.log( 'val1', val1 )
+  //   var val2 = yield util.xhrPromise(path + 'lorem2.txt')
+  //   console.log( 'val2', val2 )
+  // }
+  // util.runGenerator( main )
+  // ```
+
 
   // ### Canvas/Image ###
 
@@ -159,7 +259,8 @@ const util = {
   ctxToImageData(ctx) {
     return ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height)
   },
-  // Return an image/png base64 dataUrl string for this ctx object
+  // Return an image/png base64 [dataUrl](https://goo.gl/fyBPnL)
+  // string for this ctx object.
   ctxToDataUrl: ctx => ctx.canvas.toDataURL('image/png'),
 
   // Convert a dataUrl back into am image.
@@ -170,19 +271,29 @@ const util = {
   },
   // Return a ctx object for this base64 data url
   dataUrlToCtx(dataUrl) { // async in some browsers?? http://goo.gl/kIk2U
-    const img = new Image()
-    img.src = dataUrl
+    const img = this.dataUrlToImage(dataUrl)
     const ctx = this.createCtx(img.width, img.height)
     ctx.drawImage(img, 0, 0)
     return ctx
   },
 
+  // Get element (i.e. canvas) relative x,y position from event/mouse position.
+  getEventXY(element, evt) { // http://goo.gl/356S91
+    const rect = element.getBoundingClientRect()
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+  },
+
   // Convert an image to a context. img may be a canvas.
-  // If width, height provided, scale to that size.
+  // - x, y are origin in image, default to 0, 0.
+  // - width, height are size of context, default to image's width, height
+  // - thus default is entire image
+  //
   // Note: to convert a ctx to an "image" (drawImage) use ctx.canvas
-  imageToCtx(img, width = img.width, height = img.height) {
+  imageToCtx(img, x = 0, y = 0, width = img.width, height = img.height) {
+    if ((x + width > img.width) || (y + height > img.height))
+      throw 'imageToCtx: parameters outside of image'
     const ctx = this.createCtx(width, height)
-    ctx.drawImage(img, 0, 0, width, height)
+    ctx.drawImage(img, x, y, width, height, 0, 0, width, height)
     return ctx
   },
 

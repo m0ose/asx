@@ -20,11 +20,6 @@
             <div id="jump_page">
               
                 
-                <a class="source" href="DataSet.html">
-                  DataSet.js
-                </a>
-              
-                
                 <a class="source" href="OofA.html">
                   OofA.js
                 </a>
@@ -32,6 +27,11 @@
                 
                 <a class="source" href="app.html">
                   app.js
+                </a>
+              
+                
+                <a class="source" href="dataset.html">
+                  dataset.js
                 </a>
               
                 
@@ -60,14 +60,10 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>Import the lib/ mmodules</p>
-
+              
             </div>
             
-            <div class="content"><div class='highlight'><pre>
-<span class="hljs-keyword">import</span> OofA <span class="hljs-keyword">from</span> <span class="hljs-string">'lib/OofA.js'</span>
-<span class="hljs-keyword">import</span> DataSet <span class="hljs-keyword">from</span> <span class="hljs-string">'lib/DataSet.js'</span>
-<span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'lib/util.js'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/* eslint no-console: 0 */</span></pre></div></div>
             
         </li>
         
@@ -78,23 +74,18 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>Tests for lib/ modules. Replace eventually with testing libraries.</p>
+              <p>Import the lib/ mmodules</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-<span class="hljs-keyword">const</span> ds = <span class="hljs-keyword">new</span> DataSet(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, [<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>])
-<span class="hljs-built_in">console</span>.log(ds) <span class="hljs-comment">// eslint-disable-line</span>
+<span class="hljs-keyword">import</span> OofA <span class="hljs-keyword">from</span> <span class="hljs-string">'lib/OofA.js'</span>
+<span class="hljs-keyword">import</span> DataSet <span class="hljs-keyword">from</span> <span class="hljs-string">'lib/DataSet.js'</span>
+<span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'lib/util.js'</span>
+<span class="hljs-keyword">import</span> LZMA <span class="hljs-keyword">from</span> <span class="hljs-string">'node_modules/lzma/src/lzma_worker.js'</span>
+<span class="hljs-keyword">import</span> pako <span class="hljs-keyword">from</span> <span class="hljs-string">'node_modules/pako/dist/pako.js'</span>
 
-<span class="hljs-keyword">const</span> ctx = <span class="hljs-built_in">window</span>.ctx = ds.toContext()
-<span class="hljs-keyword">const</span> id = <span class="hljs-built_in">window</span>.id = util.ctxToImageData(ctx)
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`id <span class="hljs-subst">${id.data}</span>`</span>) <span class="hljs-comment">// eslint-disable-line</span>
-
-<span class="hljs-keyword">const</span> du = <span class="hljs-built_in">window</span>.du = util.ctxToDataUrl(ctx)
-<span class="hljs-keyword">const</span> ctx1 = <span class="hljs-built_in">window</span>.ctx1 = util.createCtx(ctx.canvas.width, ctx.canvas.height)
-ctx1.drawImage(ctx.canvas, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
-<span class="hljs-keyword">const</span> du1 = <span class="hljs-built_in">window</span>.du1 = util.ctxToDataUrl(ctx1)
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`du === du1 <span class="hljs-subst">${du === du1}</span>`</span>) <span class="hljs-comment">// eslint-disable-line</span></pre></div></div>
+util.mergeObject(<span class="hljs-built_in">window</span>, { DataSet, util, OofA, LZMA, pako })</pre></div></div>
             
         </li>
         
@@ -105,11 +96,152 @@ ctx1.drawImage(ctx.canvas, <span class="hljs-number">0</span>, <span class="hljs
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Debug by adding to window global. Use these in console for testing.</p>
+              <p>Tests for lib/ modules. Replace eventually with testing libraries.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>util.mergeObject({ ds, DataSet, util, OofA }, <span class="hljs-built_in">window</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">const</span> ds = <span class="hljs-keyword">new</span> DataSet(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>([<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>]))
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'ds'</span>, ds, <span class="hljs-string">'data'</span>, ds.data)
+
+<span class="hljs-keyword">const</span> ctx = ds.toContext()
+<span class="hljs-keyword">const</span> id = util.ctxToImageData(ctx)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'to context image data'</span>, id.data)
+
+<span class="hljs-keyword">const</span> du = util.ctxToDataUrl(ctx)
+<span class="hljs-keyword">const</span> ctx1 = util.createCtx(ctx.canvas.width, ctx.canvas.height)
+ctx1.drawImage(ctx.canvas, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+<span class="hljs-keyword">const</span> du1 = util.ctxToDataUrl(ctx1)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'du === du1'</span>, du === du1)
+
+<span class="hljs-keyword">const</span> ds22 = <span class="hljs-keyword">new</span> DataSet(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>, [<span class="hljs-number">20</span>, <span class="hljs-number">21</span>, <span class="hljs-number">22</span>, <span class="hljs-number">23</span>])
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'ds22'</span>, ds22.data)
+<span class="hljs-keyword">const</span> ds33 = <span class="hljs-keyword">new</span> DataSet(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>, [<span class="hljs-number">30</span>, <span class="hljs-number">31</span>, <span class="hljs-number">32</span>, <span class="hljs-number">33</span>, <span class="hljs-number">34</span>, <span class="hljs-number">35</span>, <span class="hljs-number">36</span>, <span class="hljs-number">37</span>, <span class="hljs-number">38</span>])
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'ds33'</span>, ds33.data)
+<span class="hljs-keyword">const</span> [dseast, dssouth] = [ds.concatEast(ds33), ds.concatSouth(ds22)]
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'ds.concatEast(ds33)'</span>, dseast)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'ds.concatSouth(ds22)'</span>, dssouth)
+
+<span class="hljs-keyword">const</span> ds10f = ds.resample(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-literal">false</span>, <span class="hljs-built_in">Float32Array</span>)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'resample ds 10x10 (floats trimmed)'</span>, util.fixedArray(ds10f.data))
+<span class="hljs-keyword">const</span> ds10i = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(ds10f.data.buffer)
+
+util.mergeObject(<span class="hljs-built_in">window</span>,
+  { ds, du, ctx, ds22, ds33, dseast, dssouth, ds10f, ds10i })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>const deflate = new pako.Deflate({ level: 3 })
+deflate.push(ds10i, true)
+const ds10d = deflate.result
+const inflate = new pako.Inflate({ level: 3 })
+inflate.push(ds10d, true)
+const ds10di = inflate.result</p>
+<p>util.mergeObject(window, { ds10d, ds10di })</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>const tiler = ds.resample(256, 256, false, Float32Array)
+<a href="https://github.com/nmrugg/LZMA-JS">https://github.com/nmrugg/LZMA-JS</a>
+<a href="https://github.com/nodeca/pako">https://github.com/nodeca/pako</a></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> useLZMA = <span class="hljs-literal">false</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>const deflate = new pako.Deflate({ level: 3 })
+const inflate = new pako.Inflate({ level: 3 })</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> popts = { level: <span class="hljs-number">9</span> } <span class="hljs-comment">// 0-9</span>
+<span class="hljs-keyword">const</span> lmode = <span class="hljs-number">9</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>let tiler = util.randomArray(256 * 256, 0, 1000, Uint32Array)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">let</span> tiler = util.randomArray(<span class="hljs-number">256</span> * <span class="hljs-number">256</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1000</span>, <span class="hljs-built_in">Float32Array</span>)
+tiler = util.fixedArray(tiler, <span class="hljs-number">2</span>)
+tiler = <span class="hljs-keyword">new</span> DataSet(<span class="hljs-number">256</span>, <span class="hljs-number">256</span>, tiler)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'random 256x256 dataset'</span>, util.fixedArray(tiler.data))
+<span class="hljs-keyword">const</span> tilei = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(tiler.data.buffer)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'.. as Uint8Array'</span>, tilei)
+<span class="hljs-keyword">const</span> tc = useLZMA ? LZMA.compress(tilei, lmode) : pako.deflate(tilei, popts)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>const td = LZMA.decompress(tc)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> td = useLZMA ? LZMA.decompress(tc) : pako.inflate(tc)
+<span class="hljs-keyword">const</span> percent = <span class="hljs-number">100</span> * util.fixed(tc.length / td.length)
+<span class="hljs-built_in">console</span>.log(useLZMA ? <span class="hljs-string">'LZMA'</span> : <span class="hljs-string">'Pako'</span>, <span class="hljs-string">'compression'</span>,
+  td.length, <span class="hljs-string">'-&gt;'</span>, tc.length, percent, <span class="hljs-string">'%'</span>)
+
+util.mergeObject(<span class="hljs-built_in">window</span>, { tiler, tilei, tc, td })
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'decompressed ints === int view onto dataset?'</span>,
+  util.aPairEq(tilei, td))
+<span class="hljs-keyword">const</span> tdi = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(td)
+<span class="hljs-keyword">const</span> tdif = <span class="hljs-keyword">new</span> tiler.data.constructor(tdi.buffer)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'decompressed floats === dataset.data?'</span>,
+  util.aPairEq(tiler.data, tdif))
+<span class="hljs-keyword">const</span> tdifs = util.clone(tdif).sort((a, b) =&gt; a - b)
+<span class="hljs-keyword">const</span> tdu = util.uniq(tdifs)
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'sorted floats'</span>, util.fixedArray(tdifs, <span class="hljs-number">6</span>))
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unique?'</span>, tdu.length === tdif.length, util.fixedArray(tdu))
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'    '</span>, tdif.length, <span class="hljs-string">'-&gt;'</span>, tdu.length)
+
+util.mergeObject(<span class="hljs-built_in">window</span>, { tdi, tdif, tdifs, tdu })
+
+<span class="hljs-keyword">const</span> t64 = tiler.toDataUrl()
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'t64 length'</span>, t64.length)
+<span class="hljs-keyword">const</span> t64c = useLZMA ? LZMA.compress(tilei, lmode) : pako.deflate(tilei, popts)
+
+util.mergeObject(<span class="hljs-built_in">window</span>, { t64, t64c })</pre></div></div>
             
         </li>
         

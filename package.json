@@ -10,9 +10,9 @@
     "url": "git://github.com/backspaces/asx.git"
   },
   "scripts": {
-    "build": "babel src -d lib",
-    "watch": "babel src -d lib -watch",
-    "build:docs": "docco -o ./docs/ ./src/*.js"
+    "build": "babel src apps -d lib",
+    "watch": "babel src apps -d lib -watch",
+    "docs": "docco -o ./docs/ ./src/*.js"
   },
   "dependencies": {
     "systemjs": "^0.19.23"
