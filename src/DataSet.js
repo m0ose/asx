@@ -12,7 +12,7 @@ class DataSet {
 
   // Convert Array or TypedArray to given Type (Array or TypedArray).
   // If array is already of correct type, return it unmodified
-  static convertArray(array, Type) {
+  static convertArray (array, Type) {
     const Type0 = array.constructor
     if (Type0 === Type) return array // return array if already same Type
     if (Type !== Array) return new Type(array) // TypedArray: universal ctor
@@ -20,14 +20,14 @@ class DataSet {
   }
 
   // Return a new copy of array, with correct type.
-  static copyArray(array) {
+  static copyArray (array) {
     if (array.constructor === Array) return array.slice(0)
     return new array.constructor(array)
   }
 
   // Return a new array that is the concatination two arrays.
   // The resulting type is that of the first array.
-  static concatArrays(array1, array2) {
+  static concatArrays (array1, array2) {
     const Type = array1.constructor
     if (Type === Array)
       return array1.concat(DataSet.convertArray(array2, Array))
@@ -38,10 +38,10 @@ class DataSet {
   }
 
   // Return array's type (Array or TypedArray variant)
-  static type(array) { return array.constructor }
+  static type (array) { return array.constructor }
 
   // Return an empty dataset of given width, height, datatype
-  static emptyDataSet(width, height, Type) {
+  static emptyDataSet (width, height, Type) {
     return new DataSet(width, height, new Type(width * height))
   }
 
@@ -49,7 +49,7 @@ class DataSet {
 
   // constructor: Stores the three DataSet components.
   // Checks data is right size, throws an error if not.
-  constructor(width, height, data) {
+  constructor (width, height, data) {
     if (data.length !== width * height)
       throw `new DataSet length error: ${width} * ${height} != ${data.length}`
     else
@@ -57,38 +57,38 @@ class DataSet {
   }
 
   // Checks x,y are within DataSet. Throw error if not.
-  checkXY(x, y) {
+  checkXY (x, y) {
     if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1)))
       throw `DataSet.checkXY: x,y out of range: ${x}, ${y}`
   }
 
-  type() { return this.data.constructor }
+  type () { return this.data.constructor }
 
   // Given x,y in data space, return index into data
-  toIndex(x, y) { return x + y * this.width }
+  toIndex (x, y) { return x + y * this.width }
 
   // Given index into data, return dataset x,y
-  toXY(i) { return [i % this.width, Math.floor(i / this.width)] }
+  toXY (i) { return [i % this.width, Math.floor(i / this.width)] }
 
   // Get dataset value at x,y, checking that x,y valid
-  getXY(x, y) { return this.data[this.toIndex(x, y)] }
+  getXY (x, y) { return this.data[this.toIndex(x, y)] }
 
   // Set the data value at x,y to num
-  setXY(x, y, num) { this.data[this.toIndex(x, y)] = num }
+  setXY (x, y, num) { this.data[this.toIndex(x, y)] = num }
 
   // Wrapper for sampling, defaults to "nearest"
-  sample(x, y, useNearest = true) {
+  sample (x, y, useNearest = true) {
     return useNearest ? this.nearest(x, y) : this.bilinear(x, y)
   }
 
   // Nearest neighbor sampling
-  nearest(x, y) {
+  nearest (x, y) {
     this.checkXY(Math.round(x), Math.round(y))
     return this.getXY(Math.round(x), Math.round(y))
   }
 
   // Billinear sampling
-  bilinear(x, y) {
+  bilinear (x, y) {
     // Billinear sampling works by making two linear interpolations (lerps)
     // in the x direction, and a third in the y direction, between the
     // two x results. See wikipedia:
@@ -121,17 +121,17 @@ class DataSet {
   }
 
   // Return a copy of this, with new data array
-  copy() {
+  copy () {
     return new DataSet(this.width, this.height, DataSet.copyArray(this.data))
   }
 
   // Return new (empty) dataset of this type
-  emptyDataSet(width, height) {
+  emptyDataSet (width, height) {
     return DataSet.emptyDataSet(width, height, this.type()) // see statics above
   }
 
   // Return new (empty) array of this type
-  emptyArray(length) {
+  emptyArray (length) {
     const Type = this.type()
     return new Type(length)
   }
@@ -139,7 +139,7 @@ class DataSet {
   // Create new dataset of size width/height/type by resampling each point.
   // Type is not this.type() due to integer/float differences. Default Array.
   // If same size, return a copy of this.
-  resample(width, height, useNearest = true, Type = Array) {
+  resample (width, height, useNearest = true, Type = Array) {
     if (width === this.width && height === this.height) return this.copy()
     const ds = DataSet.emptyDataSet(width, height, Type)
     const xScale = (this.width - 1) / (width - 1)
@@ -152,7 +152,7 @@ class DataSet {
 
   // Return a rectangular subset of the dataset.
   // Returned dataset is of same array type as this.
-  subset(x, y, width, height) {
+  subset (x, y, width, height) {
     if ((x + width) > this.width || (y + height) > this.height)
       throw 'DataSet.subSet: params out of range'
     const ds = this.emptyDataSet(width, height)
@@ -163,14 +163,14 @@ class DataSet {
   }
 
   // Return maped dataset by applying f to each dataset element
-  map(f) {
+  map (f) {
     return new DataSet(this.width, this.height, this.data.map(f))
   }
 
   // Return empty array of this dataset's type
 
   // Return the column of data at position x as this array's type
-  col(x) {
+  col (x) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (x >= w)
       throw `col: x out of range width: ${w} x: ${x}`
@@ -181,7 +181,7 @@ class DataSet {
   }
 
   // Return the row of data at position y as this array's type
-  row(y) {
+  row (y) {
     const [w, h] = [this.width, this.height]
     if (y >= h)
       throw `row: y out of range height: ${h} x: ${y}`
@@ -190,7 +190,7 @@ class DataSet {
 
   // Return array converted to my data's Type.
   // If array is my Type, return w/o conversion
-  toThisType(array) {
+  toThisType (array) {
     const type = this.type()
     if (array.constructor === type) return array
     return DataSet.convertArray(array, type)
@@ -198,7 +198,7 @@ class DataSet {
 
   // Convert this dataset's data to new type. Precision may be lost.
   // Does nothing if current data is already of this Type.
-  convertType(type) {
+  convertType (type) {
     if (this.type() === type) return
     this.data = DataSet.convertArray(this.data, type)
   }
@@ -207,7 +207,7 @@ class DataSet {
   // New DataSet is of same type as this.
   //
   // Note: concatWest is dataset.concatEast(this)
-  concatEast(ds) {
+  concatEast (ds) {
     const [w, h] = [this.width, this.height]
     const [w1, h1] = [ds.width, ds.height]
     if (h !== h1)
@@ -226,7 +226,7 @@ class DataSet {
   // New DataSet is of same type as this.
   //
   // Note: concatNorth is dataset.concatSouth(this)
-  concatSouth(dataset) {
+  concatSouth (dataset) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (w !== dataset.width)
       throw `concatSouth: widths not equal ${w}, ${dataset.width}`
@@ -237,21 +237,21 @@ class DataSet {
   // return dataset x,y given x,y in a euclidean space defined by tlx, tly, w, h
   // x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h], y positive up
   // Ex: NetLogo's coords: x, y, minXcor, maxYcor, numX, numY
-  transformCoords(x, y, tlx, tly, w, h) {
+  transformCoords (x, y, tlx, tly, w, h) {
     const xs = (x - tlx) * (this.width - 1) / w
     const ys = (tly - y) * (this.height - 1) / h
     return [xs, ys]
   }
 
   // get a sample using a transformed euclidean coord system; see above
-  coordSample(x, y, tlx, tly, w, h, useNearest = true) {
+  coordSample (x, y, tlx, tly, w, h, useNearest = true) {
     const [xs, ys] = this.transformCoords(x, y, tlx, tly, w, h)
     return this.sample(xs, ys, useNearest)
   }
 
   // Return Array 3x3 neighbor values of the given x,y of the dataset.
   // Off-edge neighbors revert to nearest edge value.
-  neighborhood(x, y, array = []) {
+  neighborhood (x, y, array = []) {
     array.length = 0  // in case user supplied an array
     for (let dy = -1; dy <= +1; dy++) {
       for (let dx = -1; dx <= +1; dx++) {
@@ -271,12 +271,12 @@ class DataSet {
   // dataset of same size.
   //
   // Use ds.convertType to convert to typed array
-  convolve(kernel, factor = 1, crop = false) {
+  convolve (kernel, factor = 1, crop = false) {
     const array = [] // new convolved data
     const n = [] // the current neighborhood
-    const [x0, y0, h, w] = crop ? // the coords being convolved
-      [1, 1, this.height - 1, this.width - 1] :
-      [0, 0, this.height, this.width]
+    const [x0, y0, h, w] = crop
+      ? [1, 1, this.height - 1, this.width - 1]
+      : [0, 0, this.height, this.width]
     for (let y = y0; y < h; y++) {
       for (let x = x0; x < w; x++) {
         this.neighborhood(x, y, n)
@@ -287,22 +287,22 @@ class DataSet {
   }
 
   // A few common convolutions.  dzdx/y are also called horiz/vert Sobel
-  dzdx(n = 2, factor = 1 / 8) {
+  dzdx (n = 2, factor = 1 / 8) {
     return this.convolve([-1, 0, 1, -n, 0, n, -1, 0, 1], factor)
   }
-  dzdy(n = 2, factor = 1 / 8) {
+  dzdy (n = 2, factor = 1 / 8) {
     return this.convolve([1, n, 1, 0, 0, 0, -1, -n, -1], factor)
   }
-  laplace8() {
+  laplace8 () {
     return this.convolve([-1, -1, -1, -1, 8, -1, -1, -1, -1])
   }
-  laplace4() {
+  laplace4 () {
     return this.convolve([0, -1, 0, -1, 4, -1, 0, -1, 0])
   }
-  blur(factor = 0.0625) { // 1/16 = 0.0625
+  blur (factor = 0.0625) { // 1/16 = 0.0625
     return this.convolve([1, 2, 1, 2, 4, 2, 1, 2, 1], factor)
   }
-  edge() {
+  edge () {
     return this.convolve([1, 1, 1, 1, -7, 1, 1, 1, 1])
   }
 
@@ -314,7 +314,7 @@ class DataSet {
   // those wanting to use the results of the two convolutions.
   //
   // Use this.convertType to convert to typed array
-  slopeAndAspect(cellSize = 1, noNaNs = true, posAngle = true) {
+  slopeAndAspect (cellSize = 1, noNaNs = true, posAngle = true) {
     const dzdx = this.dzdx() // sub left z from right
     const dzdy = this.dzdy() // sub bottom z from top
     let [aspect, slope] = [[], []]
@@ -353,14 +353,14 @@ class DataSet {
   //
   // Our preferred transport is in the works, likely in the
   // tile datasets via blobs or arraybuffers. Sigh.
-  toContext(normalize = false, gray = false, alpha = 255) {
+  toContext (normalize = false, gray = false, alpha = 255) {
     const [w, h, data] = [this.width, this.height, this.data]
     let idata
     if (normalize) {
-      idata = gray ?
-        u.normalize8(data) : u.normalizeInt(data, 0, Math.pow(2, 24) - 1)
+      idata = gray
+        ? u.normalize8(data) : u.normalizeInt(data, 0, Math.pow(2, 24) - 1)
     } else {
-      idata = data.map(a => Math.round(a))
+      idata = data.map((a) => Math.round(a))
     }
     const ctx = u.createCtx(w, h)
     const id = ctx.getImageData(0, 0, w, h)
@@ -381,11 +381,11 @@ class DataSet {
   }
 
   // Convert dataset to a canvas, which can be used as an image
-  toCanvas(normalize = false, gray = false, alpha = 255) {
+  toCanvas (normalize = false, gray = false, alpha = 255) {
     return this.toContext(gray, normalize, alpha).canvas
   }
   // Convert dataset to a base64 string
-  toDataUrl(normalize = false, gray = false, alpha = 255) {
+  toDataUrl (normalize = false, gray = false, alpha = 255) {
     return u.ctxToDataUrl(this.toContext(gray, normalize, alpha))
   }
 

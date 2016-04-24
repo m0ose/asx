@@ -17,7 +17,7 @@ class OofA {
   // initSize: the initial size used for [TypedArrays](https://goo.gl/3OOQzy)
   //
   // sizeDelta: how much to grow the TypedArrays when they overflow.
-  constructor(arraySpecs, initSize = 100, sizeDelta = 100) {
+  constructor (arraySpecs, initSize = 100, sizeDelta = 100) {
     // arraySpec details: Three forms are used.
     //
     // The "key" is the name of the array. The values are brackets specifying
@@ -37,7 +37,7 @@ class OofA {
     this.arrays = {}
     this.initArrays(arraySpecs)
   }
-  initArrays(arraySpecs) {
+  initArrays (arraySpecs) {
     for (const key in arraySpecs) { // eslint-disable-line guard-for-in
       let val = arraySpecs[key]
       if (!Array.isArray(val)) val = [val, 1]
@@ -56,7 +56,7 @@ class OofA {
   }
 
   // Grow the TypedArrays by sizeDelta
-  extendArrays() {
+  extendArrays () {
     this.size += this.sizeDelta
     for (const key in this.arrays) { // eslint-disable-line guard-for-in
       const { Type, elements } = this.specs[key]
@@ -73,10 +73,10 @@ class OofA {
   }
 
   // Return the array names, the Object's keys.
-  arrayNames() { return Object.keys(this.arrays) }
+  arrayNames () { return Object.keys(this.arrays) }
 
   // Get a subarray at the position ix for the array of arrays of the key
-  getSubArrayAt(ix, key) {
+  getSubArrayAt (ix, key) {
     const array = this.arrays[key]
     const { elements } = this.specs[key]
     if (elements < 2)
@@ -87,7 +87,7 @@ class OofA {
   }
 
   // Set for the above.
-  setSubArrayAt(ix, key, val) {
+  setSubArrayAt (ix, key, val) {
     const array = this.arrays[key]
     const { elements } = this.specs[key]
     if (elements < 2)
@@ -99,14 +99,14 @@ class OofA {
 
   // Get/Set values at ix for a given key. Can be constant, simple array,
   // or array of subarrays.
-  getValueAt(ix, key) {
+  getValueAt (ix, key) {
     const { elements } = this.specs[key]
     const array = this.arrays[key]
     if (elements === 0) return array
     if (elements === 1) return array[ix]
     return this.getSubArrayAt(ix, key)
   }
-  setValueAt(ix, key, val) {
+  setValueAt (ix, key, val) {
     const { elements } = this.specs[key]
     const array = this.arrays[key]
     if (elements === 0) { this.arrays[key] = val; return }
@@ -117,19 +117,19 @@ class OofA {
   // Get/Set/push all the values at a given index, ix, as an object.
   // The arrayValues object uses the OofA keys. This is a "slice"
   // of the OofA as an instance object
-  getValuesAt(ix) {
-    const ret = {}
+  getObject (ix, obj = {}) {
+    // const obj = {}
     for (const key in this.arrays) // eslint-disable-line guard-for-in
-      ret[key] = this.getValueAt(ix, key)
-    return ret
+      obj[key] = this.getValueAt(ix, key)
+    return obj
   }
-  setValuesAt(arrayValues, ix) {
+  setObject (arrayValues, ix) {
     for (const key in arrayValues) // eslint-disable-line guard-for-in
       this.setValueAt(ix, key, arrayValues[key])
   }
-  pushValues(arrayValues) {
+  pushObject (arrayValues) {
     if (this.length === this.size) this.extendArrays()
-    this.setValuesAt(arrayValues, this.length)
+    this.setObject(arrayValues, this.length)
     this.length++
   }
 
@@ -138,7 +138,7 @@ class OofA {
   // for each of the keys in the OofA.
   //
   // This makes the OofA mimic an AofO.
-  getterSetter() {
+  getterSetter () {
     const obj = { ix: 0 }
     const arrays = this.arrays
     for (const key in arrays) { // eslint-disable-line guard-for-in
@@ -146,23 +146,23 @@ class OofA {
       if (elements === 0)
         Object.defineProperty(obj, key, {
           get: () => arrays[key],
-          set: (val) => {arrays[key] = val}, // {}: avoid return undef
+          set: (val) => { arrays[key] = val }
         })
       if (elements === 1)
         Object.defineProperty(obj, key, {
           get: () => arrays[key][obj.ix],
-          set: (val) => {arrays[key][obj.ix] = val}, // {}: avoid return undef
+          set: (val) => { arrays[key][obj.ix] = val }
         })
       if (elements > 1)
         Object.defineProperty(obj, key, {
           get: () =>
             arrays[key].subarray(obj.ix * elements, (obj.ix + 1) * elements),
-          set: (val) => arrays[key].set(val, obj.ix * elements),
+          set: (val) => arrays[key].set(val, obj.ix * elements)
         })
     }
     return obj
   }
-  accessor(gs, ix) {
+  accessor (gs, ix) {
     gs.ix = ix; return gs
   }
 }

@@ -10,6 +10,7 @@
     "url": "git://github.com/backspaces/asx.git"
   },
   "scripts": {
+    "help": "babel --help",
     "build": "babel src apps -d lib",
     "watch": "babel src apps -d lib -watch",
     "docs": "docco -o ./docs/ ./src/*.js"

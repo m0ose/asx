@@ -9,7 +9,6 @@
 <body>
   <script>
     var app = document.location.search.substring(1) || 'app'
-    console.log('app', app)
     System.import('lib/' + app);
   </script>
   <canvas id="can" width="300" height="200"></canvas>
