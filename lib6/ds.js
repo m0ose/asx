@@ -1,14 +1,14 @@
 'use strict';
 
-System.register(['./OofA.js', 'lib/DataSet.js', 'lib/util.js', 'node_modules/lzma/src/lzma_worker.js', 'node_modules/pako/dist/pako.js'], function (_export, _context) {
+System.register(['./OofA.js', './DataSet.js', './util.js', 'node_modules/lzma/src/lzma_worker.js', 'node_modules/pako/dist/pako.js'], function (_export, _context) {
   var OofA, DataSet, util, LZMA, pako;
   return {
     setters: [function (_OofAJs) {
       OofA = _OofAJs.default;
-    }, function (_libDataSetJs) {
-      DataSet = _libDataSetJs.default;
-    }, function (_libUtilJs) {
-      util = _libUtilJs.default;
+    }, function (_DataSetJs) {
+      DataSet = _DataSetJs.default;
+    }, function (_utilJs) {
+      util = _utilJs.default;
     }, function (_node_modulesLzmaSrcLzma_workerJs) {
       LZMA = _node_modulesLzmaSrcLzma_workerJs.default;
     }, function (_node_modulesPakoDistPakoJs) {

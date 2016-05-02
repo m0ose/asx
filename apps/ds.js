@@ -3,8 +3,8 @@
 // Import the lib/ mmodules
 
 import OofA from './OofA.js'
-import DataSet from 'lib/DataSet.js'
-import util from 'lib/util.js'
+import DataSet from './DataSet.js'
+import util from './util.js'
 import LZMA from 'node_modules/lzma/src/lzma_worker.js'
 import pako from 'node_modules/pako/dist/pako.js'
 

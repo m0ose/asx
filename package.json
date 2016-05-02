@@ -10,9 +10,13 @@
     "url": "git://github.com/backspaces/asx.git"
   },
   "scripts": {
-    "help": "babel --help",
-    "build": "babel src apps -d lib",
-    "watch": "babel src apps -d lib -watch",
+    "babel": "babel",
+    "build5": "babel --presets es2015 --plugins transform-es2015-modules-systemjs src apps -d lib5 --source-maps",
+    "build6": "babel --plugins transform-es2015-modules-systemjs src apps -d lib6",
+    "build": "npm run build5 && npm run build6",
+    "watch5": "npm run build5 -- --watch",
+    "watch6": "npm run build6 -- --watch",
+    "watch": "npm run watch5 & npm run watch6",
     "docs": "docco -o ./docs/ ./src/*.js"
   },
   "dependencies": {
@@ -21,13 +25,9 @@
   "devDependencies": {
     "babel-cli": "^6.6.0",
     "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0",
+    "babel-preset-es2015": "^6.6.0",
     "docco": "^0.7.0",
     "lzma": "^2.3.0",
     "pako": "^1.0.0"
-  },
-  "babel": {
-    "plugins": [
-      "transform-es2015-modules-systemjs"
-    ]
   }
 }

@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>dataset.js</title>
+  <title>DataSet.js</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -20,13 +20,13 @@
             <div id="jump_page">
               
                 
-                <a class="source" href="dataset.html">
-                  dataset.js
+                <a class="source" href="DataSet.html">
+                  DataSet.js
                 </a>
               
                 
-                <a class="source" href="oofa.html">
-                  oofa.js
+                <a class="source" href="OofA.html">
+                  OofA.js
                 </a>
               
                 
@@ -43,7 +43,7 @@
         
           <li id="title">
               <div class="annotation">
-                  <h1>dataset.js</h1>
+                  <h1>DataSet.js</h1>
               </div>
           </li>
         
@@ -107,7 +107,7 @@ If array is already of correct type, return it unmodified</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> convertArray(array, Type) {
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> convertArray (array, Type) {
     <span class="hljs-keyword">const</span> Type0 = array.constructor
     <span class="hljs-keyword">if</span> (Type0 === Type) <span class="hljs-keyword">return</span> array <span class="hljs-comment">// return array if already same Type</span>
     <span class="hljs-keyword">if</span> (Type !== <span class="hljs-built_in">Array</span>) <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Type(array) <span class="hljs-comment">// TypedArray: universal ctor</span>
@@ -127,7 +127,7 @@ If array is already of correct type, return it unmodified</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> copyArray(array) {
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> copyArray (array) {
     <span class="hljs-keyword">if</span> (array.constructor === <span class="hljs-built_in">Array</span>) <span class="hljs-keyword">return</span> array.slice(<span class="hljs-number">0</span>)
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> array.constructor(array)
   }</pre></div></div>
@@ -146,7 +146,7 @@ The resulting type is that of the first array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> concatArrays(array1, array2) {
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> concatArrays (array1, array2) {
     <span class="hljs-keyword">const</span> Type = array1.constructor
     <span class="hljs-keyword">if</span> (Type === <span class="hljs-built_in">Array</span>)
       <span class="hljs-keyword">return</span> array1.concat(DataSet.convertArray(array2, <span class="hljs-built_in">Array</span>))
@@ -182,7 +182,7 @@ The resulting type is that of the first array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> type(array) { <span class="hljs-keyword">return</span> array.constructor }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> type (array) { <span class="hljs-keyword">return</span> array.constructor }</pre></div></div>
             
         </li>
         
@@ -197,7 +197,7 @@ The resulting type is that of the first array.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> emptyDataSet(width, height, Type) {
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> emptyDataSet (width, height, Type) {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet(width, height, <span class="hljs-keyword">new</span> Type(width * height))
   }</pre></div></div>
             
@@ -228,7 +228,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span>(width, height, data) {
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span> (width, height, data) {
     <span class="hljs-keyword">if</span> (data.length !== width * height)
       <span class="hljs-keyword">throw</span> <span class="hljs-string">`new DataSet length error: <span class="hljs-subst">${width}</span> * <span class="hljs-subst">${height}</span> != <span class="hljs-subst">${data.length}</span>`</span>
     <span class="hljs-keyword">else</span>
@@ -248,12 +248,12 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  checkXY(x, y) {
+            <div class="content"><div class='highlight'><pre>  checkXY (x, y) {
     <span class="hljs-keyword">if</span> (!(u.between(x, <span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.width - <span class="hljs-number">1</span>) &amp;&amp; u.between(y, <span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.height - <span class="hljs-number">1</span>)))
       <span class="hljs-keyword">throw</span> <span class="hljs-string">`DataSet.checkXY: x,y out of range: <span class="hljs-subst">${x}</span>, <span class="hljs-subst">${y}</span>`</span>
   }
 
-  type() { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data.constructor }</pre></div></div>
+  type () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data.constructor }</pre></div></div>
             
         </li>
         
@@ -268,7 +268,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toIndex(x, y) { <span class="hljs-keyword">return</span> x + y * <span class="hljs-keyword">this</span>.width }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  toIndex (x, y) { <span class="hljs-keyword">return</span> x + y * <span class="hljs-keyword">this</span>.width }</pre></div></div>
             
         </li>
         
@@ -283,7 +283,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toXY(i) { <span class="hljs-keyword">return</span> [i % <span class="hljs-keyword">this</span>.width, <span class="hljs-built_in">Math</span>.floor(i / <span class="hljs-keyword">this</span>.width)] }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  toXY (i) { <span class="hljs-keyword">return</span> [i % <span class="hljs-keyword">this</span>.width, <span class="hljs-built_in">Math</span>.floor(i / <span class="hljs-keyword">this</span>.width)] }</pre></div></div>
             
         </li>
         
@@ -298,7 +298,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getXY(x, y) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data[<span class="hljs-keyword">this</span>.toIndex(x, y)] }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  getXY (x, y) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data[<span class="hljs-keyword">this</span>.toIndex(x, y)] }</pre></div></div>
             
         </li>
         
@@ -313,7 +313,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setXY(x, y, num) { <span class="hljs-keyword">this</span>.data[<span class="hljs-keyword">this</span>.toIndex(x, y)] = num }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  setXY (x, y, num) { <span class="hljs-keyword">this</span>.data[<span class="hljs-keyword">this</span>.toIndex(x, y)] = num }</pre></div></div>
             
         </li>
         
@@ -328,7 +328,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  sample(x, y, useNearest = <span class="hljs-literal">true</span>) {
+            <div class="content"><div class='highlight'><pre>  sample (x, y, useNearest = <span class="hljs-literal">true</span>) {
     <span class="hljs-keyword">return</span> useNearest ? <span class="hljs-keyword">this</span>.nearest(x, y) : <span class="hljs-keyword">this</span>.bilinear(x, y)
   }</pre></div></div>
             
@@ -345,7 +345,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  nearest(x, y) {
+            <div class="content"><div class='highlight'><pre>  nearest (x, y) {
     <span class="hljs-keyword">this</span>.checkXY(<span class="hljs-built_in">Math</span>.round(x), <span class="hljs-built_in">Math</span>.round(y))
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getXY(<span class="hljs-built_in">Math</span>.round(x), <span class="hljs-built_in">Math</span>.round(y))
   }</pre></div></div>
@@ -363,7 +363,7 @@ Checks data is right size, throws an error if not.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  bilinear(x, y) {</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  bilinear (x, y) {</pre></div></div>
             
         </li>
         
@@ -445,7 +445,7 @@ fxy = f00(<span class="hljs-number">1</span>-dx) + f10(dx) i.e. x-lerp
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  copy() {
+            <div class="content"><div class='highlight'><pre>  copy () {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet(<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, DataSet.copyArray(<span class="hljs-keyword">this</span>.data))
   }</pre></div></div>
             
@@ -462,7 +462,7 @@ fxy = f00(<span class="hljs-number">1</span>-dx) + f10(dx) i.e. x-lerp
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  emptyDataSet(width, height) {
+            <div class="content"><div class='highlight'><pre>  emptyDataSet (width, height) {
     <span class="hljs-keyword">return</span> DataSet.emptyDataSet(width, height, <span class="hljs-keyword">this</span>.type()) <span class="hljs-comment">// see statics above</span>
   }</pre></div></div>
             
@@ -479,7 +479,7 @@ fxy = f00(<span class="hljs-number">1</span>-dx) + f10(dx) i.e. x-lerp
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  emptyArray(length) {
+            <div class="content"><div class='highlight'><pre>  emptyArray (length) {
     <span class="hljs-keyword">const</span> Type = <span class="hljs-keyword">this</span>.type()
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Type(length)
   }</pre></div></div>
@@ -499,7 +499,7 @@ If same size, return a copy of this.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  resample(width, height, useNearest = <span class="hljs-literal">true</span>, Type = <span class="hljs-built_in">Array</span>) {
+            <div class="content"><div class='highlight'><pre>  resample (width, height, useNearest = <span class="hljs-literal">true</span>, Type = <span class="hljs-built_in">Array</span>) {
     <span class="hljs-keyword">if</span> (width === <span class="hljs-keyword">this</span>.width &amp;&amp; height === <span class="hljs-keyword">this</span>.height) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.copy()
     <span class="hljs-keyword">const</span> ds = DataSet.emptyDataSet(width, height, Type)
     <span class="hljs-keyword">const</span> xScale = (<span class="hljs-keyword">this</span>.width - <span class="hljs-number">1</span>) / (width - <span class="hljs-number">1</span>)
@@ -524,7 +524,7 @@ Returned dataset is of same array type as this.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  subset(x, y, width, height) {
+            <div class="content"><div class='highlight'><pre>  subset (x, y, width, height) {
     <span class="hljs-keyword">if</span> ((x + width) &gt; <span class="hljs-keyword">this</span>.width || (y + height) &gt; <span class="hljs-keyword">this</span>.height)
       <span class="hljs-keyword">throw</span> <span class="hljs-string">'DataSet.subSet: params out of range'</span>
     <span class="hljs-keyword">const</span> ds = <span class="hljs-keyword">this</span>.emptyDataSet(width, height)
@@ -547,7 +547,7 @@ Returned dataset is of same array type as this.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  map(f) {
+            <div class="content"><div class='highlight'><pre>  map (f) {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet(<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data.map(f))
   }</pre></div></div>
             
@@ -577,7 +577,7 @@ Returned dataset is of same array type as this.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  col(x) {
+            <div class="content"><div class='highlight'><pre>  col (x) {
     <span class="hljs-keyword">const</span> [w, h, data] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data]
     <span class="hljs-keyword">if</span> (x &gt;= w)
       <span class="hljs-keyword">throw</span> <span class="hljs-string">`col: x out of range width: <span class="hljs-subst">${w}</span> x: <span class="hljs-subst">${x}</span>`</span>
@@ -600,7 +600,7 @@ Returned dataset is of same array type as this.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  row(y) {
+            <div class="content"><div class='highlight'><pre>  row (y) {
     <span class="hljs-keyword">const</span> [w, h] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height]
     <span class="hljs-keyword">if</span> (y &gt;= h)
       <span class="hljs-keyword">throw</span> <span class="hljs-string">`row: y out of range height: <span class="hljs-subst">${h}</span> x: <span class="hljs-subst">${y}</span>`</span>
@@ -621,7 +621,7 @@ If array is my Type, return w/o conversion</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toThisType(array) {
+            <div class="content"><div class='highlight'><pre>  toThisType (array) {
     <span class="hljs-keyword">const</span> type = <span class="hljs-keyword">this</span>.type()
     <span class="hljs-keyword">if</span> (array.constructor === type) <span class="hljs-keyword">return</span> array
     <span class="hljs-keyword">return</span> DataSet.convertArray(array, type)
@@ -641,7 +641,7 @@ Does nothing if current data is already of this Type.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  convertType(type) {
+            <div class="content"><div class='highlight'><pre>  convertType (type) {
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.type() === type) <span class="hljs-keyword">return</span>
     <span class="hljs-keyword">this</span>.data = DataSet.convertArray(<span class="hljs-keyword">this</span>.data, type)
   }</pre></div></div>
@@ -661,7 +661,7 @@ New DataSet is of same type as this.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  concatEast(ds) {
+            <div class="content"><div class='highlight'><pre>  concatEast (ds) {
     <span class="hljs-keyword">const</span> [w, h] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height]
     <span class="hljs-keyword">const</span> [w1, h1] = [ds.width, ds.height]
     <span class="hljs-keyword">if</span> (h !== h1)
@@ -691,7 +691,7 @@ New DataSet is of same type as this.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  concatSouth(dataset) {
+            <div class="content"><div class='highlight'><pre>  concatSouth (dataset) {
     <span class="hljs-keyword">const</span> [w, h, data] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data]
     <span class="hljs-keyword">if</span> (w !== dataset.width)
       <span class="hljs-keyword">throw</span> <span class="hljs-string">`concatSouth: widths not equal <span class="hljs-subst">${w}</span>, <span class="hljs-subst">${dataset.width}</span>`</span>
@@ -714,7 +714,7 @@ Ex: NetLogo’s coords: x, y, minXcor, maxYcor, numX, numY</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  transformCoords(x, y, tlx, tly, w, h) {
+            <div class="content"><div class='highlight'><pre>  transformCoords (x, y, tlx, tly, w, h) {
     <span class="hljs-keyword">const</span> xs = (x - tlx) * (<span class="hljs-keyword">this</span>.width - <span class="hljs-number">1</span>) / w
     <span class="hljs-keyword">const</span> ys = (tly - y) * (<span class="hljs-keyword">this</span>.height - <span class="hljs-number">1</span>) / h
     <span class="hljs-keyword">return</span> [xs, ys]
@@ -733,7 +733,7 @@ Ex: NetLogo’s coords: x, y, minXcor, maxYcor, numX, numY</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  coordSample(x, y, tlx, tly, w, h, useNearest = <span class="hljs-literal">true</span>) {
+            <div class="content"><div class='highlight'><pre>  coordSample (x, y, tlx, tly, w, h, useNearest = <span class="hljs-literal">true</span>) {
     <span class="hljs-keyword">const</span> [xs, ys] = <span class="hljs-keyword">this</span>.transformCoords(x, y, tlx, tly, w, h)
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.sample(xs, ys, useNearest)
   }</pre></div></div>
@@ -752,7 +752,7 @@ Off-edge neighbors revert to nearest edge value.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  neighborhood(x, y, array = []) {
+            <div class="content"><div class='highlight'><pre>  neighborhood (x, y, array = []) {
     array.length = <span class="hljs-number">0</span>  <span class="hljs-comment">// in case user supplied an array</span>
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> dy = <span class="hljs-number">-1</span>; dy &lt;= +<span class="hljs-number">1</span>; dy++) {
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> dx = <span class="hljs-number">-1</span>; dx &lt;= +<span class="hljs-number">1</span>; dx++) {
@@ -782,12 +782,12 @@ dataset of same size.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  convolve(kernel, factor = <span class="hljs-number">1</span>, crop = <span class="hljs-literal">false</span>) {
+            <div class="content"><div class='highlight'><pre>  convolve (kernel, factor = <span class="hljs-number">1</span>, crop = <span class="hljs-literal">false</span>) {
     <span class="hljs-keyword">const</span> array = [] <span class="hljs-comment">// new convolved data</span>
     <span class="hljs-keyword">const</span> n = [] <span class="hljs-comment">// the current neighborhood</span>
-    <span class="hljs-keyword">const</span> [x0, y0, h, w] = crop ? <span class="hljs-comment">// the coords being convolved</span>
-      [<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-keyword">this</span>.height - <span class="hljs-number">1</span>, <span class="hljs-keyword">this</span>.width - <span class="hljs-number">1</span>] :
-      [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.width]
+    <span class="hljs-keyword">const</span> [x0, y0, h, w] = crop
+      ? [<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-keyword">this</span>.height - <span class="hljs-number">1</span>, <span class="hljs-keyword">this</span>.width - <span class="hljs-number">1</span>]
+      : [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.width]
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> y = y0; y &lt; h; y++) {
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> x = x0; x &lt; w; x++) {
         <span class="hljs-keyword">this</span>.neighborhood(x, y, n)
@@ -810,22 +810,22 @@ dataset of same size.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  dzdx(n = <span class="hljs-number">2</span>, factor = <span class="hljs-number">1</span> / <span class="hljs-number">8</span>) {
+            <div class="content"><div class='highlight'><pre>  dzdx (n = <span class="hljs-number">2</span>, factor = <span class="hljs-number">1</span> / <span class="hljs-number">8</span>) {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.convolve([<span class="hljs-number">-1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, -n, <span class="hljs-number">0</span>, n, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>], factor)
   }
-  dzdy(n = <span class="hljs-number">2</span>, factor = <span class="hljs-number">1</span> / <span class="hljs-number">8</span>) {
+  dzdy (n = <span class="hljs-number">2</span>, factor = <span class="hljs-number">1</span> / <span class="hljs-number">8</span>) {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.convolve([<span class="hljs-number">1</span>, n, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, -n, <span class="hljs-number">-1</span>], factor)
   }
-  laplace8() {
+  laplace8 () {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.convolve([<span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">8</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">-1</span>])
   }
-  laplace4() {
+  laplace4 () {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.convolve([<span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">4</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">-1</span>, <span class="hljs-number">0</span>])
   }
-  blur(factor = <span class="hljs-number">0.0625</span>) { <span class="hljs-comment">// 1/16 = 0.0625</span>
+  blur (factor = <span class="hljs-number">0.0625</span>) { <span class="hljs-comment">// 1/16 = 0.0625</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.convolve([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">4</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>], factor)
   }
-  edge() {
+  edge () {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.convolve([<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">-7</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>])
   }</pre></div></div>
             
@@ -847,7 +847,7 @@ those wanting to use the results of the two convolutions.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  slopeAndAspect(cellSize = <span class="hljs-number">1</span>, noNaNs = <span class="hljs-literal">true</span>, posAngle = <span class="hljs-literal">true</span>) {
+            <div class="content"><div class='highlight'><pre>  slopeAndAspect (cellSize = <span class="hljs-number">1</span>, noNaNs = <span class="hljs-literal">true</span>, posAngle = <span class="hljs-literal">true</span>) {
     <span class="hljs-keyword">const</span> dzdx = <span class="hljs-keyword">this</span>.dzdx() <span class="hljs-comment">// sub left z from right</span>
     <span class="hljs-keyword">const</span> dzdy = <span class="hljs-keyword">this</span>.dzdy() <span class="hljs-comment">// sub bottom z from top</span>
     <span class="hljs-keyword">let</span> [aspect, slope] = [[], []]
@@ -921,14 +921,14 @@ tile datasets via blobs or arraybuffers. Sigh.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toContext(normalize = <span class="hljs-literal">false</span>, gray = <span class="hljs-literal">false</span>, alpha = <span class="hljs-number">255</span>) {
+            <div class="content"><div class='highlight'><pre>  toContext (normalize = <span class="hljs-literal">false</span>, gray = <span class="hljs-literal">false</span>, alpha = <span class="hljs-number">255</span>) {
     <span class="hljs-keyword">const</span> [w, h, data] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data]
     <span class="hljs-keyword">let</span> idata
     <span class="hljs-keyword">if</span> (normalize) {
-      idata = gray ?
-        u.normalize8(data) : u.normalizeInt(data, <span class="hljs-number">0</span>, <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">2</span>, <span class="hljs-number">24</span>) - <span class="hljs-number">1</span>)
+      idata = gray
+        ? u.normalize8(data) : u.normalizeInt(data, <span class="hljs-number">0</span>, <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">2</span>, <span class="hljs-number">24</span>) - <span class="hljs-number">1</span>)
     } <span class="hljs-keyword">else</span> {
-      idata = data.map(a =&gt; <span class="hljs-built_in">Math</span>.round(a))
+      idata = data.map((a) =&gt; <span class="hljs-built_in">Math</span>.round(a))
     }
     <span class="hljs-keyword">const</span> ctx = u.createCtx(w, h)
     <span class="hljs-keyword">const</span> id = ctx.getImageData(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, w, h)
@@ -961,7 +961,7 @@ tile datasets via blobs or arraybuffers. Sigh.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toCanvas(normalize = <span class="hljs-literal">false</span>, gray = <span class="hljs-literal">false</span>, alpha = <span class="hljs-number">255</span>) {
+            <div class="content"><div class='highlight'><pre>  toCanvas (normalize = <span class="hljs-literal">false</span>, gray = <span class="hljs-literal">false</span>, alpha = <span class="hljs-number">255</span>) {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.toContext(gray, normalize, alpha).canvas
   }</pre></div></div>
             
@@ -978,7 +978,7 @@ tile datasets via blobs or arraybuffers. Sigh.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toDataUrl(normalize = <span class="hljs-literal">false</span>, gray = <span class="hljs-literal">false</span>, alpha = <span class="hljs-number">255</span>) {
+            <div class="content"><div class='highlight'><pre>  toDataUrl (normalize = <span class="hljs-literal">false</span>, gray = <span class="hljs-literal">false</span>, alpha = <span class="hljs-number">255</span>) {
     <span class="hljs-keyword">return</span> u.ctxToDataUrl(<span class="hljs-keyword">this</span>.toContext(gray, normalize, alpha))
   }</pre></div></div>
             

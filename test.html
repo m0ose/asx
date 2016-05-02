@@ -2,30 +2,13 @@
 <head>
   <title>asx</title>
   <script src="node_modules/systemjs/dist/system.js"></script>
-  <!-- <script src="node_modules/pako/dist/pako.js"></script> -->
-  <!-- <script src="node_modules/lzma/src/lzma_worker.js"></script> -->
 </script>
 </head>
 <body>
   <script>
-    var app = document.location.search.substring(1) || 'app'
-    System.import('lib/' + app);
+    var app = document.location.search.substring(1) || 'lib5/app'
+    System.import(app);
   </script>
   <canvas id="can" width="300" height="200"></canvas>
 </body>
 </html>
-
-<!-- <script>
-  System.traceurOptions = { arrowFunctions: false, blockBinding: false, classes: false, computedPropertyNames: false, defaultParameters: false, destructuring: false, forOf: false, generators: false, numericLiterals: false, propertyMethods: false, propertyNameShorthand: false, restParameters: false, spread: false, symbols: false, templateLiterals: false, unicodeEscapeSequences: false, unicodeExpressions: false }
-</script> -->
-<!-- <script type="module">
-  import app from 'lib/app.js'
-  app()
-
-  // import DataSet from 'src/dataset.js'
-  // let ds = new DataSet(2, 3, [0,1,2,3,4,5])
-  // console.log(ds)
-  // let a, b
-  // [a, b] = [1, 2]
-  // console.log(a, b)
-</script> -->

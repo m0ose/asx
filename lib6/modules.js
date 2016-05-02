@@ -1,14 +1,14 @@
 'use strict';
 
-System.register(['../lib/OofA.js', '../lib/DataSet.js', '../lib/util.js'], function (_export, _context) {
+System.register(['./OofA.js', './DataSet.js', './util.js'], function (_export, _context) {
   var OofA, DataSet, util;
   return {
-    setters: [function (_libOofAJs) {
-      OofA = _libOofAJs.default;
-    }, function (_libDataSetJs) {
-      DataSet = _libDataSetJs.default;
-    }, function (_libUtilJs) {
-      util = _libUtilJs.default;
+    setters: [function (_OofAJs) {
+      OofA = _OofAJs.default;
+    }, function (_DataSetJs) {
+      DataSet = _DataSetJs.default;
+    }, function (_utilJs) {
+      util = _utilJs.default;
     }],
     execute: function () {
 

@@ -8,6 +8,7 @@
         "sourceType": "module"
     },
     "rules": {
-      "curly": [ 0 ]
+      "curly": [ 0 ],
+      "no-throw-literal": 0
     }
 }

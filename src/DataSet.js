@@ -10,36 +10,6 @@ class DataSet {
   // **Static methods:** called via DataSet.foo(), similar to Math.foo().
   // Generally useful utilities for use with TypedArrays & JS Arrays
 
-  // Convert Array or TypedArray to given Type (Array or TypedArray).
-  // If array is already of correct type, return it unmodified
-  static convertArray (array, Type) {
-    const Type0 = array.constructor
-    if (Type0 === Type) return array // return array if already same Type
-    if (Type !== Array) return new Type(array) // TypedArray: universal ctor
-    return Array.prototype.slice.call(array) // Convert TypedArray to Array
-  }
-
-  // Return a new copy of array, with correct type.
-  static copyArray (array) {
-    if (array.constructor === Array) return array.slice(0)
-    return new array.constructor(array)
-  }
-
-  // Return a new array that is the concatination two arrays.
-  // The resulting type is that of the first array.
-  static concatArrays (array1, array2) {
-    const Type = array1.constructor
-    if (Type === Array)
-      return array1.concat(DataSet.convertArray(array2, Array))
-    const array = new Type(array1.length + array2.length)
-    // Note typedArray.set() allows any Array or TypedArray array.
-    array.set(array1); array.set(array2, array1.length)
-    return array
-  }
-
-  // Return array's type (Array or TypedArray variant)
-  static type (array) { return array.constructor }
-
   // Return an empty dataset of given width, height, datatype
   static emptyDataSet (width, height, Type) {
     return new DataSet(width, height, new Type(width * height))
@@ -65,9 +35,9 @@ class DataSet {
   type () { return this.data.constructor }
 
   // Given x,y in data space, return index into data
-  toIndex (x, y) { return x + y * this.width }
+  toIndex (x, y) { return x + (y * this.width) }
 
-  // Given index into data, return dataset x,y
+  // Given index into data, return dataset [x, y] position
   toXY (i) { return [i % this.width, Math.floor(i / this.width)] }
 
   // Get dataset value at x,y, checking that x,y valid
@@ -122,7 +92,7 @@ class DataSet {
 
   // Return a copy of this, with new data array
   copy () {
-    return new DataSet(this.width, this.height, DataSet.copyArray(this.data))
+    return new DataSet(this.width, this.height, u.copyArray(this.data))
   }
 
   // Return new (empty) dataset of this type
@@ -193,14 +163,14 @@ class DataSet {
   toThisType (array) {
     const type = this.type()
     if (array.constructor === type) return array
-    return DataSet.convertArray(array, type)
+    return u.convertArray(array, type)
   }
 
   // Convert this dataset's data to new type. Precision may be lost.
   // Does nothing if current data is already of this Type.
   convertType (type) {
     if (this.type() === type) return
-    this.data = DataSet.convertArray(this.data, type)
+    this.data = u.convertArray(this.data, type)
   }
 
   // Concatinate a dataset of equal height to my right to my east.
@@ -230,7 +200,7 @@ class DataSet {
     const [w, h, data] = [this.width, this.height, this.data]
     if (w !== dataset.width)
       throw `concatSouth: widths not equal ${w}, ${dataset.width}`
-    const data1 = DataSet.concatArrays(data, dataset.data)
+    const data1 = u.concatArrays(data, dataset.data)
     return new DataSet(w, h + dataset.height, data1)
   }
 

@@ -20,8 +20,9 @@ const util = {
     for (let i = 0; i < runs; i++) f(i)
     console.timeEnd(name) // eslint-disable-line
   },
-  // Print out prototype stack
-  pps0 (obj, title = '') { // Print Proto Stack
+
+  // Print Prototype Stack
+  pps (obj, title = '') {
     if (title) console.log(title)   // eslint-disable-line
     let count = 1
     let str = ''
@@ -30,31 +31,26 @@ const util = {
         str = obj.constructor.toString()
       else
         str = `[${Object.keys(obj).join(', ')}]`
-        // str = '[' + Object.keys(obj).join(', ') + ']'
       console.log(`[${count++}]: ${str}`)   // eslint-disable-line
       obj = Object.getPrototypeOf(obj)
     }
   },
-  pps (obj, title = '') { // Print Proto Stack
-    // for (let k in obj) { obj[k]++ }
-    if (title) console.log(title)   // eslint-disable-line
-    let lastObj = null
-    let count = 1
-    let str = ''
-    while (obj) {
-      if (typeof obj === 'function') {
-        str = obj.constructor.toString()
-      } else {
-        const keys = Object.keys(obj).join(', ')
-        const ctor = obj.constructor.name
-        const proto = (lastObj !== null) &&
-          (lastObj.prototype || (lastObj.constructor === obj.constructor))
-        str = `${proto ? 'proto ' : ''}${ctor}: [${keys}]`
-      }
-      console.log(`[${count++}]: ${str}`)   // eslint-disable-line
-      lastObj = obj
-      obj = Object.getPrototypeOf(obj)
-    }
+
+  // ### HTML, CSS, DOM ###
+  parseQueryString () {
+    const results = {}
+    const query = document.location.search.substring(1)
+    query.split('&').forEach((s) => {
+      const param = s.split('=')
+      results[param[0]] = (param.length === 1) ? true : param[1]
+    })
+    return results
+  },
+
+  setScript (path) {
+    const scriptTag = document.createElement('script')
+    scriptTag.src = path
+    document.querySelector('head').appendChild(scriptTag)
   },
 
   // ### Math ###
@@ -103,7 +99,7 @@ const util = {
   // Liner interpolation .. scale in [0-1]. Lerp a standard name.
   lerp: (num1, num2, scale) => num1 * (1 - scale) + num2 * scale,
 
-  // ### Arrays and Objects and Iteration ###
+  // ### Arrays, Objects and Iteration ###
 
   // Execute fcn for all own member of an obj or array (typed OK).
   // - Unlike forEach, does not skip undefines.
@@ -119,6 +115,36 @@ const util = {
 
   // Repeat function f(i) n times, n in 0, i-1
   repeat (n, f) { for (let i = 0; i < n; i++) f(i) },
+
+  // Convert Array or TypedArray to given Type (Array or TypedArray).
+  // If array is already of correct type, return it unmodified
+  convertArray (array, Type) {
+    const Type0 = array.constructor
+    if (Type0 === Type) return array // return array if already same Type
+    if (Type !== Array) return new Type(array) // TypedArray: universal ctor
+    return Array.prototype.slice.call(array) // Convert TypedArray to Array
+  },
+
+  // Return a new copy of array, with correct type.
+  copyArray (array) {
+    if (array.constructor === Array) return array.slice(0)
+    return new array.constructor(array)
+  },
+
+  // Return a new array that is the concatination two arrays.
+  // The resulting type is that of the first array.
+  concatArrays (array1, array2) {
+    const Type = array1.constructor
+    if (Type === Array)
+      return array1.concat(this.convertArray(array2, Array))
+    const array = new Type(array1.length + array2.length)
+    // Note typedArray.set() allows any Array or TypedArray array.
+    array.set(array1); array.set(array2, array1.length)
+    return array
+  },
+
+  // Return array's type (Array or TypedArray variant)
+  arrayType (array) { return array.constructor },
 
   // Return a new JavaScript Array of floats to a given precision.
   // Fails for Float32Array due to float64->32 artifiacts, thus Array conversion
@@ -140,7 +166,7 @@ const util = {
   // [Deep clone](http://goo.gl/MIaTxU) an obj or array. Clever!
   deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
 
-  // Compare objects or arrays via JSON string. TypedArrays !== Arrays
+  // Compare Objects or Arrays via JSON string. TypedArrays !== Arrays
   objectsEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
 
   // Merge from's key/val pairs into to

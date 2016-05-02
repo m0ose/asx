@@ -15,18 +15,12 @@ System.register(['./util.js'], function (_export, _context) {
         getDefaultable(name) {
           return this[name] || this.myAgentSet.defaults[name];
         }
-        setDefaultable(name, value) {
-          // allow overriding for debugging/interactivity
-          const override = this[name];
-          const defaultValue = this.myAgentSet.defaults[name];
-          if (override && defaultValue && defaultValue === value) delete this[name];else this[name] = value;
-        }
         getColor() {
           return this.getDefaultable('color');
         }
         setColor(color) {
-          this.setDefaultable('color', color);
-        } // overridable
+          this.color = color;
+        }
       } /* eslint no-console: 0 */
 
 
@@ -34,7 +28,6 @@ System.register(['./util.js'], function (_export, _context) {
         constructor() {
           super();
           this.defaults = {};
-          this.defaultsOverridable = false;
         }
         create() {
           this.push(new Agent(this));return this[this.length - 1];

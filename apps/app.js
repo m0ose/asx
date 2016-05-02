@@ -1,41 +1,39 @@
 /* eslint no-console: 0 */
 import util from './util.js'
+// import {pps} from './util.js'
 
-class Agent {
-  constructor (myAgentSet) {
-    this.myAgentSet = myAgentSet
-  }
-  getDefaultable (name) { return this[name] || this.myAgentSet.defaults[name] }
-  setDefaultable (name, value) { // allow overriding for debugging/interactivity
-    const override = this[name]
-    const defaultValue = this.myAgentSet.defaults[name]
-    if (override && defaultValue && defaultValue === value)
-      delete this[name]
-    else
-      this[name] = value
-  }
-  getColor () { return this.getDefaultable('color') }
-  setColor (color) { this.setDefaultable('color', color) } // overridable
+// Case 3: Prototypal Inheritance Stack
+// Prototypal Agent Methods
+
+const agentObject = { // agent prototype
+  setID (id) { this.id = id },
+  setxy (x, y) { this.x = x; this.y = y },
+  getColor () { return this.color }
+}
+// AgentSet Contains these
+let ID = 0
+// An empty defaults obj w/ agentObject as proto
+const defaults = Object.create(agentObject)
+function setDefault (key, value) {
+  defaults[key] = value
+}
+// The agent creation function
+function createAgent () {
+  const obj = Object.create(defaults)
+  obj.setID(ID++)
+  return obj
 }
 
-class AgentSet extends Array {
-  constructor () {
-    super()
-    this.defaults = {}
-    this.defaultsOverridable = false
-  }
-  create () { this.push(new Agent(this)); return this[this.length - 1] }
-  setDefault (name, value) { this.defaults[name] = value }
-}
+const a = createAgent()
+a.setxy(1, 2); setDefault('color', 'red')
+console.log(a.id, a.x, a.y, a.color, a.getColor())
+// 0 1 2 "red" "red"
+const b = createAgent()
+b.setxy(3, 4); b.color = 'green'
+console.log(b.id, b.x, b.y, b.color, b.getColor())
+// 1 3 4 "green" "green"
 
-util.copyTo(window, { Agent, AgentSet, util })
-
-const as = window.as = new AgentSet()
-as.setDefault('color', 'red')
-const a = window.a = as.create()
-
-util.copyTo(window, { as, a })
-
-console.log('a.color', a.getColor())
-util.pps(as, 'as')
 util.pps(a, 'a')
+util.pps(b, 'b')
+// pps(a, 'a')
+// pps(b, 'b')

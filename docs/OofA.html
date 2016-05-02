@@ -2,7 +2,7 @@
 
 <html>
 <head>
-  <title>oofa.js</title>
+  <title>OofA.js</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
   <link rel="stylesheet" media="all" href="docco.css" />
@@ -20,13 +20,13 @@
             <div id="jump_page">
               
                 
-                <a class="source" href="dataset.html">
-                  dataset.js
+                <a class="source" href="DataSet.html">
+                  DataSet.js
                 </a>
               
                 
-                <a class="source" href="oofa.html">
-                  oofa.js
+                <a class="source" href="OofA.html">
+                  OofA.js
                 </a>
               
                 
@@ -43,7 +43,7 @@
         
           <li id="title">
               <div class="annotation">
-                  <h1>oofa.js</h1>
+                  <h1>OofA.js</h1>
               </div>
           </li>
         
@@ -84,7 +84,7 @@ The arrays can be TypedArrays, standard JavaScript Arrays, or constants.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span>(arraySpecs, initSize = 100, sizeDelta = 100) {</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span> (arraySpecs, initSize = 100, sizeDelta = 100) {</pre></div></div>
             
         </li>
         
@@ -118,7 +118,7 @@ they should be array objects of size num, not num elements from array.</li>
     <span class="hljs-keyword">this</span>.arrays = {}
     <span class="hljs-keyword">this</span>.initArrays(arraySpecs)
   }
-  initArrays(arraySpecs) {
+  initArrays (arraySpecs) {
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> arraySpecs) { <span class="hljs-comment">// eslint-disable-line guard-for-in</span>
       <span class="hljs-keyword">let</span> val = arraySpecs[key]
       <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">Array</span>.isArray(val)) val = [val, <span class="hljs-number">1</span>]
@@ -149,7 +149,7 @@ they should be array objects of size num, not num elements from array.</li>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  extendArrays() {
+            <div class="content"><div class='highlight'><pre>  extendArrays () {
     <span class="hljs-keyword">this</span>.size += <span class="hljs-keyword">this</span>.sizeDelta
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.arrays) { <span class="hljs-comment">// eslint-disable-line guard-for-in</span>
       <span class="hljs-keyword">const</span> { Type, elements } = <span class="hljs-keyword">this</span>.specs[key]
@@ -178,7 +178,7 @@ they should be array objects of size num, not num elements from array.</li>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  arrayNames() { <span class="hljs-keyword">return</span> <span class="hljs-built_in">Object</span>.keys(<span class="hljs-keyword">this</span>.arrays) }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  arrayNames () { <span class="hljs-keyword">return</span> <span class="hljs-built_in">Object</span>.keys(<span class="hljs-keyword">this</span>.arrays) }</pre></div></div>
             
         </li>
         
@@ -193,7 +193,7 @@ they should be array objects of size num, not num elements from array.</li>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getSubArrayAt(ix, key) {
+            <div class="content"><div class='highlight'><pre>  getSubArrayAt (ix, key) {
     <span class="hljs-keyword">const</span> array = <span class="hljs-keyword">this</span>.arrays[key]
     <span class="hljs-keyword">const</span> { elements } = <span class="hljs-keyword">this</span>.specs[key]
     <span class="hljs-keyword">if</span> (elements &lt; <span class="hljs-number">2</span>)
@@ -216,7 +216,7 @@ they should be array objects of size num, not num elements from array.</li>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setSubArrayAt(ix, key, val) {
+            <div class="content"><div class='highlight'><pre>  setSubArrayAt (ix, key, val) {
     <span class="hljs-keyword">const</span> array = <span class="hljs-keyword">this</span>.arrays[key]
     <span class="hljs-keyword">const</span> { elements } = <span class="hljs-keyword">this</span>.specs[key]
     <span class="hljs-keyword">if</span> (elements &lt; <span class="hljs-number">2</span>)
@@ -240,14 +240,14 @@ or array of subarrays.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getValueAt(ix, key) {
+            <div class="content"><div class='highlight'><pre>  getValueAt (ix, key) {
     <span class="hljs-keyword">const</span> { elements } = <span class="hljs-keyword">this</span>.specs[key]
     <span class="hljs-keyword">const</span> array = <span class="hljs-keyword">this</span>.arrays[key]
     <span class="hljs-keyword">if</span> (elements === <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> array
     <span class="hljs-keyword">if</span> (elements === <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> array[ix]
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getSubArrayAt(ix, key)
   }
-  setValueAt(ix, key, val) {
+  setValueAt (ix, key, val) {
     <span class="hljs-keyword">const</span> { elements } = <span class="hljs-keyword">this</span>.specs[key]
     <span class="hljs-keyword">const</span> array = <span class="hljs-keyword">this</span>.arrays[key]
     <span class="hljs-keyword">if</span> (elements === <span class="hljs-number">0</span>) { <span class="hljs-keyword">this</span>.arrays[key] = val; <span class="hljs-keyword">return</span> }
@@ -270,21 +270,7 @@ of the OofA as an instance object</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getValuesAt(ix) {
-    <span class="hljs-keyword">const</span> ret = {}
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.arrays) <span class="hljs-comment">// eslint-disable-line guard-for-in</span>
-      ret[key] = <span class="hljs-keyword">this</span>.getValueAt(ix, key)
-    <span class="hljs-keyword">return</span> ret
-  }
-  setValuesAt(arrayValues, ix) {
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> arrayValues) <span class="hljs-comment">// eslint-disable-line guard-for-in</span>
-      <span class="hljs-keyword">this</span>.setValueAt(ix, key, arrayValues[key])
-  }
-  pushValues(arrayValues) {
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.length === <span class="hljs-keyword">this</span>.size) <span class="hljs-keyword">this</span>.extendArrays()
-    <span class="hljs-keyword">this</span>.setValuesAt(arrayValues, <span class="hljs-keyword">this</span>.length)
-    <span class="hljs-keyword">this</span>.length++
-  }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  getObject (ix, obj = {}) {</pre></div></div>
             
         </li>
         
@@ -295,6 +281,33 @@ of the OofA as an instance object</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
+              <p>const obj = {}</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.arrays) <span class="hljs-comment">// eslint-disable-line guard-for-in</span>
+      obj[key] = <span class="hljs-keyword">this</span>.getValueAt(ix, key)
+    <span class="hljs-keyword">return</span> obj
+  }
+  setObject (arrayValues, ix) {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> arrayValues) <span class="hljs-comment">// eslint-disable-line guard-for-in</span>
+      <span class="hljs-keyword">this</span>.setValueAt(ix, key, arrayValues[key])
+  }
+  pushObject (arrayValues) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.length === <span class="hljs-keyword">this</span>.size) <span class="hljs-keyword">this</span>.extendArrays()
+    <span class="hljs-keyword">this</span>.setObject(arrayValues, <span class="hljs-keyword">this</span>.length)
+    <span class="hljs-keyword">this</span>.length++
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
               <p>An alternative technique for get/set values at a given indes.
 The getterSetter is an object using an index, ix, and getter/setters
 for each of the keys in the OofA.</p>
@@ -302,7 +315,7 @@ for each of the keys in the OofA.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getterSetter() {
+            <div class="content"><div class='highlight'><pre>  getterSetter () {
     <span class="hljs-keyword">const</span> obj = { ix: <span class="hljs-number">0</span> }
     <span class="hljs-keyword">const</span> arrays = <span class="hljs-keyword">this</span>.arrays
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> arrays) { <span class="hljs-comment">// eslint-disable-line guard-for-in</span>
@@ -310,23 +323,23 @@ for each of the keys in the OofA.</p>
       <span class="hljs-keyword">if</span> (elements === <span class="hljs-number">0</span>)
         <span class="hljs-built_in">Object</span>.defineProperty(obj, key, {
           get: () =&gt; arrays[key],
-          set: (val) =&gt; {arrays[key] = val}, <span class="hljs-comment">// {}: avoid return undef</span>
+          set: (val) =&gt; { arrays[key] = val }
         })
       <span class="hljs-keyword">if</span> (elements === <span class="hljs-number">1</span>)
         <span class="hljs-built_in">Object</span>.defineProperty(obj, key, {
           get: () =&gt; arrays[key][obj.ix],
-          set: (val) =&gt; {arrays[key][obj.ix] = val}, <span class="hljs-comment">// {}: avoid return undef</span>
+          set: (val) =&gt; { arrays[key][obj.ix] = val }
         })
       <span class="hljs-keyword">if</span> (elements &gt; <span class="hljs-number">1</span>)
         <span class="hljs-built_in">Object</span>.defineProperty(obj, key, {
           get: () =&gt;
             arrays[key].subarray(obj.ix * elements, (obj.ix + <span class="hljs-number">1</span>) * elements),
-          set: (val) =&gt; arrays[key].set(val, obj.ix * elements),
+          set: (val) =&gt; arrays[key].set(val, obj.ix * elements)
         })
     }
     <span class="hljs-keyword">return</span> obj
   }
-  accessor(gs, ix) {
+  accessor (gs, ix) {
     gs.ix = ix; <span class="hljs-keyword">return</span> gs
   }
 }
