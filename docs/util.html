@@ -20,6 +20,21 @@
             <div id="jump_page">
               
                 
+                <a class="source" href="AgentSet.html">
+                  AgentSet.js
+                </a>
+              
+                
+                <a class="source" href="Color.html">
+                  Color.js
+                </a>
+              
+                
+                <a class="source" href="ColorMap.html">
+                  ColorMap.js
+                </a>
+              
+                
                 <a class="source" href="DataSet.html">
                   DataSet.js
                 </a>
@@ -87,8 +102,7 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  typeOf: (obj) =&gt; ({}).toString.call(obj).match(<span class="hljs-regexp">/\s(\w+)/</span>)[<span class="hljs-number">1</span>].toLowerCase(),
-  isAorO: (obj) =&gt; [<span class="hljs-string">'array'</span>, <span class="hljs-string">'object'</span>].indexOf(util.typeOf(obj)) &gt;= <span class="hljs-number">0</span>,</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  typeOf: (obj) =&gt; ({}).toString.call(obj).match(<span class="hljs-regexp">/\s(\w+)/</span>)[<span class="hljs-number">1</span>].toLowerCase(),</pre></div></div>
             
         </li>
         
@@ -98,6 +112,51 @@
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Is obj Array or Object (but not typed array)?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  isAorO: (obj) =&gt; [<span class="hljs-string">'array'</span>, <span class="hljs-string">'object'</span>].indexOf(util.typeOf(obj)) &gt;= <span class="hljs-number">0</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Is obj TypedArray? If obj.buffer not present, works .. type is ‘undefined’</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  isTypedArray: (obj) =&gt; util.typeOf(obj.buffer) === <span class="hljs-string">'arraybuffer'</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Is a number an integer (rather than a float w/ non-zero fractional part)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  isInteger: <span class="hljs-built_in">Number</span>.isInteger || ((num) =&gt; <span class="hljs-built_in">Math</span>.floor(num) === num),</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Check <a href="https://en.wikipedia.org/wiki/Endianness">big/little endian</a></p>
 
@@ -111,11 +170,78 @@
         </li>
         
         
-        <li id="section-5">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Throw an error with string.
+Use instead of <code>throw message</code> for better debugging</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  error: (message) =&gt; { <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(message) },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Return identity fcn, returning its argument unchanged. Used in callbacks</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  identity: (o) =&gt; o,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Return function returning an object’s property.  Property in fcn closure.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  propFcn: (prop) =&gt; (o) =&gt; o[prop],</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Convert Array or TypedArray to given Type (Array or TypedArray).
+If array is already of correct type, return it unmodified</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  convertArray (array, Type) {
+    <span class="hljs-keyword">const</span> Type0 = array.constructor
+    <span class="hljs-keyword">if</span> (Type0 === Type) <span class="hljs-keyword">return</span> array <span class="hljs-comment">// return array if already same Type</span>
+    <span class="hljs-keyword">if</span> (Type !== <span class="hljs-built_in">Array</span>) <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> Type(array) <span class="hljs-comment">// TypedArray: universal ctor</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Array</span>.prototype.slice.call(array) <span class="hljs-comment">// Convert TypedArray to Array</span>
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <h3 id="debug">Debug</h3>
 
@@ -124,11 +250,11 @@
         </li>
         
         
-        <li id="section-6">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Use chrome/ffox/ie console.time()/timeEnd() performance functions</p>
 
@@ -143,11 +269,11 @@
         </li>
         
         
-        <li id="section-7">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Print Prototype Stack</p>
 
@@ -158,58 +284,61 @@
     <span class="hljs-keyword">let</span> count = <span class="hljs-number">1</span>
     <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>
     <span class="hljs-keyword">while</span> (obj) {
-      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> obj === <span class="hljs-string">'function'</span>)
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> obj === <span class="hljs-string">'function'</span>) {
         str = obj.constructor.toString()
-      <span class="hljs-keyword">else</span>
-        str = <span class="hljs-string">`[<span class="hljs-subst">${Object.keys(obj).join(', ')}</span>]`</span>
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">let</span> okeys = <span class="hljs-built_in">Object</span>.keys(obj)
+        str = okeys.length &gt; <span class="hljs-number">0</span> ? <span class="hljs-comment">// eslint-disable-line</span>
+          <span class="hljs-string">`[<span class="hljs-subst">${okeys.join(', ')}</span>]`</span> : <span class="hljs-string">`[<span class="hljs-subst">${obj.constructor.name}</span>]`</span>
+      }
       <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`[<span class="hljs-subst">${count++}</span>]: <span class="hljs-subst">${str}</span>`</span>)   <span class="hljs-comment">// eslint-disable-line</span>
       obj = <span class="hljs-built_in">Object</span>.getPrototypeOf(obj)
     }
   },
 
-  pps1 (obj, title = <span class="hljs-string">''</span>) { <span class="hljs-comment">// Print Proto Stack</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-8">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>
-              <p>for (let k in obj) { obj[k]++ }</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (title) <span class="hljs-built_in">console</span>.log(title)   <span class="hljs-comment">// eslint-disable-line</span>
-    <span class="hljs-keyword">let</span> lastObj = <span class="hljs-literal">null</span>
-    <span class="hljs-keyword">let</span> count = <span class="hljs-number">1</span>
+  arraysToString (arrays) {
     <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>
-    <span class="hljs-keyword">while</span> (obj) {
-      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> obj === <span class="hljs-string">'function'</span>) {
-        str = obj.constructor.toString()
-      } <span class="hljs-keyword">else</span> {
-        <span class="hljs-keyword">const</span> keys = <span class="hljs-built_in">Object</span>.keys(obj).join(<span class="hljs-string">', '</span>)
-        <span class="hljs-keyword">const</span> ctor = obj.constructor.name
-        <span class="hljs-keyword">const</span> proto =
-          (lastObj !== <span class="hljs-literal">null</span>) &amp;&amp; (lastObj.constructor === obj.constructor)
-        str = <span class="hljs-string">`<span class="hljs-subst">${proto ? 'proto ' : ''}</span><span class="hljs-subst">${ctor}</span>: [<span class="hljs-subst">${keys}</span>]`</span>
-      }
-      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`[<span class="hljs-subst">${count++}</span>]: <span class="hljs-subst">${str}</span>`</span>)   <span class="hljs-comment">// eslint-disable-line</span>
-      lastObj = obj
-      obj = <span class="hljs-built_in">Object</span>.getPrototypeOf(obj)
-    }
+    <span class="hljs-keyword">this</span>.repeat(arrays.length, (i) =&gt; { str += <span class="hljs-string">`[<span class="hljs-subst">${arrays[i]}</span>]`</span> })
+    <span class="hljs-keyword">return</span> str
   },</pre></div></div>
             
         </li>
         
         
-        <li id="section-9">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h3 id="html-css-dom">HTML, CSS, DOM</h3>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  parseQueryString () {
+    <span class="hljs-keyword">const</span> results = {}
+    <span class="hljs-keyword">const</span> query = <span class="hljs-built_in">document</span>.location.search.substring(<span class="hljs-number">1</span>)
+    query.split(<span class="hljs-string">'&amp;'</span>).forEach((s) =&gt; {
+      <span class="hljs-keyword">const</span> param = s.split(<span class="hljs-string">'='</span>)
+      results[param[<span class="hljs-number">0</span>]] = (param.length === <span class="hljs-number">1</span>) ? <span class="hljs-literal">true</span> : param[<span class="hljs-number">1</span>]
+    })
+    <span class="hljs-keyword">return</span> results
+  },
+
+  setScript (path) {
+    <span class="hljs-keyword">const</span> scriptTag = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'script'</span>)
+    scriptTag.src = path
+    <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'head'</span>).appendChild(scriptTag)
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <h3 id="math">Math</h3>
 
@@ -218,11 +347,11 @@
         </li>
         
         
-        <li id="section-10">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Return random int/float in [0,max) or [min,max) or [-r/2,r/2)</p>
 
@@ -237,11 +366,11 @@
         </li>
         
         
-        <li id="section-11">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Return float Gaussian normal with given mean, std deviation.</p>
 
@@ -256,11 +385,11 @@
         </li>
         
         
-        <li id="section-12">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Return whether num is <a href="http://goo.gl/tCfg5">Power of Two</a>. Very clever!</p>
 
@@ -271,11 +400,11 @@
         </li>
         
         
-        <li id="section-13">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Degrees &amp; Radians</p>
 
@@ -287,11 +416,11 @@
         </li>
         
         
-        <li id="section-14">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Hypotenuse/distance from origin of point x,y</p>
 
@@ -302,11 +431,11 @@
         </li>
         
         
-        <li id="section-15">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Trims decimal digits of float to reduce size.</p>
 
@@ -320,11 +449,11 @@
         </li>
         
         
-        <li id="section-16">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Clamp a number to be between min/max.
 Much faster than Math.max(Math.min(v, max), min)</p>
@@ -340,11 +469,11 @@ Much faster than Math.max(Math.min(v, max), min)</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Return true is val in [min, max] enclusive</p>
 
@@ -355,39 +484,80 @@ Much faster than Math.max(Math.min(v, max), min)</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
-              <p>Liner interpolation .. scale in [0-1]. Lerp a standard name.</p>
+              <p>Return a linear interpolation between lo and hi.
+Scale is in [0-1], a percentage, and the result is in [lo,hi]
+If lo&gt;hi, scaling is from hi end of range.
+<a href="http://goo.gl/QrzMc">Why the name <code>lerp</code>?</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  lerp: (num1, num2, scale) =&gt; num1 * (<span class="hljs-number">1</span> - scale) + num2 * scale,</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  lerp: (lo, hi, scale) =&gt;
+    lo &lt;= hi ? lo + (hi - lo) * scale : lo - (lo - hi) * scale,</pre></div></div>
             
         </li>
         
         
-        <li id="section-19">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <h3 id="arrays-and-objects-and-iteration">Arrays and Objects and Iteration</h3>
+              <p>Calculate the lerp scale given lo/hi pair and a number between them.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  lerpScale: (number, lo, hi) =&gt; (number - lo) / (hi - lo),</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <h3 id="arrays-objects-and-iteration">Arrays, Objects and Iteration</h3>
 
             </div>
             
         </li>
         
         
-        <li id="section-20">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Shim for Object.setPrototypeOf for legacy use.
+Support for <strong>proto</strong> currently greater, oddly enough.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setPrototypeOf (obj, prototype) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Object</span>.setPrototypeOf)
+      <span class="hljs-built_in">Object</span>.setPrototypeOf(obj, prototype)
+    <span class="hljs-keyword">else</span>
+      obj.__proto__ = prototype <span class="hljs-comment">// eslint-disable-line</span>
+    <span class="hljs-keyword">return</span> obj
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Execute fcn for all own member of an obj or array (typed OK).</p>
 <ul>
@@ -409,11 +579,11 @@ Much faster than Math.max(Math.min(v, max), min)</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Repeat function f(i) n times, n in 0, i-1</p>
 
@@ -424,11 +594,96 @@ Much faster than Math.max(Math.min(v, max), min)</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>Repeat function n/step times, incrementing i by step each step.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  step (n, step, f) { <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; n; i += step) f(i) },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Return a new copy of array, with correct type.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  copyArray (array) {
+    <span class="hljs-keyword">if</span> (array.constructor === <span class="hljs-built_in">Array</span>) <span class="hljs-keyword">return</span> array.slice(<span class="hljs-number">0</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> array.constructor(array)
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Return a new array that is the concatination two arrays.
+The resulting type is that of the first array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  concatArrays (array1, array2) {
+    <span class="hljs-keyword">const</span> Type = array1.constructor
+    <span class="hljs-keyword">if</span> (Type === <span class="hljs-built_in">Array</span>)
+      <span class="hljs-keyword">return</span> array1.concat(<span class="hljs-keyword">this</span>.convertArray(array2, <span class="hljs-built_in">Array</span>))
+    <span class="hljs-keyword">const</span> array = <span class="hljs-keyword">new</span> Type(array1.length + array2.length)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Note typedArray.set() allows any Array or TypedArray array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    array.set(array1); array.set(array2, array1.length)
+    <span class="hljs-keyword">return</span> array
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>Return array’s type (Array or TypedArray variant)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  arrayType (array) { <span class="hljs-keyword">return</span> array.constructor },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Return a new JavaScript Array of floats to a given precision.
 Fails for Float32Array due to float64-&gt;32 artifiacts, thus Array conversion</p>
@@ -440,11 +695,11 @@ Fails for Float32Array due to float64-&gt;32 artifiacts, thus Array conversion</
         </li>
         
         
-        <li id="section-23">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>const a = (array.constructor === Array) ?
   array : Array.prototype.slice.call(array) // see <a href="https://goo.gl/UcIrGZ">https://goo.gl/UcIrGZ</a>
@@ -458,11 +713,11 @@ return a.map(n =&gt; util.fixed(n, digits))</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Shallow clome of obj or array</p>
 
@@ -478,11 +733,11 @@ return a.map(n =&gt; util.fixed(n, digits))</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p><a href="http://goo.gl/MIaTxU">Deep clone</a> an obj or array. Clever!</p>
 
@@ -493,13 +748,13 @@ return a.map(n =&gt; util.fixed(n, digits))</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
-              <p>Compare objects or arrays via JSON string. TypedArrays !== Arrays</p>
+              <p>Compare Objects or Arrays via JSON string. TypedArrays !== Arrays</p>
 
             </div>
             
@@ -508,13 +763,14 @@ return a.map(n =&gt; util.fixed(n, digits))</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
-              <p>Merge from’s key/val pairs into to</p>
+              <p>Merge from’s key/val pairs into to
+REMIND: use Object.assign</p>
 
             </div>
             
@@ -525,11 +781,11 @@ return a.map(n =&gt; util.fixed(n, digits))</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Returns new array (of this type) of unique elements in this <em>sorted</em> array.
 Sort or clone &amp; sort if needed.</p>
@@ -544,11 +800,11 @@ Sort or clone &amp; sort if needed.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Create random array of floats between min/max.
 Array Type allows conversion to integers (Int32Array etc)</p>
@@ -564,11 +820,11 @@ Array Type allows conversion to integers (Int32Array etc)</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Create an array of properties from an array of objects</p>
 
@@ -579,11 +835,11 @@ Array Type allows conversion to integers (Int32Array etc)</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>Create a histogram, given an array, a bin size, and a
 min bin defaulting to min of of the array.
@@ -618,11 +874,11 @@ Return an object with:</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Return scalar max/min/sum/avg of numeric array.
 Works with es6 TypedArrays</p>
@@ -637,11 +893,11 @@ Works with es6 TypedArrays</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>You’d think this wasn’t necessary, and I always forget. Damn.
 Note this, like sort, sorts in place. Clone array if needed.</p>
@@ -655,20 +911,23 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
-              <p>sort an array of objects by a property key of the objects</p>
+              <p>sort an array of objects w/ fcn(obj) as compareFunction.
+If fcn is a string, convert to propFcn.
+See <a href="https://goo.gl/fWNFf">Fisher-Yates-Knuth shuffle</a> for better approach</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  sortObjs (array, key, ascending = <span class="hljs-literal">true</span>) {
+            <div class="content"><div class='highlight'><pre>  sortObjs (array, fcn, ascending = <span class="hljs-literal">true</span>) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> fcn === <span class="hljs-string">'string'</span>) fcn = <span class="hljs-keyword">this</span>.propFcn(fcn)
     <span class="hljs-keyword">const</span> comp = (a, b) =&gt; {
-      <span class="hljs-keyword">if</span> (a[key] &gt; b[key]) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
-      <span class="hljs-keyword">if</span> (a[key] &lt; b[key]) <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>
+      <span class="hljs-keyword">if</span> (fcn(a) &gt; fcn(b)) <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>
+      <span class="hljs-keyword">if</span> (fcn(a) &lt; fcn(b)) <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>
       <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
     }
     <span class="hljs-keyword">return</span> array.sort((a, b) =&gt; ascending ? comp(a, b) : -comp(a, b))
@@ -677,11 +936,27 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>Randomize array in-place. Use clone() first if new array needed
+The array is returned for chaining; same as input array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  shuffle (array) { array.sort((a, b) =&gt; <span class="hljs-built_in">Math</span>.random() &lt; <span class="hljs-number">0.5</span>); <span class="hljs-keyword">return</span> array },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Return array composed of f(a1i, a2i) called pairwise on both arrays</p>
 
@@ -696,11 +971,67 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p>Return a “ramp” (array of uniformly ascending/descending floats)
+in [start,stop] with numItems (positive integer &gt; 1).
+OK for start&gt;stop. Will always include start/stop w/in float accuracy.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  aRamp (start, stop, numItems) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>Note: start + step*i, where step is (stop-start)/(numItems-1),
+has float accuracy problems, must recalc step each iteration.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (numItems &lt;= <span class="hljs-number">1</span>) <span class="hljs-keyword">this</span>.error(<span class="hljs-string">'aRamp: numItems must be &gt; 1'</span>)
+    <span class="hljs-keyword">const</span> a = []
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; numItems; i++)
+      a.push(start + (stop - start) * (i / (numItems - <span class="hljs-number">1</span>)))
+    <span class="hljs-keyword">return</span> a
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>Integer version of aRamp, start &amp; stop integers, rounding each element.
+Default numItems yields unit step between start &amp; stop.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  aIntRamp (start, stop, numItems = (<span class="hljs-built_in">Math</span>.abs(stop - start) + <span class="hljs-number">1</span>)) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.aRamp(start, stop, numItems).map(a =&gt; <span class="hljs-built_in">Math</span>.round(a))
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>Return an array normalized (lerp) between lo/hi values</p>
 
@@ -715,11 +1046,11 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>Return Uint8ClampedArray normalized in 0-255</p>
 
@@ -732,11 +1063,11 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Return Array normalized to integers in lo-hi</p>
 
@@ -749,11 +1080,11 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <h3 id="async">Async</h3>
 
@@ -762,11 +1093,11 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>Return Promise for getting an image.</p>
 <ul>
@@ -788,11 +1119,11 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>Return Promise for ajax/xhr data.</p>
 <ul>
@@ -817,11 +1148,11 @@ Note this, like sort, sorts in place. Clone array if needed.</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <p>An <a href="https://davidwalsh.name/async-generators">async/await</a>
 implementation using generators returning promises.</p>
@@ -845,11 +1176,11 @@ promise initially yielded by the generator function.</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-61">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
               <p>Used like this, main() is entirely sync:</p>
 <pre><code><span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">main</span>(<span class="hljs-params"></span>) </span>{
@@ -866,11 +1197,11 @@ util.runGenerator( main )
         </li>
         
         
-        <li id="section-44">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <h3 id="canvas-image">Canvas/Image</h3>
 
@@ -879,11 +1210,11 @@ util.runGenerator( main )
         </li>
         
         
-        <li id="section-45">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <p>Get an image in this page by its ID</p>
 
@@ -894,11 +1225,11 @@ util.runGenerator( main )
         </li>
         
         
-        <li id="section-46">
+        <li id="section-64">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
               <p>Create a blank canvas of a given width/height</p>
 
@@ -913,11 +1244,11 @@ util.runGenerator( main )
         </li>
         
         
-        <li id="section-47">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>As above, but returing the context object.
 Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
@@ -932,11 +1263,11 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
         </li>
         
         
-        <li id="section-48">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>Return the ImageData object for this context object</p>
 
@@ -949,11 +1280,11 @@ Note ctx.canvas is the canvas for the ctx, and can be use as an image.</p>
         </li>
         
         
-        <li id="section-49">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <p>Return an image/png base64 <a href="https://goo.gl/fyBPnL">dataUrl</a>
 string for this ctx object.</p>
@@ -965,11 +1296,11 @@ string for this ctx object.</p>
         </li>
         
         
-        <li id="section-50">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>Convert a dataUrl back into am image.</p>
 
@@ -984,11 +1315,11 @@ string for this ctx object.</p>
         </li>
         
         
-        <li id="section-51">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>Return a ctx object for this base64 data url</p>
 
@@ -1004,11 +1335,11 @@ string for this ctx object.</p>
         </li>
         
         
-        <li id="section-52">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>Get element (i.e. canvas) relative x,y position from event/mouse position.</p>
 
@@ -1022,11 +1353,11 @@ string for this ctx object.</p>
         </li>
         
         
-        <li id="section-53">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p>Convert an image to a context. img may be a canvas.</p>
 <ul>
@@ -1040,7 +1371,7 @@ string for this ctx object.</p>
             
             <div class="content"><div class='highlight'><pre>  imageToCtx (img, x = <span class="hljs-number">0</span>, y = <span class="hljs-number">0</span>, width = img.width, height = img.height) {
     <span class="hljs-keyword">if</span> ((x + width &gt; img.width) || (y + height &gt; img.height))
-      <span class="hljs-keyword">throw</span> <span class="hljs-string">'imageToCtx: parameters outside of image'</span>
+      <span class="hljs-keyword">this</span>.error(<span class="hljs-string">'imageToCtx: parameters outside of image'</span>)
     <span class="hljs-keyword">const</span> ctx = <span class="hljs-keyword">this</span>.createCtx(width, height)
     ctx.drawImage(img, x, y, width, height, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, width, height)
     <span class="hljs-keyword">return</span> ctx

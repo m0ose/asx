@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>AgentSet.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="AgentSet.html">
+                  AgentSet.js
+                </a>
+              
+                
+                <a class="source" href="Color.html">
+                  Color.js
+                </a>
+              
+                
+                <a class="source" href="ColorMap.html">
+                  ColorMap.js
+                </a>
+              
+                
+                <a class="source" href="DataSet.html">
+                  DataSet.js
+                </a>
+              
+                
+                <a class="source" href="OofA.html">
+                  OofA.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>AgentSet.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>AgentSets are arrays that are factories for their agents/objects.
+They are the base for Patches, Turtles and Links.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">const</span> AgentSet = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h3 id="array-like-methods">Array-like Methods</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>AgentSet “class method”: Convert an array to an agentset.
+This is a constructor for an AgentSet.
+It also is used in AgentSet methods which call an Array function
+returning a new Array, to turn it back into an AgentSet.
+See clone() below.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  AsSet (array, set = AgentSet) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.hasOwnProperty(<span class="hljs-string">'length'</span>))
+      util.error(<span class="hljs-string">'AsSet: called from AgentSet method, use this.asSet'</span>)
+    <span class="hljs-keyword">return</span> util.setPrototypeOf(array, set)
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>AgentSet method to convert an array to the same AgentSet type as this’s.
+Always called with “this”: this.asSet(array). Mainly used when
+an AgentSet method calls this.someArrayMethod which returns a new array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  asSet (array) {
+    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.hasOwnProperty(<span class="hljs-string">'length'</span>))
+      util.error(<span class="hljs-string">'asSet: not called from AgentSet method, use AgentSet.AsSet'</span>)
+    <span class="hljs-keyword">return</span> AgentSet.AsSet(array, <span class="hljs-built_in">Object</span>.getPrototypeOf(<span class="hljs-keyword">this</span>))
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Return true if there are no items in this set, false if not empty.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  empty () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.length === <span class="hljs-number">0</span> },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Return !empty()</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  any () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.length !== <span class="hljs-number">0</span> },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Return last item in this array. Returns undefined if empty.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  last () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[ <span class="hljs-keyword">this</span>.length - <span class="hljs-number">1</span> ] },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Return true if reporter true for all of this set’s objects</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  all (reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.every(reporter) },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Return shallow copy of a protion of this agentset
+<a href="https://goo.gl/Ilgsok">See Array.slice</a>
+Default is to clone entire agentset</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  clone (begin = <span class="hljs-number">0</span>, end = <span class="hljs-keyword">this</span>.length) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.asSet(<span class="hljs-keyword">this</span>.slice(begin, end))
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Return this agentset sorted by the reporter in ascending/descending order.
+If reporter is a string, convert to a fcn returning that property</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  sortBy (reporter, ascending = <span class="hljs-literal">true</span>) {
+    util.sortObjs(<span class="hljs-keyword">this</span>, reporter, ascending)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Return a random agent. Return undefined if empty.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  oneOf () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[ util.randomInt(<span class="hljs-keyword">this</span>.length) ] },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Return the first agent having the min/max of given value of f(agent).
+If reporter is a string, convert to a fcn returning that property</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  minOrMaxOf (min, reporter) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.empty()) util.error(<span class="hljs-string">'min/max OneOf: empty array'</span>)
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> reporter === <span class="hljs-string">'string'</span>) reporter = util.propFcn(reporter)
+    <span class="hljs-keyword">let</span> o = <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">let</span> val = min ? <span class="hljs-literal">Infinity</span> : -<span class="hljs-literal">Infinity</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-keyword">this</span>.length; i++) {
+      <span class="hljs-keyword">let</span> a = <span class="hljs-keyword">this</span>[i]
+      <span class="hljs-keyword">let</span> aval = reporter(a)
+      <span class="hljs-keyword">if</span> ((min &amp;&amp; (aval &lt; val)) || (!min &amp;&amp; (aval &gt; val)))
+        [o, val] = [a, aval]
+    }
+    <span class="hljs-keyword">return</span> o
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>The min version of the above</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  minOneOf (reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.minOrMaxOf(<span class="hljs-literal">true</span>, reporter) },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>The max version of the above</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  maxOneOf (reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.minOrMaxOf(<span class="hljs-literal">false</span>, reporter) },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Return n random agents.
+See <a href="https://goo.gl/fWNFf">Fisher-Yates-Knuth shuffle</a>
+for better approach for large n.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  nOf (n) { <span class="hljs-comment">// I realize this is a bit silly, lets hope random doesn't repeat!</span>
+    <span class="hljs-keyword">if</span> (n &gt; <span class="hljs-keyword">this</span>.length) util.error(<span class="hljs-string">'nOf: n larger than agentset'</span>)
+    <span class="hljs-keyword">if</span> (n === <span class="hljs-keyword">this</span>.length) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">const</span> result = []
+    <span class="hljs-keyword">while</span> (result.length &lt; n) {
+      <span class="hljs-keyword">const</span> o = <span class="hljs-keyword">this</span>.oneOf()
+      <span class="hljs-keyword">if</span> (!(o <span class="hljs-keyword">in</span> result)) result.push(o)
+    }
+    <span class="hljs-keyword">return</span> result
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Return a new agentset of the n min/max agents of the value of reporter,
+in ascending order.
+If reporter is a string, convert to a fcn returning that property
+Note we do not manage ties, see NetLogo docs.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  minOrMaxNOf (min, n, reporter) {
+    <span class="hljs-keyword">if</span> (n &gt; <span class="hljs-keyword">this</span>.length) util.error(<span class="hljs-string">'min/max nOf: n larger than agentset'</span>)
+    <span class="hljs-keyword">const</span> <span class="hljs-keyword">as</span> = <span class="hljs-keyword">this</span>.clone().sortBy(reporter)
+    <span class="hljs-keyword">return</span> min ? <span class="hljs-keyword">as</span>.clone(<span class="hljs-number">0</span>, n) : <span class="hljs-keyword">as</span>.clone(<span class="hljs-keyword">as</span>.length - n)
+  },
+  minNOf (n, reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.minOrMaxNOf(<span class="hljs-literal">true</span>, n, reporter) },
+  maxNOf (n, reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.minOrMaxNOf(<span class="hljs-literal">false</span>, n, reporter) }
+
+}
+util.setPrototypeOf(AgentSet, <span class="hljs-built_in">Array</span>.prototype)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>AgentSet.<strong>proto</strong> = Array.prototype</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> AgentSet</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

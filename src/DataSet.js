@@ -21,7 +21,7 @@ class DataSet {
   // Checks data is right size, throws an error if not.
   constructor (width, height, data) {
     if (data.length !== width * height)
-      throw `new DataSet length error: ${width} * ${height} != ${data.length}`
+      u.error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
     else
       [this.width, this.height, this.data] = [width, height, data]
   }
@@ -29,7 +29,7 @@ class DataSet {
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
     if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1)))
-      throw `DataSet.checkXY: x,y out of range: ${x}, ${y}`
+      u.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
   }
 
   type () { return this.data.constructor }
@@ -124,7 +124,7 @@ class DataSet {
   // Returned dataset is of same array type as this.
   subset (x, y, width, height) {
     if ((x + width) > this.width || (y + height) > this.height)
-      throw 'DataSet.subSet: params out of range'
+      u.error('DataSet.subSet: params out of range')
     const ds = this.emptyDataSet(width, height)
     for (let i = 0; i < width; i++)
       for (let j = 0; j < height; j++)
@@ -143,7 +143,7 @@ class DataSet {
   col (x) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (x >= w)
-      throw `col: x out of range width: ${w} x: ${x}`
+      u.error(`col: x out of range width: ${w} x: ${x}`)
     const colData = this.emptyArray(h)
     for (let i = 0; i < h; i++)
       colData[i] = data[x + i * w]
@@ -154,7 +154,7 @@ class DataSet {
   row (y) {
     const [w, h] = [this.width, this.height]
     if (y >= h)
-      throw `row: y out of range height: ${h} x: ${y}`
+      u.error(`row: y out of range height: ${h} x: ${y}`)
     return this.data.slice(y * w, (y + 1) * w)
   }
 
@@ -181,7 +181,7 @@ class DataSet {
     const [w, h] = [this.width, this.height]
     const [w1, h1] = [ds.width, ds.height]
     if (h !== h1)
-      throw `concatEast: heights not equal ${h}, ${h1}`
+      u.error(`concatEast: heights not equal ${h}, ${h1}`)
     const ds1 = this.emptyDataSet((w + w1), h)
     for (let x = 0; x < h; x++) // copy this into new dataset
       for (let y = 0; y < w; y++)
@@ -199,7 +199,7 @@ class DataSet {
   concatSouth (dataset) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (w !== dataset.width)
-      throw `concatSouth: widths not equal ${w}, ${dataset.width}`
+      u.error(`concatSouth: widths not equal ${w}, ${dataset.width}`)
     const data1 = u.concatArrays(data, dataset.data)
     return new DataSet(w, h + dataset.height, data1)
   }
@@ -293,9 +293,10 @@ class DataSet {
       for (let x = 0; x < w; x++) {
         let [gx, gy] = [dzdx.getXY(x, y), dzdy.getXY(x, y)]
         slope.push(Math.atan(u.distance(gx, gy)) / cellSize) // radians
-        while (noNaNs && gx === gy) {
-          gx += u.randomNormal(0, 0.0001); gy += u.randomNormal(0, 0.0001)
-        }
+        if (noNaNs)
+          while (gx === gy) {
+            gx += u.randomNormal(0, 0.0001); gy += u.randomNormal(0, 0.0001)
+          }
         // radians in [-PI,PI], downhill
         let rad = (gx === gy && gy === 0) ? NaN : Math.atan2(-gy, -gx)
         // positive radians in [0,2PI] if desired

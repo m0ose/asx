@@ -11,11 +11,36 @@ System.register([], function (_export, _context) {
 
         // Fixing the javascript [typeof operator](https://goo.gl/Efdzk5)
         typeOf: obj => ({}).toString.call(obj).match(/\s(\w+)/)[1].toLowerCase(),
+        // Is obj Array or Object (but not typed array)?
         isAorO: obj => ['array', 'object'].indexOf(util.typeOf(obj)) >= 0,
+        // Is obj TypedArray? If obj.buffer not present, works .. type is 'undefined'
+        isTypedArray: obj => util.typeOf(obj.buffer) === 'arraybuffer',
+        // Is a number an integer (rather than a float w/ non-zero fractional part)
+        isInteger: Number.isInteger || (num => Math.floor(num) === num),
         // Check [big/little endian](https://en.wikipedia.org/wiki/Endianness)
         isLittleEndian() {
           const d32 = new Uint32Array([0x01020304]);
           return new Uint8ClampedArray(d32.buffer)[0] === 4;
+        },
+
+        // Throw an error with string.
+        // Use instead of `throw message` for better debugging
+        error: message => {
+          throw new Error(message);
+        },
+
+        // Return identity fcn, returning its argument unchanged. Used in callbacks
+        identity: o => o,
+        // Return function returning an object's property.  Property in fcn closure.
+        propFcn: prop => o => o[prop],
+
+        // Convert Array or TypedArray to given Type (Array or TypedArray).
+        // If array is already of correct type, return it unmodified
+        convertArray(array, Type) {
+          const Type0 = array.constructor;
+          if (Type0 === Type) return array; // return array if already same Type
+          if (Type !== Array) return new Type(array); // TypedArray: universal ctor
+          return Array.prototype.slice.call(array); // Convert TypedArray to Array
         },
 
         // ### Debug ###
@@ -33,10 +58,24 @@ System.register([], function (_export, _context) {
           let count = 1;
           let str = '';
           while (obj) {
-            if (typeof obj === 'function') str = obj.constructor.toString();else str = `[${ Object.keys(obj).join(', ') }]`;
+            if (typeof obj === 'function') {
+              str = obj.constructor.toString();
+            } else {
+              let okeys = Object.keys(obj);
+              str = okeys.length > 0 ? // eslint-disable-line
+              `[${ okeys.join(', ') }]` : `[${ obj.constructor.name }]`;
+            }
             console.log(`[${ count++ }]: ${ str }`); // eslint-disable-line
             obj = Object.getPrototypeOf(obj);
           }
+        },
+
+        arraysToString(arrays) {
+          let str = '';
+          this.repeat(arrays.length, i => {
+            str += `[${ arrays[i] }]`;
+          });
+          return str;
         },
 
         // ### HTML, CSS, DOM ###
@@ -100,10 +139,22 @@ System.register([], function (_export, _context) {
         // Return true is val in [min, max] enclusive
         between: (val, min, max) => min <= val && val <= max,
 
-        // Liner interpolation .. scale in [0-1]. Lerp a standard name.
-        lerp: (num1, num2, scale) => num1 * (1 - scale) + num2 * scale,
+        // Return a linear interpolation between lo and hi.
+        // Scale is in [0-1], a percentage, and the result is in [lo,hi]
+        // If lo>hi, scaling is from hi end of range.
+        // [Why the name `lerp`?](http://goo.gl/QrzMc)
+        lerp: (lo, hi, scale) => lo <= hi ? lo + (hi - lo) * scale : lo - (lo - hi) * scale,
+        // Calculate the lerp scale given lo/hi pair and a number between them.
+        lerpScale: (number, lo, hi) => (number - lo) / (hi - lo),
 
         // ### Arrays, Objects and Iteration ###
+
+        // Shim for Object.setPrototypeOf for legacy use.
+        // Support for __proto__ currently greater, oddly enough.
+        setPrototypeOf(obj, prototype) {
+          if (Object.setPrototypeOf) Object.setPrototypeOf(obj, prototype);else obj.__proto__ = prototype; // eslint-disable-line
+          return obj;
+        },
 
         // Execute fcn for all own member of an obj or array (typed OK).
         // - Unlike forEach, does not skip undefines.
@@ -118,14 +169,9 @@ System.register([], function (_export, _context) {
         repeat(n, f) {
           for (let i = 0; i < n; i++) f(i);
         },
-
-        // Convert Array or TypedArray to given Type (Array or TypedArray).
-        // If array is already of correct type, return it unmodified
-        convertArray(array, Type) {
-          const Type0 = array.constructor;
-          if (Type0 === Type) return array; // return array if already same Type
-          if (Type !== Array) return new Type(array); // TypedArray: universal ctor
-          return Array.prototype.slice.call(array); // Convert TypedArray to Array
+        // Repeat function n/step times, incrementing i by step each step.
+        step(n, step, f) {
+          for (let i = 0; i < n; i += step) f(i);
         },
 
         // Return a new copy of array, with correct type.
@@ -176,6 +222,7 @@ System.register([], function (_export, _context) {
         objectsEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
 
         // Merge from's key/val pairs into to
+        // REMIND: use Object.assign
         copyTo(toObj, fromObj) {
           Object.keys(fromObj).forEach(k => {
             toObj[k] = fromObj[k];
@@ -240,14 +287,22 @@ System.register([], function (_export, _context) {
         sortNums(array, ascending = true) {
           return array.sort((a, b) => ascending ? a - b : b - a);
         },
-        // sort an array of objects by a property key of the objects
-        sortObjs(array, key, ascending = true) {
+        // sort an array of objects w/ fcn(obj) as compareFunction.
+        // If fcn is a string, convert to propFcn.
+        // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf) for better approach
+        sortObjs(array, fcn, ascending = true) {
+          if (typeof fcn === 'string') fcn = this.propFcn(fcn);
           const comp = (a, b) => {
-            if (a[key] > b[key]) return 1;
-            if (a[key] < b[key]) return -1;
+            if (fcn(a) > fcn(b)) return 1;
+            if (fcn(a) < fcn(b)) return -1;
             return 0;
           };
           return array.sort((a, b) => ascending ? comp(a, b) : -comp(a, b));
+        },
+        // Randomize array in-place. Use clone() first if new array needed
+        // The array is returned for chaining; same as input array.
+        shuffle(array) {
+          array.sort((a, b) => Math.random() < 0.5);return array;
         },
 
         // Return array composed of f(a1i, a2i) called pairwise on both arrays
@@ -256,6 +311,23 @@ System.register([], function (_export, _context) {
         aPairDif: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a - b),
         aPairMul: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a * b),
         aPairEq: (a1, a2) => util.aPairDif(a1, a2).every(a => a === 0),
+
+        // Return a "ramp" (array of uniformly ascending/descending floats)
+        // in [start,stop] with numItems (positive integer > 1).
+        // OK for start>stop. Will always include start/stop w/in float accuracy.
+        aRamp(start, stop, numItems) {
+          // Note: start + step*i, where step is (stop-start)/(numItems-1),
+          // has float accuracy problems, must recalc step each iteration.
+          if (numItems <= 1) this.error('aRamp: numItems must be > 1');
+          const a = [];
+          for (let i = 0; i < numItems; i++) a.push(start + (stop - start) * (i / (numItems - 1)));
+          return a;
+        },
+        // Integer version of aRamp, start & stop integers, rounding each element.
+        // Default numItems yields unit step between start & stop.
+        aIntRamp(start, stop, numItems = Math.abs(stop - start) + 1) {
+          return this.aRamp(start, stop, numItems).map(a => Math.round(a));
+        },
 
         // Return an array normalized (lerp) between lo/hi values
         normalize(array, lo = 0, hi = 1) {
@@ -382,7 +454,7 @@ System.register([], function (_export, _context) {
         //
         // Note: to convert a ctx to an "image" (drawImage) use ctx.canvas
         imageToCtx(img, x = 0, y = 0, width = img.width, height = img.height) {
-          if (x + width > img.width || y + height > img.height) throw 'imageToCtx: parameters outside of image';
+          if (x + width > img.width || y + height > img.height) this.error('imageToCtx: parameters outside of image');
           const ctx = this.createCtx(width, height);
           ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
           return ctx;

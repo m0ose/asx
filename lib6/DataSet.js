@@ -28,12 +28,12 @@ System.register(['./util.js'], function (_export, _context) {
         // constructor: Stores the three DataSet components.
         // Checks data is right size, throws an error if not.
         constructor(width, height, data) {
-          if (data.length !== width * height) throw `new DataSet length error: ${ width } * ${ height } != ${ data.length }`;else [this.width, this.height, this.data] = [width, height, data];
+          if (data.length !== width * height) u.error(`new DataSet length: ${ data.length } !== ${ width } * ${ height }`);else [this.width, this.height, this.data] = [width, height, data];
         }
 
         // Checks x,y are within DataSet. Throw error if not.
         checkXY(x, y) {
-          if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1))) throw `DataSet.checkXY: x,y out of range: ${ x }, ${ y }`;
+          if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1))) u.error(`DataSet.checkXY: x,y out of range: ${ x }, ${ y }`);
         }
 
         type() {
@@ -134,7 +134,7 @@ System.register(['./util.js'], function (_export, _context) {
         // Return a rectangular subset of the dataset.
         // Returned dataset is of same array type as this.
         subset(x, y, width, height) {
-          if (x + width > this.width || y + height > this.height) throw 'DataSet.subSet: params out of range';
+          if (x + width > this.width || y + height > this.height) u.error('DataSet.subSet: params out of range');
           const ds = this.emptyDataSet(width, height);
           for (let i = 0; i < width; i++) for (let j = 0; j < height; j++) ds.setXY(i, j, this.getXY(i + x, j + y));
           return ds;
@@ -150,7 +150,7 @@ System.register(['./util.js'], function (_export, _context) {
         // Return the column of data at position x as this array's type
         col(x) {
           const [w, h, data] = [this.width, this.height, this.data];
-          if (x >= w) throw `col: x out of range width: ${ w } x: ${ x }`;
+          if (x >= w) u.error(`col: x out of range width: ${ w } x: ${ x }`);
           const colData = this.emptyArray(h);
           for (let i = 0; i < h; i++) colData[i] = data[x + i * w];
           return colData;
@@ -159,7 +159,7 @@ System.register(['./util.js'], function (_export, _context) {
         // Return the row of data at position y as this array's type
         row(y) {
           const [w, h] = [this.width, this.height];
-          if (y >= h) throw `row: y out of range height: ${ h } x: ${ y }`;
+          if (y >= h) u.error(`row: y out of range height: ${ h } x: ${ y }`);
           return this.data.slice(y * w, (y + 1) * w);
         }
 
@@ -185,7 +185,7 @@ System.register(['./util.js'], function (_export, _context) {
         concatEast(ds) {
           const [w, h] = [this.width, this.height];
           const [w1, h1] = [ds.width, ds.height];
-          if (h !== h1) throw `concatEast: heights not equal ${ h }, ${ h1 }`;
+          if (h !== h1) u.error(`concatEast: heights not equal ${ h }, ${ h1 }`);
           const ds1 = this.emptyDataSet(w + w1, h);
           for (let x = 0; x < h; x++) // copy this into new dataset
           for (let y = 0; y < w; y++) ds1.setXY(x, y, this.getXY(x, y));
@@ -200,7 +200,7 @@ System.register(['./util.js'], function (_export, _context) {
         // Note: concatNorth is dataset.concatSouth(this)
         concatSouth(dataset) {
           const [w, h, data] = [this.width, this.height, this.data];
-          if (w !== dataset.width) throw `concatSouth: widths not equal ${ w }, ${ dataset.width }`;
+          if (w !== dataset.width) u.error(`concatSouth: widths not equal ${ w }, ${ dataset.width }`);
           const data1 = u.concatArrays(data, dataset.data);
           return new DataSet(w, h + dataset.height, data1);
         }
@@ -293,7 +293,7 @@ System.register(['./util.js'], function (_export, _context) {
             for (let x = 0; x < w; x++) {
               let [gx, gy] = [dzdx.getXY(x, y), dzdy.getXY(x, y)];
               slope.push(Math.atan(u.distance(gx, gy)) / cellSize); // radians
-              while (noNaNs && gx === gy) {
+              if (noNaNs) while (gx === gy) {
                 gx += u.randomNormal(0, 0.0001);gy += u.randomNormal(0, 0.0001);
               }
               // radians in [-PI,PI], downhill

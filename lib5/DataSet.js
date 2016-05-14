@@ -86,7 +86,7 @@ System.register(['./util.js'], function (_export, _context) {
         function DataSet(width, height, data) {
           _classCallCheck(this, DataSet);
 
-          if (data.length !== width * height) throw 'new DataSet length error: ' + width + ' * ' + height + ' != ' + data.length;else {
+          if (data.length !== width * height) u.error('new DataSet length: ' + data.length + ' !== ' + width + ' * ' + height);else {
             ;
             var _ref = [width, height, data];
             this.width = _ref[0];
@@ -101,7 +101,7 @@ System.register(['./util.js'], function (_export, _context) {
         _createClass(DataSet, [{
           key: 'checkXY',
           value: function checkXY(x, y) {
-            if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1))) throw 'DataSet.checkXY: x,y out of range: ' + x + ', ' + y;
+            if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1))) u.error('DataSet.checkXY: x,y out of range: ' + x + ', ' + y);
           }
         }, {
           key: 'type',
@@ -213,7 +213,7 @@ System.register(['./util.js'], function (_export, _context) {
         }, {
           key: 'subset',
           value: function subset(x, y, width, height) {
-            if (x + width > this.width || y + height > this.height) throw 'DataSet.subSet: params out of range';
+            if (x + width > this.width || y + height > this.height) u.error('DataSet.subSet: params out of range');
             var ds = this.emptyDataSet(width, height);
             for (var i = 0; i < width; i++) {
               for (var j = 0; j < height; j++) {
@@ -233,7 +233,7 @@ System.register(['./util.js'], function (_export, _context) {
             var h = this.height;
             var data = this.data;
 
-            if (x >= w) throw 'col: x out of range width: ' + w + ' x: ' + x;
+            if (x >= w) u.error('col: x out of range width: ' + w + ' x: ' + x);
             var colData = this.emptyArray(h);
             for (var i = 0; i < h; i++) {
               colData[i] = data[x + i * w];
@@ -245,7 +245,7 @@ System.register(['./util.js'], function (_export, _context) {
             var w = this.width;
             var h = this.height;
 
-            if (y >= h) throw 'row: y out of range height: ' + h + ' x: ' + y;
+            if (y >= h) u.error('row: y out of range height: ' + h + ' x: ' + y);
             return this.data.slice(y * w, (y + 1) * w);
           }
         }, {
@@ -269,7 +269,7 @@ System.register(['./util.js'], function (_export, _context) {
             var w1 = ds.width;
             var h1 = ds.height;
 
-            if (h !== h1) throw 'concatEast: heights not equal ' + h + ', ' + h1;
+            if (h !== h1) u.error('concatEast: heights not equal ' + h + ', ' + h1);
             var ds1 = this.emptyDataSet(w + w1, h);
             for (var x = 0; x < h; x++) {
               // copy this into new dataset
@@ -290,7 +290,7 @@ System.register(['./util.js'], function (_export, _context) {
             var h = this.height;
             var data = this.data;
 
-            if (w !== dataset.width) throw 'concatSouth: widths not equal ' + w + ', ' + dataset.width;
+            if (w !== dataset.width) u.error('concatSouth: widths not equal ' + w + ', ' + dataset.width);
             var data1 = u.concatArrays(data, dataset.data);
             return new DataSet(w, h + dataset.height, data1);
           }
@@ -414,7 +414,7 @@ System.register(['./util.js'], function (_export, _context) {
                 var gy = dzdy.getXY(x, y);
 
                 slope.push(Math.atan(u.distance(gx, gy)) / cellSize); // radians
-                while (noNaNs && gx === gy) {
+                if (noNaNs) while (gx === gy) {
                   gx += u.randomNormal(0, 0.0001);gy += u.randomNormal(0, 0.0001);
                 }
                 // radians in [-PI,PI], downhill

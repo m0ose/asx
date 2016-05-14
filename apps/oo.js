@@ -17,7 +17,14 @@ class AgentSet extends Array {
   }
   create () { this.push(new Agent(this)); return this[this.length - 1] }
   setDefault (name, value) { this.defaults[name] = value }
+
 }
+
+// let p = { x: 1 }
+// if (p.x / 4 % 2) {
+//   p.color = [255, 0, 255] }
+// else {
+//   p.color = [Math.random() * 255, Math.random() * 255, Math.random() * 255] }
 
 util.copyTo(window, { Agent, AgentSet, util })
 

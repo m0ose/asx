@@ -35,7 +35,14 @@ System.register(['./util.js'], function (_export, _context) {
         setDefault(name, value) {
           this.defaults[name] = value;
         }
+
       }
+
+      // let p = { x: 1 }
+      // if (p.x / 4 % 2) {
+      //   p.color = [255, 0, 255] }
+      // else {
+      //   p.color = [Math.random() * 255, Math.random() * 255, Math.random() * 255] }
 
       util.copyTo(window, { Agent, AgentSet, util });
 

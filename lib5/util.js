@@ -13,12 +13,46 @@ System.register([], function (_export, _context) {
         typeOf: function typeOf(obj) {
           return {}.toString.call(obj).match(/\s(\w+)/)[1].toLowerCase();
         },
+        // Is obj Array or Object (but not typed array)?
         isAorO: function isAorO(obj) {
           return ['array', 'object'].indexOf(util.typeOf(obj)) >= 0;
+        },
+        // Is obj TypedArray? If obj.buffer not present, works .. type is 'undefined'
+        isTypedArray: function isTypedArray(obj) {
+          return util.typeOf(obj.buffer) === 'arraybuffer';
+        },
+        // Is a number an integer (rather than a float w/ non-zero fractional part)
+        isInteger: Number.isInteger || function (num) {
+          return Math.floor(num) === num;
         },
         isLittleEndian: function isLittleEndian() {
           var d32 = new Uint32Array([0x01020304]);
           return new Uint8ClampedArray(d32.buffer)[0] === 4;
+        },
+
+
+        // Throw an error with string.
+        // Use instead of `throw message` for better debugging
+        error: function error(message) {
+          throw new Error(message);
+        },
+
+        // Return identity fcn, returning its argument unchanged. Used in callbacks
+        identity: function identity(o) {
+          return o;
+        },
+        // Return function returning an object's property.  Property in fcn closure.
+        propFcn: function propFcn(prop) {
+          return function (o) {
+            return o[prop];
+          };
+        },
+
+        convertArray: function convertArray(array, Type) {
+          var Type0 = array.constructor;
+          if (Type0 === Type) return array; // return array if already same Type
+          if (Type !== Array) return new Type(array); // TypedArray: universal ctor
+          return Array.prototype.slice.call(array); // Convert TypedArray to Array
         },
         timeit: function timeit(f) {
           var runs = arguments.length <= 1 || arguments[1] === undefined ? 1e5 : arguments[1];
@@ -36,10 +70,22 @@ System.register([], function (_export, _context) {
           var count = 1;
           var str = '';
           while (obj) {
-            if (typeof obj === 'function') str = obj.constructor.toString();else str = '[' + Object.keys(obj).join(', ') + ']';
+            if (typeof obj === 'function') {
+              str = obj.constructor.toString();
+            } else {
+              var okeys = Object.keys(obj);
+              str = okeys.length > 0 ? '[' + okeys.join(', ') + ']' : '[' + obj.constructor.name + ']';
+            }
             console.log('[' + count++ + ']: ' + str); // eslint-disable-line
             obj = Object.getPrototypeOf(obj);
           }
+        },
+        arraysToString: function arraysToString(arrays) {
+          var str = '';
+          this.repeat(arrays.length, function (i) {
+            str += '[' + arrays[i] + ']';
+          });
+          return str;
         },
         parseQueryString: function parseQueryString() {
           var results = {};
@@ -123,11 +169,22 @@ System.register([], function (_export, _context) {
           return min <= val && val <= max;
         },
 
-        // Liner interpolation .. scale in [0-1]. Lerp a standard name.
-        lerp: function lerp(num1, num2, scale) {
-          return num1 * (1 - scale) + num2 * scale;
+        // Return a linear interpolation between lo and hi.
+        // Scale is in [0-1], a percentage, and the result is in [lo,hi]
+        // If lo>hi, scaling is from hi end of range.
+        // [Why the name `lerp`?](http://goo.gl/QrzMc)
+        lerp: function lerp(lo, hi, scale) {
+          return lo <= hi ? lo + (hi - lo) * scale : lo - (lo - hi) * scale;
+        },
+        // Calculate the lerp scale given lo/hi pair and a number between them.
+        lerpScale: function lerpScale(number, lo, hi) {
+          return (number - lo) / (hi - lo);
         },
 
+        setPrototypeOf: function setPrototypeOf(obj, prototype) {
+          if (Object.setPrototypeOf) Object.setPrototypeOf(obj, prototype);else obj.__proto__ = prototype; // eslint-disable-line
+          return obj;
+        },
         forAll: function forAll(arrayOrObj, fcn) {
           if (arrayOrObj.slice) // typed & std arrays
             for (var i = 0, len = arrayOrObj.length; i < len; i++) {
@@ -142,11 +199,10 @@ System.register([], function (_export, _context) {
             f(i);
           }
         },
-        convertArray: function convertArray(array, Type) {
-          var Type0 = array.constructor;
-          if (Type0 === Type) return array; // return array if already same Type
-          if (Type !== Array) return new Type(array); // TypedArray: universal ctor
-          return Array.prototype.slice.call(array); // Convert TypedArray to Array
+        step: function step(n, _step, f) {
+          for (var i = 0; i < n; i += _step) {
+            f(i);
+          }
         },
         copyArray: function copyArray(array) {
           if (array.constructor === Array) return array.slice(0);
@@ -238,8 +294,8 @@ System.register([], function (_export, _context) {
           var _iteratorError = undefined;
 
           try {
-            for (var _iterator = array[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var a = _step.value;
+            for (var _iterator = array[Symbol.iterator](), _step2; !(_iteratorNormalCompletion = (_step2 = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var a = _step2.value;
 
               var _i = Math.floor(a / bin) - min;
               hist[_i] = hist[_i] === undefined ? 1 : hist[_i] + 1;
@@ -300,17 +356,23 @@ System.register([], function (_export, _context) {
             return ascending ? a - b : b - a;
           });
         },
-        sortObjs: function sortObjs(array, key) {
+        sortObjs: function sortObjs(array, fcn) {
           var ascending = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
+          if (typeof fcn === 'string') fcn = this.propFcn(fcn);
           var comp = function comp(a, b) {
-            if (a[key] > b[key]) return 1;
-            if (a[key] < b[key]) return -1;
+            if (fcn(a) > fcn(b)) return 1;
+            if (fcn(a) < fcn(b)) return -1;
             return 0;
           };
           return array.sort(function (a, b) {
             return ascending ? comp(a, b) : -comp(a, b);
           });
+        },
+        shuffle: function shuffle(array) {
+          array.sort(function (a, b) {
+            return Math.random() < 0.5;
+          });return array;
         },
 
 
@@ -341,6 +403,22 @@ System.register([], function (_export, _context) {
           });
         },
 
+        aRamp: function aRamp(start, stop, numItems) {
+          // Note: start + step*i, where step is (stop-start)/(numItems-1),
+          // has float accuracy problems, must recalc step each iteration.
+          if (numItems <= 1) this.error('aRamp: numItems must be > 1');
+          var a = [];
+          for (var i = 0; i < numItems; i++) {
+            a.push(start + (stop - start) * (i / (numItems - 1)));
+          }return a;
+        },
+        aIntRamp: function aIntRamp(start, stop) {
+          var numItems = arguments.length <= 2 || arguments[2] === undefined ? Math.abs(stop - start) + 1 : arguments[2];
+
+          return this.aRamp(start, stop, numItems).map(function (a) {
+            return Math.round(a);
+          });
+        },
         normalize: function normalize(array) {
           var _this = this;
 
@@ -465,7 +543,7 @@ System.register([], function (_export, _context) {
           var width = arguments.length <= 3 || arguments[3] === undefined ? img.width : arguments[3];
           var height = arguments.length <= 4 || arguments[4] === undefined ? img.height : arguments[4];
 
-          if (x + width > img.width || y + height > img.height) throw 'imageToCtx: parameters outside of image';
+          if (x + width > img.width || y + height > img.height) this.error('imageToCtx: parameters outside of image');
           var ctx = this.createCtx(width, height);
           ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
           return ctx;
