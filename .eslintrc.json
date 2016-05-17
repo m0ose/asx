@@ -9,6 +9,6 @@
     },
     "rules": {
       "curly": [ 0 ],
-      "no-throw-literal": 0
+      "prefer-const": [ 2 ]
     }
 }

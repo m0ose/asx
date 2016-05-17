@@ -17,7 +17,7 @@ System.register([], function (_export, _context) {
         isAorO: function isAorO(obj) {
           return ['array', 'object'].indexOf(util.typeOf(obj)) >= 0;
         },
-        // Is obj TypedArray? If obj.buffer not present, works .. type is 'undefined'
+        // Is obj TypedArray? If obj.buffer not present, works, type is 'undefined'
         isTypedArray: function isTypedArray(obj) {
           return util.typeOf(obj.buffer) === 'arraybuffer';
         },

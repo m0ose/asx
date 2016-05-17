@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['./util.js'], function (_export, _context) {
-  var util, Color, TypedColorProto;
+  var util, _slicedToArray, Color, TypedColorProto;
 
   function _toConsumableArray(arr) {
     if (Array.isArray(arr)) {
@@ -20,6 +20,44 @@ System.register(['./util.js'], function (_export, _context) {
       util = _utilJs.default;
     }],
     execute: function () {
+      _slicedToArray = function () {
+        function sliceIterator(arr, i) {
+          var _arr = [];
+          var _n = true;
+          var _d = false;
+          var _e = undefined;
+
+          try {
+            for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+              _arr.push(_s.value);
+
+              if (i && _arr.length === i) break;
+            }
+          } catch (err) {
+            _d = true;
+            _e = err;
+          } finally {
+            try {
+              if (!_n && _i["return"]) _i["return"]();
+            } finally {
+              if (_d) throw _e;
+            }
+          }
+
+          return _arr;
+        }
+
+        return function (arr, i) {
+          if (Array.isArray(arr)) {
+            return arr;
+          } else if (Symbol.iterator in Object(arr)) {
+            return sliceIterator(arr, i);
+          } else {
+            throw new TypeError("Invalid attempt to destructure non-iterable instance");
+          }
+        };
+      }();
+
       Color = {
         rgbaString: function rgbaString(r, g, b) {
           var a = arguments.length <= 3 || arguments[3] === undefined ? 255 : arguments[3];
@@ -54,7 +92,6 @@ System.register(['./util.js'], function (_export, _context) {
         triString: function triString(r, g, b) {
           var a = arguments.length <= 3 || arguments[3] === undefined ? 255 : arguments[3];
 
-          // if (a === 255) { return this.hexString(r, g, b, true) } else { return this.rgbaString(r, g, b, a) }
           return a === 255 ? // eslint-disable-line
           this.hexString(r, g, b, true) : this.rgbaString(r, g, b, a);
         },
@@ -64,9 +101,9 @@ System.register(['./util.js'], function (_export, _context) {
 
         // Return 4 element array given any legal CSS string color.
         //
-        // Legal strings vary widely: CadetBlue, #0f0, rgb(255,0,0), hsl(120,100%,50%)
-        //
-        // Note: The browser speaks for itself: we simply set a 1x1 canvas fillStyle
+        // Because strings vary widely: CadetBlue, #0f0, rgb(255,0,0),
+        // hsl(120,100%,50%), we do not parse strings, instead we let
+        // the browser do our work: we set a 1x1 canvas fillStyle
         // to the string and create a pixel, returning the r,g,b,a TypedArray.
 
         // The shared 1x1 canvas 2D context.
@@ -75,48 +112,28 @@ System.register(['./util.js'], function (_export, _context) {
           this.sharedCtx1x1.fillRect(0, 0, 1, 1);
           return this.sharedCtx1x1.getImageData(0, 0, 1, 1).data;
         },
-
-
-        // ### Pixel Colors.
-
-        // Primitive Rgba <-> Pixel manipulation.
-        //
-        // These use two views onto a 4 byte TypedArray buffer.
-        //
-        // These shared values are initialized at end of Color,
-        // see why at [Stack Overflow](http://goo.gl/qrHXwB)
-        sharedPixel: null,
-        sharedUint8s: null,
-
-        rgbaToPixel: function rgbaToPixel(r, g, b) {
-          var a = arguments.length <= 3 || arguments[3] === undefined ? 255 : arguments[3];
-
-          this.sharedUint8s.set([r, g, b, a]);
-          return this.sharedPixel[0];
-        },
-        pixelToUint8s: function pixelToUint8s(pixel) {
-          var sharedOK = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
-
-          this.sharedPixel[0] = pixel;
-          return sharedOK ? // eslint-disable-line
-          this.sharedUint8s : new Uint8ClampedArray(this.sharedUint8s);
-        },
         typedColor: function typedColor(r, g, b) {
           var a = arguments.length <= 3 || arguments[3] === undefined ? 255 : arguments[3];
 
-          var ua = r.buffer ? r : new Uint8ClampedArray([r, g, b, a]);
-          ua.pixelArray = new Uint32Array(ua.buffer, ua.byteOffset, 1);
+          var u8array = r.buffer ? r : new Uint8ClampedArray([r, g, b, a]);
+          u8array.pixelArray = new Uint32Array(u8array.buffer); // one element array
           // Make this an instance of TypedColorProto
-          util.setPrototypeOf(ua, TypedColorProto);
-          // ua.__proto__ = TypedColorProto
-          return ua;
+          util.setPrototypeOf(u8array, TypedColorProto);
+          return u8array;
+        },
+        toTypedColor: function toTypedColor(any) {
+          if (util.isTypedArray(any) && any.length === 4) return this.typedColor(any);
+          var tc = this.typedColor(0, 0, 0, 0);
+          if (util.isInteger(any)) tc.setPixel(any);else if (Array.isArray(any) || util.isTypedArray(any)) tc.setColor.apply(tc, _toConsumableArray(any));else if (typeof any === 'string') tc.setString(any);else util.error('toTypedColor: invalid argument');
+          return tc;
+        },
+        randomTypedColor: function randomTypedColor() {
+          var r255 = function r255() {
+            return util.randomInt(256);
+          }; // random int in [0,255]
+          return this.typedColor(r255(), r255(), r255());
         }
       };
-
-      // initialize sharedPixel and sharedUint8s
-      Color.sharedPixel = new Uint32Array(1);
-      Color.sharedUint8s = new Uint8ClampedArray(Color.sharedPixel.buffer);
-
       TypedColorProto = {
         // Set TypedColorProto prototype to Uint8ClampedArray's prototype
         __proto__: Uint8ClampedArray.prototype,
@@ -140,14 +157,30 @@ System.register(['./util.js'], function (_export, _context) {
           if (this.string == null) this.string = Color.triString.apply(Color, _toConsumableArray(this));
           return this.string;
         },
+        checkColorChange: function checkColorChange() {
+          // Reset string on color change.
+          this.string = null; // will be lazy evaluated via getString.
+        },
         equals: function equals(color) {
           return this.getPixel() === color.getPixel();
         },
-        checkColorChange: function checkColorChange() {
-          // Check for immutable colormap color.
-          if (this.colormap) util.error('typedColor: cannot modify ColorMap color.');
-          // Reset string on color change.
-          this.string = null; // will be lazy evaluated via getString.
+        rgbDistance: function rgbDistance(r, g, b) {
+          var _ref = _slicedToArray(this, 3);
+
+          var r1 = _ref[0];
+          var g1 = _ref[1];
+          var b1 = _ref[2];
+
+          var rMean = Math.round((r1 + r) / 2);
+          var dr = r1 - r;
+          var dg = g1 - g;
+          var db = b1 - b;
+          var dr2 = dr * dr;
+          var dg2 = dg * dg;
+          var db2 = db * db;
+
+          var distanceSq = ((512 + rMean) * dr2 >> 8) + 4 * dg2 + ((767 - rMean) * db2 >> 8);
+          return distanceSq; // Math.sqrt(distanceSq)
         }
       };
 

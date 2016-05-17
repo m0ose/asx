@@ -31,12 +31,12 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
           var ctx = util.createCtx(nColors, 1);
           // Install default locs if none provide
           if (!locs) locs = util.aRamp(0, 1, stops.length);
-          // create a new gradient and fill it with the color stops
+          // Create a new gradient and fill it with the color stops
           var grad = ctx.createLinearGradient(0, 0, nColors, 0);
           util.repeat(stops.length, function (i) {
             return grad.addColorStop(locs[i], stops[i]);
           });
-          // draw the gradient returning the image data TypedArray
+          // Draw the gradient, returning the image data TypedArray
           ctx.fillStyle = grad;
           ctx.fillRect(0, 0, nColors, 1);
           return util.ctxToImageData(ctx).data;
@@ -49,7 +49,7 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
           array.typedArray = typedArray;
           return array;
         },
-        arrayToColors: function arrayToColors(array) {
+        arraysToColors: function arraysToColors(array) {
           var typedArray = new Uint8ClampedArray(array.length * 4);
           util.repeat(array.length, function (i) {
             var a = array[i];
@@ -75,6 +75,7 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
               var _iteratorError2 = undefined;
 
               try {
+                // sorta odd const works with ths, but...
                 for (var _iterator2 = A2[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                   var a2 = _step2.value;
                   var _iteratorNormalCompletion3 = true;
@@ -149,7 +150,7 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
         // ### ColorMaps
 
         // ColorMaps are Arrays of TypedColors with these methods.
-        // Webgl ready if made with typedArrayToTypedColors or arrayToColors above.
+        // Webgl ready if made with typedArrayToTypedColors or arraysToColors above.
         ColorMapProto: {
           __proto__: Array.prototype,
           createIndex: function createIndex() {
@@ -159,6 +160,7 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
             util.repeat(this.length, function (i) {
               var px = _this[i].getPixel();
               _this.index[px] = i;
+              if (_this.cssNames) _this.index[_this.cssNames[i]] = i;
             });
           },
           randomIndex: function randomIndex() {
@@ -174,19 +176,97 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
             }return undefined;
           },
           scaleColor: function scaleColor(number, min, max) {
-            // number = util.clamp(number, min, max)
             var scale = util.lerpScale(number, min, max);
             var index = Math.round(util.lerp(0, this.length - 1, scale));
             return this[index];
           },
           webglArray: function webglArray() {
             return this.typedArray;
+          },
+          toString: function toString() {
+            return this.length + ' ' + util.arraysToString(this);
+          },
+          rgbClosestIndex: function rgbClosestIndex(r, g, b) {
+            var minDist = Infinity;
+            var ixMin = 0;
+            for (var i = 0; i < this.length; i++) {
+              var d = this[i].rgbDistance(r, g, b);
+              if (d < minDist) {
+                minDist = d;
+                ixMin = i;
+                if (d === 0) return ixMin;
+              }
+            }
+            return ixMin;
+          },
+          rgbClosestColor: function rgbClosestColor(r, g, b) {
+            return this[this.rgbClosestIndex(r, g, b)];
           }
         },
-        basicColorMap: function basicColorMap(array) {
-          array = this.arrayToColors(array);
-          util.setPrototypeOf(array, this.ColorMapProto);
-          return array;
+        basicColorMap: function basicColorMap(colors) {
+          colors = this.arraysToColors(colors);
+          util.setPrototypeOf(colors, this.ColorMapProto);
+          return colors;
+        },
+        grayColorMap: function grayColorMap() {
+          var size = arguments.length <= 0 || arguments[0] === undefined ? 256 : arguments[0];
+
+          var ramp = util.aIntRamp(0, 255, size);
+          return this.basicColorMap(ramp.map(function (i) {
+            return [i, i, i];
+          }));
+        },
+        rgbColorCube: function rgbColorCube(numRs) {
+          var numGs = arguments.length <= 1 || arguments[1] === undefined ? numRs : arguments[1];
+          var numBs = arguments.length <= 2 || arguments[2] === undefined ? numRs : arguments[2];
+
+          var array = this.permuteRGBColors(numRs, numGs, numBs);
+          var map = this.basicColorMap(array);
+          // Save the parameters for fast color calculations.
+          map.cube = [numRs, numGs, numBs];
+          return map;
+        },
+        rgbColorMap: function rgbColorMap(R, G, B) {
+          var array = this.permuteArrays(R, G, B);
+          return this.basicColorMap(array);
+        },
+        hslColorMap: function hslColorMap(H) {
+          var S = arguments.length <= 1 || arguments[1] === undefined ? [100] : arguments[1];
+          var L = arguments.length <= 2 || arguments[2] === undefined ? [50] : arguments[2];
+
+          var hslArray = this.permuteArrays(H, S, L);
+          var array = hslArray.map(function (a) {
+            return Color.toTypedColor(Color.hslString.apply(Color, _toConsumableArray(a)));
+          });
+          return this.basicColorMap(array);
+        },
+        gradientColorMap: function gradientColorMap(nColors, stops, locs) {
+          var uint8arrays = this.gradientImageData(nColors, stops, locs);
+          var typedColors = this.typedArrayToTypedColors(uint8arrays);
+          util.setPrototypeOf(typedColors, this.ColorMapProto);
+          return typedColors;
+        },
+
+        // The most popular MatLab gradient, "jet":
+        jetColors: [[0, 0, 127], [0, 0, 255], [0, 127, 255], [0, 255, 255], [127, 255, 127], [255, 255, 0], [255, 127, 0], [255, 0, 0], [127, 0, 0]],
+        // Two other popular MatLab 'ramp' gradients are:
+        // * One color: from black/white to color, optionally back to white/black.
+        // stops = ['black', 'red'] or ['white', 'orange', 'black']
+        // The NetLogo map is a concatenation of 14 of these.
+        // * Two colors: stops = ['red', 'orange'] (blends the tow, center is white)
+
+        // The 16 unique [CSS Color Names](https://goo.gl/sxo36X), case insensitive.
+        // Aqua == Cyan and Fuchsia == Magenta, 18 total color names.
+        // These sorted by hue/saturation/light, hue in 0-300 degrees.
+        // See [Mozilla Color Docs](https://goo.gl/tolSnS) for *lots* more!
+        basicColorNames: 'white silver gray black red maroon yellow olive lime green aqua cyan teal blue navy fuchsia magenta purple'.split(' '),
+        cssColorMap: function cssColorMap(cssArray) {
+          var array = cssArray.map(function (str) {
+            return Color.stringToUint8s(str);
+          });
+          var map = this.basicColorMap(array);
+          map.cssNames = cssArray;
+          return map;
         }
       };
 

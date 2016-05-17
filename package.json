@@ -25,7 +25,11 @@
     "watch6": "npm run build6 -- --watch",
     "watch": "npm run watch5 & npm run watch6",
 
-    "docs": "docco -o ./docs/ ./src/*.js"
+    "docs": "docco -o ./docs/ ./src/*.js",
+
+    "git-diff": "git diff README.md package.json src apps",
+    "git-prep": "npm run all && git add . && git status",
+    "git-commit": "git commit -v && git push origin master"
   },
   "globalDependencies": {
     "README": "Standard global installs: run installglobals",

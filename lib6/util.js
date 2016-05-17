@@ -13,7 +13,7 @@ System.register([], function (_export, _context) {
         typeOf: obj => ({}).toString.call(obj).match(/\s(\w+)/)[1].toLowerCase(),
         // Is obj Array or Object (but not typed array)?
         isAorO: obj => ['array', 'object'].indexOf(util.typeOf(obj)) >= 0,
-        // Is obj TypedArray? If obj.buffer not present, works .. type is 'undefined'
+        // Is obj TypedArray? If obj.buffer not present, works, type is 'undefined'
         isTypedArray: obj => util.typeOf(obj.buffer) === 'arraybuffer',
         // Is a number an integer (rather than a float w/ non-zero fractional part)
         isInteger: Number.isInteger || (num => Math.floor(num) === num),
