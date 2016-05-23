@@ -24,7 +24,6 @@ System.register(['./util.js'], function (_export, _context) {
         }
       };
       // AgentSet Contains these
-      /* eslint no-console: 0 */
       let ID = 0;
       // An empty defaults obj w/ agentObject as proto
       const defaults = Object.create(agentObject);

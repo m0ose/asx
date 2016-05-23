@@ -93,10 +93,7 @@ System.register(['./util.js'], function (_export, _context) {
 
       util.setPrototypeOf(AgentSet, Array.prototype);
 
-      // AgentSet.__proto__ = Array.prototype
-
       _export('default', AgentSet);
     }
   };
 });
-//# sourceMappingURL=AgentSet.js.map

@@ -25,15 +25,16 @@ System.register(['./util.js'], function (_export, _context) {
         // See [this wikipedia article](https://goo.gl/ev8Kw0)
         // on differences between HSL and HSB/HSV.
 
-        // Convert 4 r,g,b,a ints in [0-255] to a css color string.
-        // Alpha "a" is int in [0-255], converted to float in 0-1 for rgba string.
+        // Convert 4 r,g,b,a ints in [0-255] ("a" defaulted to 255) to a
+        // css color string. Alpha "a" is converted to float in 0-1 for css string.
+        // We use alpha in [0-255] to be compatible with TypedArray conventions.
         rgbaString(r, g, b, a = 255) {
           a = a / 255;const a4 = a.toPrecision(4);
           return a === 1 ? `rgb(${ r },${ g },${ b })` : `rgba(${ r },${ g },${ b },${ a4 })`;
         },
 
-        // Convert 3 ints, h in [0-360], s,l in [0-100]% to a css color string.
-        // Alpha "a" is int in [0-255].
+        // Convert 4 ints, h,s,l,a, h in [0-360], s,l in [0-100]% a in [0-255] to a
+        // css color string. Alpha "a" is converted to float in 0-1 for css string.
         //
         // Note h=0 and h=360 are the same, use h in 0-359 for unique colors.
         hslString(h, s, l, a = 255) {
@@ -41,10 +42,11 @@ System.register(['./util.js'], function (_export, _context) {
           return a === 1 ? `hsl(${ h },${ s }%,${ l }%)` : `hsla(${ h },${ s }%,${ l }%,${ a4 })`;
         },
 
-        // Return a html/css hex color string for an r,g,b opaque color (a=255)
+        // Return a html/css hex color string for an r,g,b opaque color (a=255).
+        // Hex strings do not support alpha.
         //
         // Both #nnn and #nnnnnn forms supported.
-        // Default is to check for the short hex form: #nnn.
+        // Default is to check for the short hex form.
         hexString(r, g, b, shortOK = true) {
           if (shortOK) {
             const [r0, g0, b0] = [r / 17, g / 17, b / 17];
@@ -66,7 +68,7 @@ System.register(['./util.js'], function (_export, _context) {
           return `#${ r.toString(16) }${ g.toString(16) }${ b.toString(16) }`;
         },
 
-        // This is a hybrid string and generally our default.  It returns:
+        // Tristring is a hybrid string and is our standard.  It returns:
         //
         // * rgbaString if a not 255 (i.e. not opaque)
         // * hexString otherwise
@@ -82,13 +84,13 @@ System.register(['./util.js'], function (_export, _context) {
         //
         // Because strings vary widely: CadetBlue, #0f0, rgb(255,0,0),
         // hsl(120,100%,50%), we do not parse strings, instead we let
-        // the browser do our work: we set a 1x1 canvas fillStyle
-        // to the string and create a pixel, returning the r,g,b,a TypedArray.
+        // the browser do our work: we fill a 1x1 canvas with the css string color,
+        // returning the r,g,b,a canvas ImageData TypedArray.
 
         // The shared 1x1 canvas 2D context.
         sharedCtx1x1: util.createCtx(1, 1), // share across calls.
-        // Convert any css string to TypedArray.
-        // If you need a JavaScript Array, use util.convertArray(array, Array)
+        // Convert any css string to 4 element Uint8ClampedArray TypedArray.
+        // If you need a JavaScript Array, use `new Array(...TypedArray)`
         stringToUint8s(string) {
           this.sharedCtx1x1.fillStyle = string;
           this.sharedCtx1x1.fillRect(0, 0, 1, 1);
@@ -101,12 +103,11 @@ System.register(['./util.js'], function (_export, _context) {
         // * pixelArray: A single element Uint32Array view on the Uint8ClampedArray
         // * string: an optional, lazy evaluated, css color string.
         //
-        // This provides a universal color, good for pixels, webgl & image
+        // This provides a universal color, good for canvas2d pixels, webgl & image
         // TypedArrays, and css/canvas2d strings.
 
-        // Create typedColor from r,g,b,a. Use toTypedColor below for strings etc.
-        // If r is TypedArray, assumed to be length 4, use it for the typedColer.
-        // Used for colormaps and above functions returning 4 byte Uint8s.
+        // Create typedColor from r,g,b,a. Use `toTypedColor()` below for strings etc.
+        // Shortcut: If r is TypedArray, use it as the typedColor.
         typedColor(r, g, b, a = 255) {
           const u8array = r.buffer ? r : new Uint8ClampedArray([r, g, b, a]);
           u8array.pixelArray = new Uint32Array(u8array.buffer); // one element array
@@ -115,8 +116,14 @@ System.register(['./util.js'], function (_export, _context) {
           return u8array;
         },
         // Create a typedColor from a css string, pixel, JavaScript or Typed Array.
-        // Useful for hsl: toTypedColor(<hsl css string>) or any of the functions
-        // returning uint8s: toTypedColor(<uint8s array>)
+        // Useful for
+        // ```
+        // css: `toTypedColor('#ff0a00')`
+        // hsl: `toTypedColor('hsl(200,100%,50%)')`
+        // named colors: `toTypedColor('CadetBlue')`
+        // pixels: `toTypedColor(4294945280)`
+        // JavaScript Arrays: `toTypedColor([255,0,0])`
+        // ```
         toTypedColor(any) {
           if (util.isTypedArray(any) && any.length === 4) return this.typedColor(any);
           const tc = this.typedColor(0, 0, 0, 0);
@@ -129,21 +136,24 @@ System.register(['./util.js'], function (_export, _context) {
           return this.typedColor(r255(), r255(), r255());
         }
 
-      }; // A general color module, supporting css string colors, canvas2d pixel
+      };
+
+      // Prototype for typedColor.
+      // A general color module, supporting css string colors, canvas2d pixel
       // colors, webgl and canvas2d Uint8ClampedArray r,g,b,a arrays. Note: a
       // JavaScript Array is **not** a color!
 
       const TypedColorProto = {
-        // Set TypedColorProto prototype to Uint8ClampedArray's prototype
+        // Inherit from Uint8ClampedArray
         __proto__: Uint8ClampedArray.prototype,
-        // Set the TypedArray
+        // Set the typedColor to new rgba values.
         setColor(r, g, b, a = 255) {
           this.checkColorChange();
           this[0] = r;this[1] = g;this[2] = b;this[3] = a;
         },
         // No need for getColor, it *is* the typed Uint8 array
 
-        // Set the pixel view, changing the shared array (Uint8) view too
+        // Set the typedColor to a new pixel value
         setPixel(pixel) {
           this.checkColorChange();
           this.pixelArray[0] = pixel;
@@ -154,7 +164,7 @@ System.register(['./util.js'], function (_export, _context) {
         },
 
         // Set pixel/rgba values to equivalent of the css string.
-        // 'red', '#f00', 'ff0000', 'rgb(255,0,0)', etc equivalent
+        // 'red', '#f00', 'ff0000', 'rgb(255,0,0)', etc.
         //
         // Does *not* set the chached this.string, which will be lazily evaluated
         // to its common triString by getString(). The above would all return '#f00'.
@@ -166,7 +176,7 @@ System.register(['./util.js'], function (_export, _context) {
           if (this.string == null) this.string = Color.triString(...this);
           return this.string;
         },
-        // Housekeeping when a color is modified.
+        // Housekeeping when the color is modified.
         checkColorChange() {
           // Reset string on color change.
           this.string = null; // will be lazy evaluated via getString.

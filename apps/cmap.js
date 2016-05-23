@@ -1,13 +1,11 @@
-/* eslint no-console: 0 */
-
 // Import the lib/ mmodules via relative paths
 import Color from './Color.js'
 import ColorMap from './ColorMap.js'
 import util from './util.js'
 
 util.copyTo(window, { util, Color, ColorMap })
-var { util: u, Color: c, ColorMap: cmap } = { util, Color, ColorMap }
-util.copyTo(window, { u, c, cmap })
+var { util: u, Color: color, ColorMap: cmap } = { util, Color, ColorMap }
+util.copyTo(window, { u, color, cmap })
 
 console.log('util, Color, ColorMap')
 console.log('u, c, cmap')
@@ -87,10 +85,16 @@ console.log('NetLogo red ramp', nlred.toString())
 const cssmap = cmap.cssColorMap(cmap.basicColorNames)
 console.log('cssmap(basicColorNames)', cssmap.toString())
 
-util.copyTo(window, { gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap })
+const cube432 = cmap.rgbColorCube(4, 3, 2)
+const arrays432 = cube432.map(a => [a[0], a[1], a[2]])
+console.log('cube432', cube432.toString())
+console.log('arrays432', u.arraysToString(arrays432))
+
+util.copyTo(window, { gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432 })
 
 util.repeat(5, (i) => {
-  const r = c.randomTypedColor()
+  const r = color.randomTypedColor()
   const rc = rgbcube.rgbClosestColor(...r)
-  console.log(i, r.toString(), rc.toString())
+  const rd = rgbcube.cubeClosestColor(...r)
+  console.log(i, r.toString(), rc.toString(), rd.toString())
 })

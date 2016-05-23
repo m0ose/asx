@@ -1,4 +1,3 @@
-/* eslint no-console: 0 */
 import util from './util.js'
 // import {pps} from './util.js'
 

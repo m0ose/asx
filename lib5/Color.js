@@ -103,8 +103,8 @@ System.register(['./util.js'], function (_export, _context) {
         //
         // Because strings vary widely: CadetBlue, #0f0, rgb(255,0,0),
         // hsl(120,100%,50%), we do not parse strings, instead we let
-        // the browser do our work: we set a 1x1 canvas fillStyle
-        // to the string and create a pixel, returning the r,g,b,a TypedArray.
+        // the browser do our work: we fill a 1x1 canvas with the css string color,
+        // returning the r,g,b,a canvas ImageData TypedArray.
 
         // The shared 1x1 canvas 2D context.
         sharedCtx1x1: util.createCtx(1, 1), stringToUint8s: function stringToUint8s(string) {
@@ -135,7 +135,7 @@ System.register(['./util.js'], function (_export, _context) {
         }
       };
       TypedColorProto = {
-        // Set TypedColorProto prototype to Uint8ClampedArray's prototype
+        // Inherit from Uint8ClampedArray
         __proto__: Uint8ClampedArray.prototype,
         setColor: function setColor(r, g, b) {
           var a = arguments.length <= 3 || arguments[3] === undefined ? 255 : arguments[3];
@@ -188,4 +188,3 @@ System.register(['./util.js'], function (_export, _context) {
     }
   };
 });
-//# sourceMappingURL=Color.js.map

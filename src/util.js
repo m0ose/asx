@@ -1,7 +1,7 @@
 // A set of useful misc utils which will eventually move to individual modules.
 const util = {
 
-  // ### Types ###
+  // ### Types
 
   // Fixing the javascript [typeof operator](https://goo.gl/Efdzk5)
   typeOf: (obj) => ({}).toString.call(obj).match(/\s(\w+)/)[1].toLowerCase(),
@@ -32,19 +32,29 @@ const util = {
     const Type0 = array.constructor
     if (Type0 === Type) return array // return array if already same Type
     if (Type !== Array) return new Type(array) // TypedArray: universal ctor
-    return Array.prototype.slice.call(array) // Convert TypedArray to Array
+    return new Array(...array) // Convert TypedArray to Array
   },
 
-  // ### Debug ###
+  // ### Debug
 
   // Use chrome/ffox/ie console.time()/timeEnd() performance functions
   timeit (f, runs = 1e5, name = 'test') {
-    console.time(name) // eslint-disable-line
+    console.time(name)
     for (let i = 0; i < runs; i++) f(i)
-    console.timeEnd(name) // eslint-disable-line
+    console.timeEnd(name)
   },
 
-  // Print Prototype Stack
+  // Print Prototype Stack. Ex: Color.typedColor
+  // ```
+  // util.pps(color.toTypedColor('red'))
+  // [1]: [0, 1, 2, 3, pixelArray, string]
+  // [2]: [setColor, setPixel, getPixel, setString,
+  //       getString, hange, equals, rgbDistance]
+  // [3]: [Uint8ClampedArray]
+  // [4]: [TypedArray]
+  // [5]: [Object]
+  // ```
+
   pps (obj, title = '') {
     if (title) console.log(title)   // eslint-disable-line
     let count = 1
@@ -53,39 +63,44 @@ const util = {
       if (typeof obj === 'function') {
         str = obj.constructor.toString()
       } else {
-        let okeys = Object.keys(obj)
+        const okeys = Object.keys(obj)
         str = okeys.length > 0 ? // eslint-disable-line
           `[${okeys.join(', ')}]` : `[${obj.constructor.name}]`
       }
-      console.log(`[${count++}]: ${str}`)   // eslint-disable-line
+      console.log(`[${count++}]: ${str}`)
       obj = Object.getPrototypeOf(obj)
     }
   },
 
+  // Return a string representation of and array of arrays
   arraysToString (arrays) {
     let str = ''
     this.repeat(arrays.length, (i) => { str += `[${arrays[i]}]` })
     return str
   },
 
-  // ### HTML, CSS, DOM ###
+  // ### HTML, CSS, DOM
+
+  // REST: Parse the query, returning an object of key/val pairs.
   parseQueryString () {
     const results = {}
     const query = document.location.search.substring(1)
     query.split('&').forEach((s) => {
       const param = s.split('=')
+      // If just key, no val, set val to true
       results[param[0]] = (param.length === 1) ? true : param[1]
     })
     return results
   },
 
+  // Create dynamic `<script>` tag, appending to `<head>`
   setScript (path) {
     const scriptTag = document.createElement('script')
     scriptTag.src = path
     document.querySelector('head').appendChild(scriptTag)
   },
 
-  // ### Math ###
+  // ### Math
 
   // Return random int/float in [0,max) or [min,max) or [-r/2,r/2)
   randomInt: (max) => Math.floor(Math.random() * max),
@@ -137,10 +152,10 @@ const util = {
   // Calculate the lerp scale given lo/hi pair and a number between them.
   lerpScale: (number, lo, hi) => (number - lo) / (hi - lo),
 
-  // ### Arrays, Objects and Iteration ###
+  // ### Arrays, Objects and Iteration
 
   // Shim for Object.setPrototypeOf for legacy use.
-  // Support for __proto__ currently greater, oddly enough.
+  // Support for `__proto__` currently greater, oddly enough.
   setPrototypeOf (obj, prototype) {
     if (Object.setPrototypeOf)
       Object.setPrototypeOf(obj, prototype)
@@ -149,9 +164,21 @@ const util = {
     return obj
   },
 
+  // Two iterators, soo \o functional! :)
+  // ```
+  // for (let i = 0; i < n; i++ or i+=step)
+  // ```
+
+  // Repeat function f(i) n times, n in 0, i-1.
+  repeat (n, f) { for (let i = 0; i < n; i++) f(i) },
+  // Repeat function n/step times, incrementing i by step each step.
+  step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },
+
+  // Return a new copy of array, with correct type.
   // Execute fcn for all own member of an obj or array (typed OK).
   // - Unlike forEach, does not skip undefines.
   // - Like map, forEach, etc, fcn = fcn(item, key/index, obj).
+  // - Prefer `for..of`, array map, reduce, filter etc
   forAll (arrayOrObj, fcn) {
     if (arrayOrObj.slice) // typed & std arrays
       for (let i = 0, len = arrayOrObj.length; i < len; i++)
@@ -161,25 +188,20 @@ const util = {
     return arrayOrObj
   },
 
-  // Repeat function f(i) n times, n in 0, i-1
-  repeat (n, f) { for (let i = 0; i < n; i++) f(i) },
-  // Repeat function n/step times, incrementing i by step each step.
-  step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },
-
-  // Return a new copy of array, with correct type.
+  // Return a new shallow of array, either Array or TypedArray
   copyArray (array) {
     if (array.constructor === Array) return array.slice(0)
     return new array.constructor(array)
   },
 
   // Return a new array that is the concatination two arrays.
-  // The resulting type is that of the first array.
+  // The resulting Type is that of the first array.
   concatArrays (array1, array2) {
     const Type = array1.constructor
     if (Type === Array)
       return array1.concat(this.convertArray(array2, Array))
     const array = new Type(array1.length + array2.length)
-    // Note typedArray.set() allows any Array or TypedArray array.
+    // Note typedArray.set() allows any Array or TypedArray arg
     array.set(array1); array.set(array2, array1.length)
     return array
   },
@@ -190,13 +212,10 @@ const util = {
   // Return a new JavaScript Array of floats to a given precision.
   // Fails for Float32Array due to float64->32 artifiacts, thus Array conversion
   fixedArray (array, digits = 4) {
-    // const a = (array.constructor === Array) ?
-    //   array : Array.prototype.slice.call(array) // see https://goo.gl/UcIrGZ
-    // return a.map(n => util.fixed(n, digits))
     return array.map((n) => util.fixed(n, digits))
   },
 
-  // Shallow clome of obj or array
+  // Shallow clone of obj or array
   clone (obj) {
     if (obj.slice) return obj.slice(0) // ok for TypedArrays
     const result = {}
@@ -224,7 +243,7 @@ const util = {
   },
 
   // Create random array of floats between min/max.
-  // Array Type allows conversion to integers (Int32Array etc)
+  // Array Type allows conversion to Float32Array or integers (Int32Array etc)
   randomArray (length, min = 0, max = 1, Type = Array) {
     const a = new Type(length)
     for (let i = 0; i < length; i++) { a[i] = this.randomFloat2(min, max) }
@@ -260,7 +279,7 @@ const util = {
   },
 
   // Return scalar max/min/sum/avg of numeric array.
-  // Works with es6 TypedArrays
+  // Works with TypedArrays
   aMax: (array) => array.reduce((a, b) => Math.max(a, b)),
   aMin: (array) => array.reduce((a, b) => Math.min(a, b)),
   aSum: (array) => array.reduce((a, b) => a + b),
@@ -271,9 +290,10 @@ const util = {
   sortNums (array, ascending = true) {
     return array.sort((a, b) => ascending ? a - b : b - a)
   },
-  // sort an array of objects w/ fcn(obj) as compareFunction.
+  // Sort an array of objects w/ fcn(obj) as compareFunction.
   // If fcn is a string, convert to propFcn.
-  // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf) for better approach
+  // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
+  // for better approach, thanks Nick!
   sortObjs (array, fcn, ascending = true) {
     if (typeof fcn === 'string') fcn = this.propFcn(fcn)
     const comp = (a, b) => {
@@ -327,7 +347,7 @@ const util = {
     return this.normalize(array, lo, hi).map((n) => Math.round(n))
   },
 
-  // ### Async ###
+  // ### Async
 
   // Return Promise for getting an image.
   // - use: imagePromise('./path/to/img').then(img => imageFcn(img))
@@ -383,7 +403,7 @@ const util = {
   // util.runGenerator( main )
   // ```
 
-  // ### Canvas/Image ###
+  // ### Canvas/Image
 
   // Get an image in this page by its ID
   getCanvasByID: (id) => document.getElementById(id),

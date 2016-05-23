@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['./util.js', './Color.js'], function (_export, _context) {
-  var util, Color, ColorMap;
+  var util, Color, _slicedToArray, ColorMap;
 
   function _toConsumableArray(arr) {
     if (Array.isArray(arr)) {
@@ -22,6 +22,44 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
       Color = _ColorJs.default;
     }],
     execute: function () {
+      _slicedToArray = function () {
+        function sliceIterator(arr, i) {
+          var _arr = [];
+          var _n = true;
+          var _d = false;
+          var _e = undefined;
+
+          try {
+            for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+              _arr.push(_s.value);
+
+              if (i && _arr.length === i) break;
+            }
+          } catch (err) {
+            _d = true;
+            _e = err;
+          } finally {
+            try {
+              if (!_n && _i["return"]) _i["return"]();
+            } finally {
+              if (_d) throw _e;
+            }
+          }
+
+          return _arr;
+        }
+
+        return function (arr, i) {
+          if (Array.isArray(arr)) {
+            return arr;
+          } else if (Symbol.iterator in Object(arr)) {
+            return sliceIterator(arr, i);
+          } else {
+            throw new TypeError("Invalid attempt to destructure non-iterable instance");
+          }
+        };
+      }();
+
       ColorMap = {
         gradientImageData: function gradientImageData(nColors, stops, locs) {
           // Convert the color stops to css strings
@@ -68,8 +106,8 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
           var _iteratorError = undefined;
 
           try {
-            for (var _iterator = A1[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var a1 = _step.value;
+            for (var _iterator = A3[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var a3 = _step.value;
               var _iteratorNormalCompletion2 = true;
               var _didIteratorError2 = false;
               var _iteratorError2 = undefined;
@@ -83,8 +121,8 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
                   var _iteratorError3 = undefined;
 
                   try {
-                    for (var _iterator3 = A3[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                      var a3 = _step3.value;
+                    for (var _iterator3 = A1[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                      var a1 = _step3.value;
 
                       array.push([a1, a2, a3]);
                     }
@@ -140,7 +178,7 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
           var numBs = arguments.length <= 2 || arguments[2] === undefined ? numRs : arguments[2];
 
           var toRamp = function toRamp(num) {
-            return util.aIntRamp(0, 256, num);
+            return util.aIntRamp(0, 255, num);
           };
           var ramps = [numRs, numGs, numBs].map(toRamp);
           return this.permuteArrays.apply(this, _toConsumableArray(ramps));
@@ -149,9 +187,12 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
 
         // ### ColorMaps
 
-        // ColorMaps are Arrays of TypedColors with these methods.
-        // Webgl ready if made with typedArrayToTypedColors or arraysToColors above.
+        // ColorMaps are Arrays of TypedColors with these additional methods. Webgl
+        // ready if made w/ `typedArrayToTypedColors` or `arraysToColors` above.
+        // Used to be memory effecent (shared colors), webgl compatible,  and for
+        // MatLab-like color-as-data.
         ColorMapProto: {
+          // Inherit from Array
           __proto__: Array.prototype,
           createIndex: function createIndex() {
             var _this = this;
@@ -176,6 +217,7 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
             }return undefined;
           },
           scaleColor: function scaleColor(number, min, max) {
+            util.clamp(number, min, max);
             var scale = util.lerpScale(number, min, max);
             var index = Math.round(util.lerp(0, this.length - 1, scale));
             return this[index];
@@ -201,8 +243,36 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
           },
           rgbClosestColor: function rgbClosestColor(r, g, b) {
             return this[this.rgbClosestIndex(r, g, b)];
+          },
+          cubeClosestIndex: function cubeClosestIndex(r, g, b) {
+            var cube = this.cube;
+            var rgbSteps = cube.map(function (c) {
+              return 255 / (c - 1);
+            });
+            var rgbLocs = [r, g, b].map(function (c, i) {
+              return Math.round(c / rgbSteps[i]);
+            });
+
+            var _rgbLocs = _slicedToArray(rgbLocs, 3);
+
+            var rLoc = _rgbLocs[0];
+            var gLoc = _rgbLocs[1];
+            var bLoc = _rgbLocs[2];
+
+            return rLoc + gLoc * cube[0] + bLoc * cube[0] * cube[1];
+          },
+          cubeClosestColor: function cubeClosestColor(r, g, b) {
+            return this[this.cubeClosestIndex(r, g, b)];
+          },
+          closestIndex: function closestIndex(r, g, b) {
+            return this.cube ? // eslint-disable-line
+            this.cubeClosestIndex(r, g, b) : this.rgbClosestIndex(r, g, b);
+          },
+          closestColor: function closestColor(r, g, b) {
+            return this.closestIndex(r, g, b);
           }
         },
+
         basicColorMap: function basicColorMap(colors) {
           colors = this.arraysToColors(colors);
           util.setPrototypeOf(colors, this.ColorMapProto);
@@ -274,4 +344,3 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
     }
   };
 });
-//# sourceMappingURL=ColorMap.js.map

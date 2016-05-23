@@ -126,8 +126,9 @@ on differences between HSL and HSB/HSV.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Convert 4 r,g,b,a ints in [0-255] to a css color string.
-Alpha “a” is int in [0-255], converted to float in 0-1 for rgba string.</p>
+              <p>Convert 4 r,g,b,a ints in [0-255] (“a” defaulted to 255) to a
+css color string. Alpha “a” is converted to float in 0-1 for css string.
+We use alpha in [0-255] to be compatible with TypedArray conventions.</p>
 
             </div>
             
@@ -145,8 +146,8 @@ Alpha “a” is int in [0-255], converted to float in 0-1 for rgba string.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Convert 3 ints, h in [0-360], s,l in [0-100]% to a css color string.
-Alpha “a” is int in [0-255].</p>
+              <p>Convert 4 ints, h,s,l,a, h in [0-360], s,l in [0-100]% a in [0-255] to a
+css color string. Alpha “a” is converted to float in 0-1 for css string.</p>
 <p>Note h=0 and h=360 are the same, use h in 0-359 for unique colors.</p>
 
             </div>
@@ -165,9 +166,10 @@ Alpha “a” is int in [0-255].</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>Return a html/css hex color string for an r,g,b opaque color (a=255)</p>
+              <p>Return a html/css hex color string for an r,g,b opaque color (a=255).
+Hex strings do not support alpha.</p>
 <p>Both #nnn and #nnnnnn forms supported.
-Default is to check for the short hex form: #nnn.</p>
+Default is to check for the short hex form.</p>
 
             </div>
             
@@ -213,7 +215,7 @@ to <code>r*17</code>, <code>g*17</code>, <code>b*17</code>, resulting in the 16 
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>This is a hybrid string and generally our default.  It returns:</p>
+              <p>Tristring is a hybrid string and is our standard.  It returns:</p>
 <ul>
 <li>rgbaString if a not 255 (i.e. not opaque)</li>
 <li>hexString otherwise</li>
@@ -252,8 +254,8 @@ to <code>r*17</code>, <code>g*17</code>, <code>b*17</code>, resulting in the 16 
               <p>Return 4 element array given any legal CSS string color.</p>
 <p>Because strings vary widely: CadetBlue, #0f0, rgb(255,0,0),
 hsl(120,100%,50%), we do not parse strings, instead we let
-the browser do our work: we set a 1x1 canvas fillStyle
-to the string and create a pixel, returning the r,g,b,a TypedArray.</p>
+the browser do our work: we fill a 1x1 canvas with the css string color,
+returning the r,g,b,a canvas ImageData TypedArray.</p>
 
             </div>
             
@@ -281,8 +283,8 @@ to the string and create a pixel, returning the r,g,b,a TypedArray.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
-              <p>Convert any css string to TypedArray.
-If you need a JavaScript Array, use util.convertArray(array, Array)</p>
+              <p>Convert any css string to 4 element Uint8ClampedArray TypedArray.
+If you need a JavaScript Array, use <code>new Array(...TypedArray)</code></p>
 
             </div>
             
@@ -307,7 +309,7 @@ If you need a JavaScript Array, use util.convertArray(array, Array)</p>
 <li>pixelArray: A single element Uint32Array view on the Uint8ClampedArray</li>
 <li>string: an optional, lazy evaluated, css color string.</li>
 </ul>
-<p>This provides a universal color, good for pixels, webgl &amp; image
+<p>This provides a universal color, good for canvas2d pixels, webgl &amp; image
 TypedArrays, and css/canvas2d strings.</p>
 
             </div>
@@ -321,9 +323,8 @@ TypedArrays, and css/canvas2d strings.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Create typedColor from r,g,b,a. Use toTypedColor below for strings etc.
-If r is TypedArray, assumed to be length 4, use it for the typedColer.
-Used for colormaps and above functions returning 4 byte Uint8s.</p>
+              <p>Create typedColor from r,g,b,a. Use <code>toTypedColor()</code> below for strings etc.
+Shortcut: If r is TypedArray, use it as the typedColor.</p>
 
             </div>
             
@@ -358,9 +359,13 @@ Used for colormaps and above functions returning 4 byte Uint8s.</p>
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Create a typedColor from a css string, pixel, JavaScript or Typed Array.
-Useful for hsl: toTypedColor(<hsl css string>) or any of the functions
-returning uint8s: toTypedColor(<uint8s array>)</p>
-
+Useful for</p>
+<pre><code>css: <span class="hljs-string">`toTypedColor('#ff0a00')`</span>
+hsl: <span class="hljs-string">`toTypedColor('hsl(200,100%,50%)')`</span>
+named colors: <span class="hljs-string">`toTypedColor('CadetBlue')`</span>
+pixels: <span class="hljs-string">`toTypedColor(4294945280)`</span>
+JavaScript Arrays: <span class="hljs-string">`toTypedColor([255,0,0])`</span>
+</code></pre>
             </div>
             
             <div class="content"><div class='highlight'><pre>  toTypedColor (any) {
@@ -392,9 +397,7 @@ returning uint8s: toTypedColor(<uint8s array>)</p>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.typedColor(r255(), r255(), r255())
   }
 
-}
-
-<span class="hljs-keyword">const</span> TypedColorProto = {</pre></div></div>
+}</pre></div></div>
             
         </li>
         
@@ -405,11 +408,11 @@ returning uint8s: toTypedColor(<uint8s array>)</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
-              <p>Set TypedColorProto prototype to Uint8ClampedArray’s prototype</p>
+              <p>Prototype for typedColor.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  __proto__: <span class="hljs-built_in">Uint8ClampedArray</span>.prototype,</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> TypedColorProto = {</pre></div></div>
             
         </li>
         
@@ -420,7 +423,22 @@ returning uint8s: toTypedColor(<uint8s array>)</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <p>Set the TypedArray</p>
+              <p>Inherit from Uint8ClampedArray</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  __proto__: <span class="hljs-built_in">Uint8ClampedArray</span>.prototype,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Set the typedColor to new rgba values.</p>
 
             </div>
             
@@ -432,11 +450,11 @@ returning uint8s: toTypedColor(<uint8s array>)</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>No need for getColor, it <em>is</em> the typed Uint8 array</p>
 
@@ -445,13 +463,13 @@ returning uint8s: toTypedColor(<uint8s array>)</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
-              <p>Set the pixel view, changing the shared array (Uint8) view too</p>
+              <p>Set the typedColor to a new pixel value</p>
 
             </div>
             
@@ -463,11 +481,11 @@ returning uint8s: toTypedColor(<uint8s array>)</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Get the pixel value</p>
 
@@ -478,14 +496,14 @@ returning uint8s: toTypedColor(<uint8s array>)</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Set pixel/rgba values to equivalent of the css string.
-‘red’, ‘#f00’, ‘ff0000’, ‘rgb(255,0,0)’, etc equivalent</p>
+‘red’, ‘#f00’, ‘ff0000’, ‘rgb(255,0,0)’, etc.</p>
 <p>Does <em>not</em> set the chached this.string, which will be lazily evaluated
 to its common triString by getString(). The above would all return ‘#f00’.</p>
 
@@ -498,11 +516,11 @@ to its common triString by getString(). The above would all return ‘#f00’.</
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Return the triString for this typedColor, cached in the @string value</p>
 
@@ -516,13 +534,13 @@ to its common triString by getString(). The above would all return ‘#f00’.</
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>Housekeeping when a color is modified.</p>
+              <p>Housekeeping when the color is modified.</p>
 
             </div>
             
@@ -531,11 +549,11 @@ to its common triString by getString(). The above would all return ‘#f00’.</
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Reset string on color change.</p>
 
@@ -547,11 +565,11 @@ to its common triString by getString(). The above would all return ‘#f00’.</
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Return true if color is same value as myself, comparing pixels</p>
 
@@ -562,11 +580,11 @@ to its common triString by getString(). The above would all return ‘#f00’.</
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Return a <a href="http://www.compuphase.com/cmetric.htm">distance metric</a> between two colors.
 Max distance is roughly 765 (3*255), for black &amp; white.

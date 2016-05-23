@@ -1,7 +1,7 @@
 'use strict';
 
 System.register(['./Color.js', './ColorMap.js', './util.js'], function (_export, _context) {
-  var Color, ColorMap, util, _util$Color$ColorMap, u, c, cmap, tc, tcstr, tcpix, tca, tcta, gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, nlred, cssmap;
+  var Color, ColorMap, util, _util$Color$ColorMap, u, color, cmap, tc, tcstr, tcpix, tca, tcta, gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, nlred, cssmap, cube432, arrays432;
 
   function _toConsumableArray(arr) {
     if (Array.isArray(arr)) {
@@ -25,16 +25,14 @@ System.register(['./Color.js', './ColorMap.js', './util.js'], function (_export,
     }],
     execute: function () {
 
-      util.copyTo(window, { util: util, Color: Color, ColorMap: ColorMap }); /* eslint no-console: 0 */
-
-      // Import the lib/ mmodules via relative paths
+      util.copyTo(window, { util: util, Color: Color, ColorMap: ColorMap }); // Import the lib/ mmodules via relative paths
 
       _util$Color$ColorMap = { util: util, Color: Color, ColorMap: ColorMap };
       u = _util$Color$ColorMap.util;
-      c = _util$Color$ColorMap.Color;
+      color = _util$Color$ColorMap.Color;
       cmap = _util$Color$ColorMap.ColorMap;
 
-      util.copyTo(window, { u: u, c: c, cmap: cmap });
+      util.copyTo(window, { u: u, color: color, cmap: cmap });
 
       console.log('util, Color, ColorMap');
       console.log('u, c, cmap');
@@ -131,14 +129,22 @@ System.register(['./Color.js', './ColorMap.js', './util.js'], function (_export,
 
       console.log('cssmap(basicColorNames)', cssmap.toString());
 
-      util.copyTo(window, { gid: gid, gic: gic, c0: c0, rgbs: rgbs, trgbs: trgbs, basicmap: basicmap, basicmap0: basicmap0, webglArray: webglArray, graymap: graymap, rgbcube: rgbcube, rgbmap: rgbmap, hslmap: hslmap, gradientmap: gradientmap, redorange: redorange, cssmap: cssmap });
+      cube432 = cmap.rgbColorCube(4, 3, 2);
+      arrays432 = cube432.map(function (a) {
+        return [a[0], a[1], a[2]];
+      });
+
+      console.log('cube432', cube432.toString());
+      console.log('arrays432', u.arraysToString(arrays432));
+
+      util.copyTo(window, { gid: gid, gic: gic, c0: c0, rgbs: rgbs, trgbs: trgbs, basicmap: basicmap, basicmap0: basicmap0, webglArray: webglArray, graymap: graymap, rgbcube: rgbcube, rgbmap: rgbmap, hslmap: hslmap, gradientmap: gradientmap, redorange: redorange, cssmap: cssmap, cube432: cube432, arrays432: arrays432 });
 
       util.repeat(5, function (i) {
-        var r = c.randomTypedColor();
+        var r = color.randomTypedColor();
         var rc = rgbcube.rgbClosestColor.apply(rgbcube, _toConsumableArray(r));
-        console.log(i, r.toString(), rc.toString());
+        var rd = rgbcube.cubeClosestColor.apply(rgbcube, _toConsumableArray(r));
+        console.log(i, r.toString(), rc.toString(), rd.toString());
       });
     }
   };
 });
-//# sourceMappingURL=cmap.js.map

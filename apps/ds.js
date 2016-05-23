@@ -1,5 +1,3 @@
-/* eslint no-console: 0 */
-
 // Import the lib/ mmodules
 
 import OofA from './OofA.js'

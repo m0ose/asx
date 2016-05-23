@@ -9,8 +9,9 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
       Color = _ColorJs.default;
     }],
     execute: function () {
-      // A colormap is simply an array of typedColors with a few utilities such
-      // as randomColor etc. This allows the colors to be simple integer indices
+      // A colormap is simply an array of typedColors with several utilities such
+      // as randomColor, closestColor etc.
+      // This allows the colors to be simple integer indices
       // into the Array. They are also designed to be webgl-ready, being a
       // GLSL "Uniform" variable TypedArray for colors.
 
@@ -73,23 +74,26 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
         // [1,2],[3],[4,5] -> [ [1,3,4],[1,3,5],[2,3,4],[2,3,5] ]
         permuteArrays(A1, A2 = A1, A3 = A1) {
           const array = [];
-          for (const a1 of A1) // sorta odd const works with ths, but...
-          for (const a2 of A2) for (const a3 of A3) array.push([a1, a2, a3]);
+          for (const a3 of A3) // sorta odd const works with ths, but...
+          for (const a2 of A2) for (const a1 of A1) array.push([a1, a2, a3]);
           return array;
         },
         // Use permuteArrays to create uniformly spaced color ramp permutation.
         // Ex: if numRs is 3, permuteArrays's A1 would be [0, 127, 255]
         permuteRGBColors(numRs, numGs = numRs, numBs = numRs) {
-          const toRamp = num => util.aIntRamp(0, 256, num);
+          const toRamp = num => util.aIntRamp(0, 255, num);
           const ramps = [numRs, numGs, numBs].map(toRamp);
           return this.permuteArrays(...ramps);
         },
 
         // ### ColorMaps
 
-        // ColorMaps are Arrays of TypedColors with these methods.
-        // Webgl ready if made with typedArrayToTypedColors or arraysToColors above.
+        // ColorMaps are Arrays of TypedColors with these additional methods. Webgl
+        // ready if made w/ `typedArrayToTypedColors` or `arraysToColors` above.
+        // Used to be memory effecent (shared colors), webgl compatible,  and for
+        // MatLab-like color-as-data.
         ColorMapProto: {
+          // Inherit from Array
           __proto__: Array.prototype,
           // Create a [sparse array](https://goo.gl/lQlq5k) of index[pixel] = pixel.
           // Used by lookup below for exact match of a color within the colormap.
@@ -109,17 +113,21 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
           randomColor() {
             return this[this.randomIndex()];
           },
-          // Return the index of a color within the colormap, undefined if no match.
+          // Return the index of a typedColor within the colormap,
+          // undefined if no exact match.
+          // Use the `closest` methods below for nearest, not exact, match.
           lookup(color) {
             if (this.index) return this.index[color.getPixel()];
             for (let i = 0; i < this.length; i++) if (color.equals(this[i])) return i;
             return undefined;
           },
           // Return color scaled by number within [min, max].
-          // A linear interpolation (util.lerp) in [0, length-1]
+          // A linear interpolation (util.lerp) in [0, length-1].
+          // Used to match data directly to a color as in MatLab.
           //
           // Ex: scaleColor(25, 0, 50) returns the color in the middle of the colormap
           scaleColor(number, min, max) {
+            util.clamp(number, min, max);
             const scale = util.lerpScale(number, min, max);
             const index = Math.round(util.lerp(0, this.length - 1, scale));
             return this[index];
@@ -135,7 +143,8 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
             return `${ this.length } ${ util.arraysToString(this) }`;
           },
 
-          // Return the index of the color with the min rgbDistance from r, g, b
+          // Iterate through the colormap colors, returning the index of the
+          // min typedColor.rgbDistance value from r, g, b
           rgbClosestIndex(r, g, b) {
             let minDist = Infinity;
             let ixMin = 0;
@@ -149,56 +158,39 @@ System.register(['./util.js', './Color.js'], function (_export, _context) {
             }
             return ixMin;
           },
-          // Return the color with the min rgbDistance from r, g, b
+          // Return the color with the rgbClosestIndex value
           rgbClosestColor(r, g, b) {
             return this[this.rgbClosestIndex(r, g, b)];
-          }
+          },
 
-          // findClosestIndex: function(r, g, b, a) {
-          //   var b0, bLoc, c, color, d, g0, gLoc, i, ix, ixMin, j, len, minDist, r0, rLoc, ref, ref1, ref2, step;
-          //   if (a == null) {
-          //     a = 255;
-          //   }
-          //   if (g == null) {
-          //     ref = Color.colorToArray(r), r = ref[0], g = ref[1], b = ref[2], a = ref[3];
-          //   }
-          //   if (this.cube) {
-          //     step = 255 / (this.cube - 1);
-          //     ref1 = (function() {
-          //       var j, len, ref1, results;
-          //       ref1 = [r, g, b];
-          //       results = [];
-          //       for (j = 0, len = ref1.length; j < len; j++) {
-          //         c = ref1[j];
-          //         results.push(Math.round(c / step));
-          //       }
-          //       return results;
-          //     })(), rLoc = ref1[0], gLoc = ref1[1], bLoc = ref1[2];
-          //     return rLoc + gLoc * this.cube + bLoc * this.cube * this.cube;
-          //   }
-          //   if (ix = this.lookup([r, g, b, a])) {
-          //     return ix;
-          //   }
-          //   minDist = Infinity;
-          //   ixMin = 0;
-          //   for (i = j = 0, len = this.length; j < len; i = ++j) {
-          //     color = this[i];
-          //     ref2 = Color.colorToArray(color), r0 = ref2[0], g0 = ref2[1], b0 = ref2[2];
-          //     d = Color.rgbDistance(r0, g0, b0, r, g, b);
-          //     if (d < minDist) {
-          //       minDist = d;
-          //       ixMin = i;
-          //     }
-          //   }
-          //   return ixMin;
-          // },
-          // findClosestColor: function(r, g, b, a) {
-          //   if (a == null) {
-          //     a = 255;
-          //   }
-          //   return this[this.findClosestIndex(r, g, b, a)];
-          // }
+          // Calculate the closest cube index for the given r, g, b values.
+          // Faster than rgbClosestIndex, does direct calculation, not iteration.
+          cubeClosestIndex(r, g, b) {
+            const cube = this.cube;
+            const rgbSteps = cube.map(c => 255 / (c - 1));
+            const rgbLocs = [r, g, b].map((c, i) => Math.round(c / rgbSteps[i]));
+            const [rLoc, gLoc, bLoc] = rgbLocs;
+            return rLoc + gLoc * cube[0] + bLoc * cube[0] * cube[1];
+          },
+          cubeClosestColor(r, g, b) {
+            return this[this.cubeClosestIndex(r, g, b)];
+          },
+
+          // Choose the appropriate method for finding closest index.
+          // Lets the user specify any color, and let the colormap
+          // use the best match.
+          closestIndex(r, g, b) {
+            return this.cube ? // eslint-disable-line
+            this.cubeClosestIndex(r, g, b) : this.rgbClosestIndex(r, g, b);
+          },
+          // Choose the appropriate method for finding closest color
+          closestColor(r, g, b) {
+            return this.closestIndex(r, g, b);
+          }
         },
+
+        // ### Utilities for constructing ColorMaps
+
         // Convert an array of rgb(a) Arrays or TypedColors to a webgl-ready colormap.
         basicColorMap(colors) {
           colors = this.arraysToColors(colors);

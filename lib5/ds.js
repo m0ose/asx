@@ -20,8 +20,6 @@ System.register(['./OofA.js', './DataSet.js', './util.js', 'node_modules/lzma/sr
 
       // Tests for lib/ modules. Replace eventually with testing libraries.
 
-      /* eslint no-console: 0 */
-
       // Import the lib/ mmodules
 
       ds = new DataSet(2, 3, new Uint8Array([0, 1, 2, 3, 4, 5]));
@@ -118,4 +116,3 @@ System.register(['./OofA.js', './DataSet.js', './util.js', 'node_modules/lzma/sr
     }
   };
 });
-//# sourceMappingURL=ds.js.map

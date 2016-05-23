@@ -57,8 +57,8 @@ const AgentSet = {
     let o = null
     let val = min ? Infinity : -Infinity
     for (let i = 0; i < this.length; i++) {
-      let a = this[i]
-      let aval = reporter(a)
+      const a = this[i]
+      const aval = reporter(a)
       if ((min && (aval < val)) || (!min && (aval > val)))
         [o, val] = [a, aval]
     }
@@ -96,7 +96,5 @@ const AgentSet = {
 
 }
 util.setPrototypeOf(AgentSet, Array.prototype)
-
-// AgentSet.__proto__ = Array.prototype
 
 export default AgentSet

@@ -70,8 +70,9 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>A colormap is simply an array of typedColors with a few utilities such
-as randomColor etc. This allows the colors to be simple integer indices
+              <p>A colormap is simply an array of typedColors with several utilities such
+as randomColor, closestColor etc.
+This allows the colors to be simple integer indices
 into the Array. They are also designed to be webgl-ready, being a
 GLSL “Uniform” variable TypedArray for colors.</p>
 
@@ -272,9 +273,9 @@ Webgl ready as above.</p>
             
             <div class="content"><div class='highlight'><pre>  permuteArrays (A1, A2 = A1, A3 = A1) {
     <span class="hljs-keyword">const</span> array = []
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> a1 <span class="hljs-keyword">of</span> A1) <span class="hljs-comment">// sorta odd const works with ths, but...</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> a3 <span class="hljs-keyword">of</span> A3) <span class="hljs-comment">// sorta odd const works with ths, but...</span>
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> a2 <span class="hljs-keyword">of</span> A2)
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> a3 <span class="hljs-keyword">of</span> A3)
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> a1 <span class="hljs-keyword">of</span> A1)
           array.push([a1, a2, a3])
     <span class="hljs-keyword">return</span> array
   },</pre></div></div>
@@ -294,7 +295,7 @@ Ex: if numRs is 3, permuteArrays’s A1 would be [0, 127, 255]</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  permuteRGBColors (numRs, numGs = numRs, numBs = numRs) {
-    <span class="hljs-keyword">const</span> toRamp = (num) =&gt; util.aIntRamp(<span class="hljs-number">0</span>, <span class="hljs-number">256</span>, num)
+    <span class="hljs-keyword">const</span> toRamp = (num) =&gt; util.aIntRamp(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, num)
     <span class="hljs-keyword">const</span> ramps = [numRs, numGs, numBs].map(toRamp)
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.permuteArrays(...ramps)
   },</pre></div></div>
@@ -321,13 +322,14 @@ Ex: if numRs is 3, permuteArrays’s A1 would be [0, 127, 255]</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>ColorMaps are Arrays of TypedColors with these methods.
-Webgl ready if made with typedArrayToTypedColors or arraysToColors above.</p>
+              <p>ColorMaps are Arrays of TypedColors with these additional methods. Webgl
+ready if made w/ <code>typedArrayToTypedColors</code> or <code>arraysToColors</code> above.
+Used to be memory effecent (shared colors), webgl compatible,  and for
+MatLab-like color-as-data.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  ColorMapProto: {
-    __proto__: <span class="hljs-built_in">Array</span>.prototype,</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  ColorMapProto: {</pre></div></div>
             
         </li>
         
@@ -337,6 +339,21 @@ Webgl ready if made with typedArrayToTypedColors or arraysToColors above.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Inherit from Array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    __proto__: <span class="hljs-built_in">Array</span>.prototype,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Create a <a href="https://goo.gl/lQlq5k">sparse array</a> of index[pixel] = pixel.
 Used by lookup below for exact match of a color within the colormap.</p>
@@ -355,11 +372,11 @@ Used by lookup below for exact match of a color within the colormap.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Return a random index into the colormap array</p>
 
@@ -370,11 +387,11 @@ Used by lookup below for exact match of a color within the colormap.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Return a random color within the colormap</p>
 
@@ -385,13 +402,15 @@ Used by lookup below for exact match of a color within the colormap.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Return the index of a color within the colormap, undefined if no match.</p>
+              <p>Return the index of a typedColor within the colormap,
+undefined if no exact match.
+Use the <code>closest</code> methods below for nearest, not exact, match.</p>
 
             </div>
             
@@ -405,19 +424,21 @@ Used by lookup below for exact match of a color within the colormap.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Return color scaled by number within [min, max].
-A linear interpolation (util.lerp) in [0, length-1]</p>
+A linear interpolation (util.lerp) in [0, length-1].
+Used to match data directly to a color as in MatLab.</p>
 <p>Ex: scaleColor(25, 0, 50) returns the color in the middle of the colormap</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    scaleColor (number, min, max) {
+      util.clamp(number, min, max)
       <span class="hljs-keyword">const</span> scale = util.lerpScale(number, min, max)
       <span class="hljs-keyword">const</span> index = <span class="hljs-built_in">Math</span>.round(util.lerp(<span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.length - <span class="hljs-number">1</span>, scale))
       <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[index]
@@ -426,11 +447,11 @@ A linear interpolation (util.lerp) in [0, length-1]</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Return the typedArray used to create the typedColors,
 undefined if not webgl ready.</p>
@@ -442,11 +463,11 @@ undefined if not webgl ready.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Debugging: Return a string with length and array of colors</p>
 
@@ -457,13 +478,14 @@ undefined if not webgl ready.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
-              <p>Return the index of the color with the min rgbDistance from r, g, b</p>
+              <p>Iterate through the colormap colors, returning the index of the
+min typedColor.rgbDistance value from r, g, b</p>
 
             </div>
             
@@ -484,75 +506,17 @@ undefined if not webgl ready.</p>
         </li>
         
         
-        <li id="section-24">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
-              </div>
-              <p>Return the color with the min rgbDistance from r, g, b</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    rgbClosestColor (r, g, b) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[<span class="hljs-keyword">this</span>.rgbClosestIndex(r, g, b)] }</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
-              <p>findClosestIndex: function(r, g, b, a) {
-  var b0, bLoc, c, color, d, g0, gLoc, i, ix, ixMin, j, len, minDist, r0, rLoc, ref, ref1, ref2, step;
-  if (a == null) {
-    a = 255;
-  }
-  if (g == null) {
-    ref = Color.colorToArray(r), r = ref[0], g = ref[1], b = ref[2], a = ref[3];
-  }
-  if (this.cube) {
-    step = 255 / (this.cube - 1);
-    ref1 = (function() {
-      var j, len, ref1, results;
-      ref1 = [r, g, b];
-      results = [];
-      for (j = 0, len = ref1.length; j &lt; len; j++) {
-        c = ref1[j];
-        results.push(Math.round(c / step));
-      }
-      return results;
-    })(), rLoc = ref1[0], gLoc = ref1[1], bLoc = ref1[2];
-    return rLoc + gLoc <em> this.cube + bLoc </em> this.cube * this.cube;
-  }
-  if (ix = this.lookup([r, g, b, a])) {
-    return ix;
-  }
-  minDist = Infinity;
-  ixMin = 0;
-  for (i = j = 0, len = this.length; j &lt; len; i = ++j) {
-    color = this[i];
-    ref2 = Color.colorToArray(color), r0 = ref2[0], g0 = ref2[1], b0 = ref2[2];
-    d = Color.rgbDistance(r0, g0, b0, r, g, b);
-    if (d &lt; minDist) {
-      minDist = d;
-      ixMin = i;
-    }
-  }
-  return ixMin;
-},
-findClosestColor: function(r, g, b, a) {
-  if (a == null) {
-    a = 255;
-  }
-  return this[this.findClosestIndex(r, g, b, a)];
-}</p>
+              <p>Return the color with the rgbClosestIndex value</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  },</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    rgbClosestColor (r, g, b) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[<span class="hljs-keyword">this</span>.rgbClosestIndex(r, g, b)] },</pre></div></div>
             
         </li>
         
@@ -562,6 +526,78 @@ findClosestColor: function(r, g, b, a) {
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Calculate the closest cube index for the given r, g, b values.
+Faster than rgbClosestIndex, does direct calculation, not iteration.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    cubeClosestIndex (r, g, b) {
+      <span class="hljs-keyword">const</span> cube = <span class="hljs-keyword">this</span>.cube
+      <span class="hljs-keyword">const</span> rgbSteps = cube.map(c =&gt; <span class="hljs-number">255</span> / (c - <span class="hljs-number">1</span>))
+      <span class="hljs-keyword">const</span> rgbLocs = [r, g, b].map((c, i) =&gt; <span class="hljs-built_in">Math</span>.round(c / rgbSteps[i]))
+      <span class="hljs-keyword">const</span> [rLoc, gLoc, bLoc] = rgbLocs
+      <span class="hljs-keyword">return</span> (rLoc) + (gLoc * cube[<span class="hljs-number">0</span>]) + (bLoc * cube[<span class="hljs-number">0</span>] * cube[<span class="hljs-number">1</span>])
+    },
+    cubeClosestColor (r, g, b) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[<span class="hljs-keyword">this</span>.cubeClosestIndex(r, g, b)] },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Choose the appropriate method for finding closest index.
+Lets the user specify any color, and let the colormap
+use the best match.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    closestIndex (r, g, b) {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.cube ? <span class="hljs-comment">// eslint-disable-line</span>
+        <span class="hljs-keyword">this</span>.cubeClosestIndex(r, g, b) : <span class="hljs-keyword">this</span>.rgbClosestIndex(r, g, b)
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Choose the appropriate method for finding closest color</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    closestColor (r, g, b) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.closestIndex(r, g, b) }
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <h3 id="utilities-for-constructing-colormaps">Utilities for constructing ColorMaps</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Convert an array of rgb(a) Arrays or TypedColors to a webgl-ready colormap.</p>
 
@@ -576,11 +612,11 @@ findClosestColor: function(r, g, b, a) {
         </li>
         
         
-        <li id="section-27">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Create a gray map (gray: r=g=b)
 These are typically 256 entries but can be smaller
@@ -596,11 +632,11 @@ by passing a size parameter.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Create a colormap by permuted rgb values.</p>
 <p>numRs, numGs, numBs are numbers, the number of steps beteen 0-255.
@@ -616,11 +652,11 @@ Note the defaults: rgbColorCube(6) creates a <code>6 * 6 * 6</code> cube.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Save the parameters for fast color calculations.</p>
 
@@ -633,11 +669,11 @@ Note the defaults: rgbColorCube(6) creates a <code>6 * 6 * 6</code> cube.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Create a colormap by permuting the values of the given arrays.
 Similar to above but with arrays that may have arbitrary values.</p>
@@ -652,11 +688,11 @@ Similar to above but with arrays that may have arbitrary values.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Create an hsl map, inputs are arrays to be permutted like rgbColorMap.
 Convert the HSL values to typedColors, default to bright hue ramp (L=50).</p>
@@ -672,11 +708,11 @@ Convert the HSL values to typedColors, default to bright hue ramp (L=50).</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Use gradient to build an rgba array, then convert to colormap.
 Stops are css strings or rgba arrays.
@@ -695,11 +731,11 @@ locs defaults to evenly spaced, probably what you want.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>The most popular MatLab gradient, “jet”:</p>
 
@@ -711,11 +747,11 @@ locs defaults to evenly spaced, probably what you want.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Two other popular MatLab ‘ramp’ gradients are:</p>
 <ul>
@@ -730,11 +766,11 @@ The NetLogo map is a concatenation of 14 of these.</li>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>The 16 unique <a href="https://goo.gl/sxo36X">CSS Color Names</a>, case insensitive.
 Aqua == Cyan and Fuchsia == Magenta, 18 total color names.
@@ -748,11 +784,11 @@ See <a href="https://goo.gl/tolSnS">Mozilla Color Docs</a> for <em>lots</em> mor
         </li>
         
         
-        <li id="section-36">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>Create a named colors colormap</p>
 

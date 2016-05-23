@@ -2,12 +2,25 @@
 
 System.register([], function (_export, _context) {
   var util;
+
+  function _toConsumableArray(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+
+      return arr2;
+    } else {
+      return Array.from(arr);
+    }
+  }
+
   return {
     setters: [],
     execute: function () {
       util = {
 
-        // ### Types ###
+        // ### Types
 
         // Fixing the javascript [typeof operator](https://goo.gl/Efdzk5)
         typeOf: function typeOf(obj) {
@@ -52,16 +65,16 @@ System.register([], function (_export, _context) {
           var Type0 = array.constructor;
           if (Type0 === Type) return array; // return array if already same Type
           if (Type !== Array) return new Type(array); // TypedArray: universal ctor
-          return Array.prototype.slice.call(array); // Convert TypedArray to Array
+          return new (Function.prototype.bind.apply(Array, [null].concat(_toConsumableArray(array))))(); // Convert TypedArray to Array
         },
         timeit: function timeit(f) {
           var runs = arguments.length <= 1 || arguments[1] === undefined ? 1e5 : arguments[1];
           var name = arguments.length <= 2 || arguments[2] === undefined ? 'test' : arguments[2];
 
-          console.time(name); // eslint-disable-line
+          console.time(name);
           for (var i = 0; i < runs; i++) {
             f(i);
-          }console.timeEnd(name); // eslint-disable-line
+          }console.timeEnd(name);
         },
         pps: function pps(obj) {
           var title = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
@@ -76,7 +89,7 @@ System.register([], function (_export, _context) {
               var okeys = Object.keys(obj);
               str = okeys.length > 0 ? '[' + okeys.join(', ') + ']' : '[' + obj.constructor.name + ']';
             }
-            console.log('[' + count++ + ']: ' + str); // eslint-disable-line
+            console.log('[' + count++ + ']: ' + str);
             obj = Object.getPrototypeOf(obj);
           }
         },
@@ -92,6 +105,7 @@ System.register([], function (_export, _context) {
           var query = document.location.search.substring(1);
           query.split('&').forEach(function (s) {
             var param = s.split('=');
+            // If just key, no val, set val to true
             results[param[0]] = param.length === 1 ? true : param[1];
           });
           return results;
@@ -103,7 +117,7 @@ System.register([], function (_export, _context) {
         },
 
 
-        // ### Math ###
+        // ### Math
 
         // Return random int/float in [0,max) or [min,max) or [-r/2,r/2)
         randomInt: function randomInt(max) {
@@ -185,15 +199,6 @@ System.register([], function (_export, _context) {
           if (Object.setPrototypeOf) Object.setPrototypeOf(obj, prototype);else obj.__proto__ = prototype; // eslint-disable-line
           return obj;
         },
-        forAll: function forAll(arrayOrObj, fcn) {
-          if (arrayOrObj.slice) // typed & std arrays
-            for (var i = 0, len = arrayOrObj.length; i < len; i++) {
-              fcn(arrayOrObj[i], i, arrayOrObj);
-            } else Object.keys(arrayOrObj).forEach(function (k) {
-            return fcn(arrayOrObj[k], k, arrayOrObj);
-          });
-          return arrayOrObj;
-        },
         repeat: function repeat(n, f) {
           for (var i = 0; i < n; i++) {
             f(i);
@@ -204,6 +209,15 @@ System.register([], function (_export, _context) {
             f(i);
           }
         },
+        forAll: function forAll(arrayOrObj, fcn) {
+          if (arrayOrObj.slice) // typed & std arrays
+            for (var i = 0, len = arrayOrObj.length; i < len; i++) {
+              fcn(arrayOrObj[i], i, arrayOrObj);
+            } else Object.keys(arrayOrObj).forEach(function (k) {
+            return fcn(arrayOrObj[k], k, arrayOrObj);
+          });
+          return arrayOrObj;
+        },
         copyArray: function copyArray(array) {
           if (array.constructor === Array) return array.slice(0);
           return new array.constructor(array);
@@ -212,7 +226,7 @@ System.register([], function (_export, _context) {
           var Type = array1.constructor;
           if (Type === Array) return array1.concat(this.convertArray(array2, Array));
           var array = new Type(array1.length + array2.length);
-          // Note typedArray.set() allows any Array or TypedArray array.
+          // Note typedArray.set() allows any Array or TypedArray arg
           array.set(array1);array.set(array2, array1.length);
           return array;
         },
@@ -222,9 +236,6 @@ System.register([], function (_export, _context) {
         fixedArray: function fixedArray(array) {
           var digits = arguments.length <= 1 || arguments[1] === undefined ? 4 : arguments[1];
 
-          // const a = (array.constructor === Array) ?
-          //   array : Array.prototype.slice.call(array) // see https://goo.gl/UcIrGZ
-          // return a.map(n => util.fixed(n, digits))
           return array.map(function (n) {
             return util.fixed(n, digits);
           });
@@ -329,7 +340,7 @@ System.register([], function (_export, _context) {
 
 
         // Return scalar max/min/sum/avg of numeric array.
-        // Works with es6 TypedArrays
+        // Works with TypedArrays
         aMax: function aMax(array) {
           return array.reduce(function (a, b) {
             return Math.max(a, b);
@@ -492,7 +503,7 @@ System.register([], function (_export, _context) {
         // util.runGenerator( main )
         // ```
 
-        // ### Canvas/Image ###
+        // ### Canvas/Image
 
         // Get an image in this page by its ID
         getCanvasByID: function getCanvasByID(id) {
@@ -554,4 +565,3 @@ System.register([], function (_export, _context) {
     }
   };
 });
-//# sourceMappingURL=util.js.map
