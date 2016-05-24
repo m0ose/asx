@@ -1,20 +1,20 @@
 'use strict';
 
-System.register(['./OofA.js', './DataSet.js', './AgentSet.js', './Color.js', './ColorMap.js', './util.js'], function (_export, _context) {
+System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/AgentSet.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/util.js'], function (_export, _context) {
   var OofA, DataSet, AgentSet, Color, ColorMap, util;
   return {
-    setters: [function (_OofAJs) {
-      OofA = _OofAJs.default;
-    }, function (_DataSetJs) {
-      DataSet = _DataSetJs.default;
-    }, function (_AgentSetJs) {
-      AgentSet = _AgentSetJs.default;
-    }, function (_ColorJs) {
-      Color = _ColorJs.default;
-    }, function (_ColorMapJs) {
-      ColorMap = _ColorMapJs.default;
-    }, function (_utilJs) {
-      util = _utilJs.default;
+    setters: [function (_libOofAJs) {
+      OofA = _libOofAJs.default;
+    }, function (_libDataSetJs) {
+      DataSet = _libDataSetJs.default;
+    }, function (_libAgentSetJs) {
+      AgentSet = _libAgentSetJs.default;
+    }, function (_libColorJs) {
+      Color = _libColorJs.default;
+    }, function (_libColorMapJs) {
+      ColorMap = _libColorMapJs.default;
+    }, function (_libUtilJs) {
+      util = _libUtilJs.default;
     }],
     execute: function () {
       // Import the lib/ mmodules via relative paths

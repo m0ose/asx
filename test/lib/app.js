@@ -1,10 +1,10 @@
 'use strict';
 
-System.register(['./util.js'], function (_export, _context) {
+System.register(['lib/util.js'], function (_export, _context) {
   var util;
   return {
-    setters: [function (_utilJs) {
-      util = _utilJs.default;
+    setters: [function (_libUtilJs) {
+      util = _libUtilJs.default;
     }],
     execute: function () {
       // import {pps} from './util.js'

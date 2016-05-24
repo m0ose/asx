@@ -1,11 +1,9 @@
 // Import the lib/ mmodules via relative paths
-import Color from './Color.js'
-import ColorMap from './ColorMap.js'
-import util from './util.js'
+import Color from 'lib/Color.js'
+import ColorMap from 'lib/ColorMap.js'
+import util from 'lib/util.js'
 
 util.copyTo(window, { util, Color, ColorMap })
-var { util: u, Color: color, ColorMap: cmap } = { util, Color, ColorMap }
-util.copyTo(window, { u, color, cmap })
 
 console.log('util, Color, ColorMap')
 console.log('u, c, cmap')
@@ -23,23 +21,23 @@ console.log('toTypedColor: tcstr, tcpix, tca, tcta',
 util.copyTo(window, { tc, tcstr, tcpix, tca, tcta })
 
 // util.step(10, 2, (i) => console.log(i))
-const gid = cmap.gradientImageData(10, ['red', 'green'])
+const gid = ColorMap.gradientImageData(10, ['red', 'green'])
 console.log('gradientImageData', gid)
 
-const gic = cmap.typedArrayToTypedColors(gid)
+const gic = ColorMap.typedArrayToTypedColors(gid)
 console.log('gradientImageColors', util.arraysToString(gic))
 
 const c0 = gic[0]
 console.log('color0', c0, c0.getPixel(), c0.getString())
 
-const rgbs = cmap.permuteRGBColors(2, 2, 3)
+const rgbs = ColorMap.permuteRGBColors(2, 2, 3)
 console.log('permuteRGBColors(2,2,3)', util.arraysToString(rgbs))
 console.log('permuteRGBColors length)', rgbs.length)
 
-const trgbs = cmap.arraysToColors(rgbs)
+const trgbs = ColorMap.arraysToColors(rgbs)
 console.log('arraysToColors', util.arraysToString(trgbs))
 
-const basicmap = cmap.basicColorMap(rgbs)
+const basicmap = ColorMap.basicColorMap(rgbs)
 console.log('basicmap', basicmap.toString())
 console.log('basicmap prototypes'); util.pps(basicmap)
 const basicmap0 = basicmap[0]
@@ -61,39 +59,39 @@ util.repeat(6, (i) => {
 const webglArray = basicmap.webglArray()
 console.log('webglArray', webglArray)
 
-const graymap = cmap.grayColorMap(16)
+const graymap = ColorMap.grayColorMap(16)
 console.log('graymap(16)', graymap.toString())
 
-const rgbcube = cmap.rgbColorCube(4, 4, 2)
+const rgbcube = ColorMap.rgbColorCube(4, 4, 2)
 console.log('rgbcube(4,4,2)', rgbcube.toString())
 
-const rgbmap = cmap.rgbColorMap([100, 200, 300], [255], [128, 255])
+const rgbmap = ColorMap.rgbColorMap([100, 200, 300], [255], [128, 255])
 console.log('rgbmap([100,200,300],[255],[128,255])', rgbmap.toString())
 
-const hslmap = cmap.hslColorMap(util.aIntRamp(0, 350, 25))
+const hslmap = ColorMap.hslColorMap(util.aIntRamp(0, 350, 25))
 console.log('hslColorMap(util.aIntRamp(0, 350, 100))', hslmap.toString())
 
-const gradientmap = cmap.gradientColorMap(50, cmap.jetColors)
-console.log('cmap.jetColors:', util.arraysToString(cmap.jetColors))
-console.log('gradientColorMap(50, cmap.jetColors)', gradientmap.toString())
+const gradientmap = ColorMap.gradientColorMap(50, ColorMap.jetColors)
+console.log('cmap.jetColors:', util.arraysToString(ColorMap.jetColors))
+console.log('gradientColorMap(50, ColorMap.jetColors)', gradientmap.toString())
 
-const redorange = cmap.gradientColorMap(11, ['red', 'blue'])
+const redorange = ColorMap.gradientColorMap(11, ['red', 'blue'])
 console.log('red-blue gradient', redorange.toString())
-const nlred = cmap.gradientColorMap(11, ['black', 'red', 'white'])
+const nlred = ColorMap.gradientColorMap(11, ['black', 'red', 'white'])
 console.log('NetLogo red ramp', nlred.toString())
 
-const cssmap = cmap.cssColorMap(cmap.basicColorNames)
+const cssmap = ColorMap.cssColorMap(ColorMap.basicColorNames)
 console.log('cssmap(basicColorNames)', cssmap.toString())
 
-const cube432 = cmap.rgbColorCube(4, 3, 2)
+const cube432 = ColorMap.rgbColorCube(4, 3, 2)
 const arrays432 = cube432.map(a => [a[0], a[1], a[2]])
 console.log('cube432', cube432.toString())
-console.log('arrays432', u.arraysToString(arrays432))
+console.log('arrays432', util.arraysToString(arrays432))
 
 util.copyTo(window, { gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432 })
 
 util.repeat(5, (i) => {
-  const r = color.randomTypedColor()
+  const r = Color.randomTypedColor()
   const rc = rgbcube.rgbClosestColor(...r)
   const rd = rgbcube.cubeClosestColor(...r)
   console.log(i, r.toString(), rc.toString(), rd.toString())

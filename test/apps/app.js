@@ -1,4 +1,4 @@
-import util from './util.js'
+import util from 'lib/util.js'
 // import {pps} from './util.js'
 
 // Case 3: Prototypal Inheritance Stack

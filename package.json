@@ -10,24 +10,22 @@
     "url": "git://github.com/backspaces/asx.git"
   },
   "scripts": {
-    "clean": "shx rm lib5/* lib6/* docs/*.html",
     "all": "npm run build && npm run docs",
+    "clean": "shx rm lib/* test/lib/* docs/*.html",
     "babel": "babel",
     "shx": "shx",
 
     "installglobals": "npm install babel-cli babel-preset-es2015 babel-plugin-transform-es2015-modules-systemjs -g",
 
-    "build5": "babel --presets es2015 --plugins transform-es2015-modules-systemjs src apps -d lib5",
-    "build6": "babel --plugins transform-es2015-modules-systemjs src apps -d lib6",
-    "build": "npm run build5 && npm run build6",
+    "build:as": "babel --plugins transform-es2015-modules-systemjs src -d lib",
+    "build:test": "babel --plugins transform-es2015-modules-systemjs test/apps -d test/lib",
+    "build": "npm run build:as && npm run build:test",
 
-    "watch5": "npm run build5 -- --watch",
-    "watch6": "npm run build6 -- --watch",
-    "watch": "npm run watch5 & npm run watch6",
+    "watch": "npm run build:as -- --watch & npm run build:test -- --watch",
 
     "docs": "docco -o ./docs/ ./src/*.js",
 
-    "git-diff": "git diff README.md package.json src apps",
+    "git-diff": "git diff README.md package.json src test/apps",
     "git-prep": "npm run all && git add . && git status",
     "git-commit": "git commit -v && git push origin master"
   },

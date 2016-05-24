@@ -6,7 +6,9 @@
 </head>
 <body>
   <script>
-    var app = document.location.search.substring(1) || 'lib5/app'
+    var app = document.location.search.substring(1) || 'app'
+    app = `test/lib/${app}`
+    console.log('running: ', app)
     System.import(app);
   </script>
   <canvas id="can" width="300" height="200"></canvas>

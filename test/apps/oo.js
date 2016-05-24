@@ -1,5 +1,4 @@
-/* eslint no-console: 0 */
-import util from './util.js'
+import util from 'lib/util.js'
 
 class Agent {
   constructor (myAgentSet) {
