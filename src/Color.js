@@ -1,6 +1,6 @@
 // A general color module, supporting css string colors, canvas2d pixel
-// colors, webgl and canvas2d Uint8ClampedArray r,g,b,a arrays. Note: a
-// JavaScript Array is **not** a color!
+// colors, webgl and canvas2d Uint8ClampedArray r,g,b,a arrays.
+// Notice a JavaScript Array is **not** a color!
 
 import util from './util.js'
 
@@ -32,7 +32,7 @@ const Color = {
   // Convert 4 ints, h,s,l,a, h in [0-360], s,l in [0-100]% a in [0-255] to a
   // css color string. Alpha "a" is converted to float in 0-1 for css string.
   //
-  // Note h=0 and h=360 are the same, use h in 0-359 for unique colors.
+  // NOTE: h=0 and h=360 are the same, use h in 0-359 for unique colors.
   hslString (h, s, l, a = 255) {
     a = a / 255; const a4 = a.toPrecision(4)
     return (a === 1) ? `hsl(${h},${s}%,${l}%)` : `hsla(${h},${s}%,${l}%,${a4})`
@@ -89,6 +89,7 @@ const Color = {
   // Convert any css string to 4 element Uint8ClampedArray TypedArray.
   // If you need a JavaScript Array, use `new Array(...TypedArray)`
   stringToUint8s (string) {
+    this.sharedCtx1x1.clearRect(0, 0, 1, 1)
     this.sharedCtx1x1.fillStyle = string
     this.sharedCtx1x1.fillRect(0, 0, 1, 1)
     return this.sharedCtx1x1.getImageData(0, 0, 1, 1).data
@@ -104,12 +105,13 @@ const Color = {
   // TypedArrays, and css/canvas2d strings.
 
   // Create typedColor from r,g,b,a. Use `toTypedColor()` below for strings etc.
-  // Shortcut: If r is TypedArray, use it as the typedColor.
+  // // Shortcut: If r is TypedArray, use it as the typedColor.
   typedColor (r, g, b, a = 255) {
-    const u8array = r.buffer ? r : new Uint8ClampedArray([r, g, b, a])
+    // const u8array = r.buffer ? r : new Uint8ClampedArray([r, g, b, a])
+    const u8array = new Uint8ClampedArray([r, g, b, a])
     u8array.pixelArray = new Uint32Array(u8array.buffer) // one element array
     // Make this an instance of TypedColorProto
-    util.setPrototypeOf(u8array, TypedColorProto)
+    Object.setPrototypeOf(u8array, TypedColorProto)
     return u8array
   },
   // Create a typedColor from a css string, pixel, JavaScript or Typed Array.
@@ -122,8 +124,8 @@ const Color = {
   // JavaScript Arrays: `toTypedColor([255,0,0])`
   // ```
   toTypedColor (any) {
-    if (util.isTypedArray(any) && any.length === 4)
-      return this.typedColor(any)
+    // if (util.isTypedArray(any) && any.length === 4)
+    //   return this.typedColor(any)
     const tc = this.typedColor(0, 0, 0, 0)
     if (util.isInteger(any)) tc.setPixel(any)
     else if (Array.isArray(any) || util.isTypedArray(any)) tc.setColor(...any)
@@ -135,8 +137,9 @@ const Color = {
   randomTypedColor () {
     const r255 = () => util.randomInt(256) // random int in [0,255]
     return this.typedColor(r255(), r255(), r255())
-  }
-
+  },
+  // A static transparent color, set at end of file
+  transparent: null
 }
 
 // Prototype for typedColor.
@@ -191,7 +194,8 @@ const TypedColorProto = {
       (((512 + rMean) * dr2) >> 8) + (4 * dg2) + (((767 - rMean) * db2) >> 8)
     return distanceSq // Math.sqrt(distanceSq)
   }
-
 }
+
+Color.transparent = Color.typedColor(0, 0, 0, 0)
 
 export default Color

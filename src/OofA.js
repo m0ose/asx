@@ -116,7 +116,7 @@ class OofA {
 // but will require more care.
 
   // Get/Set value at ix for a given key. Can be constant or array,
-  // Note: no error check for ix >= length!
+  // NOTE: no error check for ix >= length!
   getValueAt (ix, key) {
     const { elements } = this.specs[key]
     const array = this.arrays[key]
@@ -149,9 +149,9 @@ class OofA {
     if (this.length === this.size) this.extendArrays(this.deltaSize)
     this.setObject(this.length++, obj)
   }
-  // Iterate over all the elements via the getterSetter.
+  // Iterate over all the "objects" in the OofA.
   // Fcn args:
-  // * The getterSetter with its index set to [0, length)
+  // * The object at the current index: in [0, length)
   // * The current index
   forAllObjects (fcn, obj = {}) {
     for (var i = 0, len = this.length; i < len; i++) {
@@ -162,9 +162,9 @@ class OofA {
 
   // An alternative technique for get/set values at a given indes.
   // The getterSetter is an object using an index, ix, and getter/setters
-  // for each of the keys in the OofA.
-  //
-  // This makes the OofA mimic an AofO.
+  // for each of the keys in the OofA. This makes the OofA mimic an AofO.
+  // At this time, this is quite experimental and appears to be slower than
+  // the Object approach.
   createGetterSetter () {
     const obj = { ix: 0 }
     const arrays = this.arrays
@@ -188,21 +188,12 @@ class OofA {
     }
     return obj
   }
-
-  getterSetterAt (ix, getterSetter = this.sharedGetterSetter) {
-    // Could extend via: this.extendArrays(this.deltaSize)
-    if (ix >= this.length) util.error('getterSetter: index beyond length')
-    getterSetter.ix = ix
-    return getterSetter
-  }
-
+  // Push obj values onto the end of the arrays. Extend if needed.
   push (obj, getterSetter = this.sharedGetterSetter) {
     if (this.length === this.size) this.extendArrays(this.deltaSize)
-    const ix = this.length++
-    getterSetter.ix = ix
+    getterSetter.ix = this.length++
     for (const key in obj) getterSetter[key] = obj[key]
   }
-
   // Iterate over all the elements via the getterSetter.
   // Fcn args:
   // * The getterSetter with its index set to [0, length)

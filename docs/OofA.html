@@ -25,6 +25,11 @@
                 </a>
               
                 
+                <a class="source" href="Animator.html">
+                  Animator.js
+                </a>
+              
+                
                 <a class="source" href="Color.html">
                   Color.js
                 </a>
@@ -40,8 +45,23 @@
                 </a>
               
                 
+                <a class="source" href="Model.html">
+                  Model.js
+                </a>
+              
+                
                 <a class="source" href="OofA.html">
                   OofA.js
+                </a>
+              
+                
+                <a class="source" href="Patch.html">
+                  Patch.js
+                </a>
+              
+                
+                <a class="source" href="Patches.html">
+                  Patches.js
                 </a>
               
                 
@@ -314,7 +334,7 @@ but will require more care.</p>
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Get/Set value at ix for a given key. Can be constant or array,
-Note: no error check for ix &gt;= length!</p>
+NOTE: no error check for ix &gt;= length!</p>
 
             </div>
             
@@ -372,10 +392,10 @@ pushObject will extend the arrays.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p>Iterate over all the elements via the getterSetter.
+              <p>Iterate over all the “objects” in the OofA.
 Fcn args:</p>
 <ul>
-<li>The getterSetter with its index set to [0, length)</li>
+<li>The object at the current index: in [0, length)</li>
 <li>The current index</li>
 </ul>
 
@@ -399,8 +419,9 @@ Fcn args:</p>
               </div>
               <p>An alternative technique for get/set values at a given indes.
 The getterSetter is an object using an index, ix, and getter/setters
-for each of the keys in the OofA.</p>
-<p>This makes the OofA mimic an AofO.</p>
+for each of the keys in the OofA. This makes the OofA mimic an AofO.
+At this time, this is quite experimental and appears to be slower than
+the Object approach.</p>
 
             </div>
             
@@ -426,9 +447,7 @@ for each of the keys in the OofA.</p>
         })
     }
     <span class="hljs-keyword">return</span> obj
-  }
-
-  getterSetterAt (ix, getterSetter = <span class="hljs-keyword">this</span>.sharedGetterSetter) {</pre></div></div>
+  }</pre></div></div>
             
         </li>
         
@@ -439,19 +458,13 @@ for each of the keys in the OofA.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>Could extend via: this.extendArrays(this.deltaSize)</p>
+              <p>Push obj values onto the end of the arrays. Extend if needed.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (ix &gt;= <span class="hljs-keyword">this</span>.length) util.error(<span class="hljs-string">'getterSetter: index beyond length'</span>)
-    getterSetter.ix = ix
-    <span class="hljs-keyword">return</span> getterSetter
-  }
-
-  push (obj, getterSetter = <span class="hljs-keyword">this</span>.sharedGetterSetter) {
+            <div class="content"><div class='highlight'><pre>  push (obj, getterSetter = <span class="hljs-keyword">this</span>.sharedGetterSetter) {
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.length === <span class="hljs-keyword">this</span>.size) <span class="hljs-keyword">this</span>.extendArrays(<span class="hljs-keyword">this</span>.deltaSize)
-    <span class="hljs-keyword">const</span> ix = <span class="hljs-keyword">this</span>.length++
-    getterSetter.ix = ix
+    getterSetter.ix = <span class="hljs-keyword">this</span>.length++
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> obj) getterSetter[key] = obj[key]
   }</pre></div></div>
             

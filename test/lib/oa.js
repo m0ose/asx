@@ -1,6 +1,6 @@
-'use strict';
-
 System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/AgentSet.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/util.js'], function (_export, _context) {
+  "use strict";
+
   var OofA, DataSet, AgentSet, Color, ColorMap, util;
   return {
     setters: [function (_libOofAJs) {
@@ -20,8 +20,8 @@ System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/AgentSet.js', 'lib/Color.
       // Import the lib/ mmodules via relative paths
 
 
-      const modules = { DataSet, util, OofA, AgentSet, Color, ColorMap };
-      util.copyTo(window, modules);
+      const modules = { DataSet, util, OofA, AgentSet, Color, ColorMap, pps: util.pps };
+      util.toWindow(modules);
 
       console.log('DataSet, util, OofA, AgentSet, Color, ColorMap');
       console.log('ds, u, oofa, aset, color, cmap');
@@ -86,8 +86,8 @@ System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/AgentSet.js', 'lib/Color.
         position1 = obj1.position;
       }, runs, 'object getObject');
 
-      util.copyTo(window, { oa, runs, test, test1, gs, obj, obj1 });
-      util.copyTo(window, { id, color, position, id1, color1, position1 });
+      util.toWindow({ oa, runs, test, test1, gs, obj, obj1 });
+      util.toWindow({ id, color, position, id1, color1, position1 });
     }
   };
 });

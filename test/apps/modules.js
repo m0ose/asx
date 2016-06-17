@@ -6,10 +6,11 @@ import Color from 'lib/Color.js'
 import ColorMap from 'lib/ColorMap.js'
 import util from 'lib/util.js'
 
-const modules = { DataSet, util, OofA, AgentSet, Color, ColorMap }
-util.copyTo(window, modules)
+const modules =
+  { DataSet, util, OofA, AgentSet, Color, ColorMap, pps: util.pps }
+util.toWindow(modules)
 const { DataSet: ds, util: u, OofA: oofa, AgentSet: aset, Color: color, ColorMap: cmap } = modules
-util.copyTo(window, { ds, u, oofa, aset, color, cmap })
+util.toWindow({ ds, u, oofa, aset, color, cmap })
 
 console.log('DataSet, util, OofA, AgentSet, Color, ColorMap')
 console.log('ds, u, oofa, aset, color, cmap')
@@ -25,14 +26,14 @@ console.log('ds, u, oofa, aset, color, cmap')
 //
 // // Object.setPrototypeOf(bigArray, AgentSet)
 //
-// util.copyTo(window, { as, as0, as1, a })
+// util.toWindow({ as, as0, as1, a })
 
 const size = 1e6 // ran in console, apparently better pro
 const uint8 = new Uint8ClampedArray(size * 4) // 112M
 const array8s = [] // 122M 10M overhead 10B per subarr
 util.step(uint8.length, 4, (i) => array8s.push(uint8.subarray(i, i + 4)))
 
-util.copyTo(window, { uint8, array8s })
+util.toWindow({ uint8, array8s })
 console.log(uint8, array8s)
 
 // console.log(DataSet, util, OofA, AgentSet, Color, ColorMap)

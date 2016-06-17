@@ -6,8 +6,9 @@ import Color from 'lib/Color.js'
 import ColorMap from 'lib/ColorMap.js'
 import util from 'lib/util.js'
 
-const modules = { DataSet, util, OofA, AgentSet, Color, ColorMap }
-util.copyTo(window, modules)
+const modules =
+  { DataSet, util, OofA, AgentSet, Color, ColorMap, pps: util.pps }
+util.toWindow(modules)
 
 console.log('DataSet, util, OofA, AgentSet, Color, ColorMap')
 console.log('ds, u, oofa, aset, color, cmap')
@@ -75,5 +76,5 @@ util.timeit((i) => {
 
 
 
-util.copyTo(window, { oa, runs, test, test1, gs, obj, obj1 })
-util.copyTo(window, { id, color, position, id1, color1, position1 })
+util.toWindow({ oa, runs, test, test1, gs, obj, obj1 })
+util.toWindow({ id, color, position, id1, color1, position1 })

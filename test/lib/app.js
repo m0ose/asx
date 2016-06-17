@@ -1,12 +1,14 @@
-'use strict';
-
 System.register(['lib/util.js'], function (_export, _context) {
+  "use strict";
+
   var util;
   return {
     setters: [function (_libUtilJs) {
       util = _libUtilJs.default;
     }],
     execute: function () {
+      window.util = util;
+      util.toWindow({ util, pps: util.pps });
       // import {pps} from './util.js'
 
       // Case 3: Prototypal Inheritance Stack

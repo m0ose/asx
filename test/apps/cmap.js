@@ -3,7 +3,7 @@ import Color from 'lib/Color.js'
 import ColorMap from 'lib/ColorMap.js'
 import util from 'lib/util.js'
 
-util.copyTo(window, { util, Color, ColorMap })
+util.toWindow({ util, Color, ColorMap, pps: util.pps })
 
 console.log('util, Color, ColorMap')
 console.log('u, c, cmap')
@@ -18,7 +18,7 @@ const tcta = Color.toTypedColor(new Uint8Array([255, 0, 0, 255]))
 
 console.log('toTypedColor: tcstr, tcpix, tca, tcta',
   tcstr.toString(), tcpix.toString(), tca.toString(), tcta.toString())
-util.copyTo(window, { tc, tcstr, tcpix, tca, tcta })
+util.toWindow({ tc, tcstr, tcpix, tca, tcta })
 
 // util.step(10, 2, (i) => console.log(i))
 const gid = ColorMap.gradientImageData(10, ['red', 'green'])
@@ -88,7 +88,7 @@ const arrays432 = cube432.map(a => [a[0], a[1], a[2]])
 console.log('cube432', cube432.toString())
 console.log('arrays432', util.arraysToString(arrays432))
 
-util.copyTo(window, { gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432 })
+util.toWindow({ gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432 })
 
 util.repeat(5, (i) => {
   const r = Color.randomTypedColor()

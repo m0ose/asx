@@ -1,12 +1,13 @@
-'use strict';
-
 System.register(['lib/util.js'], function (_export, _context) {
+  "use strict";
+
   var util;
   return {
     setters: [function (_libUtilJs) {
       util = _libUtilJs.default;
     }],
     execute: function () {
+      window.pps = util.pps;
 
       class Agent {
         constructor(myAgentSet) {
@@ -43,13 +44,13 @@ System.register(['lib/util.js'], function (_export, _context) {
       // else {
       //   p.color = [Math.random() * 255, Math.random() * 255, Math.random() * 255] }
 
-      util.copyTo(window, { Agent, AgentSet, util });
+      util.toWindow({ Agent, AgentSet, util });
 
       const as = window.as = new AgentSet();
       as.setDefault('color', 'red');
       const a = window.a = as.create();
 
-      util.copyTo(window, { as, a });
+      util.toWindow({ as, a });
 
       console.log('a.color', a.getColor());
       util.pps(as, 'as');

@@ -1,6 +1,6 @@
-'use strict';
-
 System.register(['lib/Color.js', 'lib/ColorMap.js', 'lib/util.js'], function (_export, _context) {
+  "use strict";
+
   var Color, ColorMap, util;
   return {
     setters: [function (_libColorJs) {
@@ -12,7 +12,7 @@ System.register(['lib/Color.js', 'lib/ColorMap.js', 'lib/util.js'], function (_e
     }],
     execute: function () {
 
-      util.copyTo(window, { util, Color, ColorMap }); // Import the lib/ mmodules via relative paths
+      util.toWindow({ util, Color, ColorMap, pps: util.pps }); // Import the lib/ mmodules via relative paths
 
 
       console.log('util, Color, ColorMap');
@@ -27,7 +27,7 @@ System.register(['lib/Color.js', 'lib/ColorMap.js', 'lib/util.js'], function (_e
       const tcta = Color.toTypedColor(new Uint8Array([255, 0, 0, 255]));
 
       console.log('toTypedColor: tcstr, tcpix, tca, tcta', tcstr.toString(), tcpix.toString(), tca.toString(), tcta.toString());
-      util.copyTo(window, { tc, tcstr, tcpix, tca, tcta });
+      util.toWindow({ tc, tcstr, tcpix, tca, tcta });
 
       // util.step(10, 2, (i) => console.log(i))
       const gid = ColorMap.gradientImageData(10, ['red', 'green']);
@@ -97,7 +97,7 @@ System.register(['lib/Color.js', 'lib/ColorMap.js', 'lib/util.js'], function (_e
       console.log('cube432', cube432.toString());
       console.log('arrays432', util.arraysToString(arrays432));
 
-      util.copyTo(window, { gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432 });
+      util.toWindow({ gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432 });
 
       util.repeat(5, i => {
         const r = Color.randomTypedColor();

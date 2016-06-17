@@ -1,7 +1,7 @@
 // A set of useful misc utils which will eventually move to individual modules.
 const util = {
 
-  // ### Types
+// ### Types
 
   // Fixing the javascript [typeof operator](https://goo.gl/Efdzk5)
   typeOf: (obj) => ({}).toString.call(obj).match(/\s(\w+)/)[1].toLowerCase(),
@@ -11,6 +11,8 @@ const util = {
   isTypedArray: (obj) => util.typeOf(obj.buffer) === 'arraybuffer',
   // Is a number an integer (rather than a float w/ non-zero fractional part)
   isInteger: Number.isInteger || ((num) => Math.floor(num) === num),
+  // Is obj a string?
+  isString: (obj) => typeof obj === 'string',
   // Check [big/little endian](https://en.wikipedia.org/wiki/Endianness)
   isLittleEndian () {
     const d32 = new Uint32Array([0x01020304])
@@ -32,10 +34,28 @@ const util = {
     const Type0 = array.constructor
     if (Type0 === Type) return array // return array if already same Type
     if (Type !== Array) return new Type(array) // TypedArray: universal ctor
-    return new Array(...array) // Convert TypedArray to Array
+    // return new Array(...array) // Convert TypedArray to Array
+    return Array.prototype.slice.call(array)
   },
 
-  // ### Debug
+  // Convert between Uint8Array "buffer" and base64 string.
+  // https://coolaj86.com/articles/typedarray-buffer-to-base64-in-javascript/
+  bufferToBase64 (buf) {
+    const binstr = Array.prototype.map.call(buf, (ch) =>
+      String.fromCharCode(ch)
+    ).join('')
+    return btoa(binstr)
+  },
+  base64ToBuffer (base64) {
+    const binstr = atob(base64)
+    const buf = new Uint8Array(binstr.length)
+    Array.prototype.forEach.call(binstr, (ch, i) => {
+      buf[i] = ch.charCodeAt(0)
+    })
+    return buf
+  },
+
+// ### Debug
 
   // Use chrome/ffox/ie console.time()/timeEnd() performance functions
   timeit (f, runs = 1e5, name = 'test') {
@@ -43,17 +63,6 @@ const util = {
     for (let i = 0; i < runs; i++) f(i)
     console.timeEnd(name)
   },
-
-  // Print Prototype Stack. Ex: Color.typedColor
-  // ```
-  // util.pps(color.toTypedColor('red'))
-  // [1]: [0, 1, 2, 3, pixelArray, string]
-  // [2]: [setColor, setPixel, getPixel, setString,
-  //       getString, hange, equals, rgbDistance]
-  // [3]: [Uint8ClampedArray]
-  // [4]: [TypedArray]
-  // [5]: [Object]
-  // ```
 
   pps (obj, title = '') {
     if (title) console.log(title)   // eslint-disable-line
@@ -72,14 +81,28 @@ const util = {
     }
   },
 
-  // Return a string representation of and array of arrays
+  // addToDom: add an element to the doeument body
+  addToDom (src, type) {
+    if (type) {
+      type = document.createElement(type)
+      src = type.textContent = src
+    }
+    document.body.appendChild(src)
+  },
+
+  // Return a string representation of an array of arrays
   arraysToString (arrays) {
     let str = ''
     this.repeat(arrays.length, (i) => { str += `[${arrays[i]}]` })
     return str
   },
 
-  // ### HTML, CSS, DOM
+  // Merge from's key/val pairs into to the global window namespace
+  toWindow (fromObj) {
+    Object.assign(window, fromObj)
+  },
+
+// ### HTML, CSS, DOM
 
   // REST: Parse the query, returning an object of key/val pairs.
   parseQueryString () {
@@ -100,7 +123,23 @@ const util = {
     document.querySelector('head').appendChild(scriptTag)
   },
 
-  // ### Math
+  // Get element (i.e. canvas) relative x,y position from event/mouse position.
+  getEventXY (element, evt) { // http://goo.gl/356S91
+    const rect = element.getBoundingClientRect()
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+  },
+
+  // Set the text font, align and baseline drawing parameters.
+  // Obj can be either a canvas context or a DOM element
+  // See [reference](http://goo.gl/AvEAq) for details.
+  // * font is a HTML/CSS string like: "9px sans-serif"
+  // * align is left right center start end
+  // * baseline is top hanging middle alphabetic ideographic bottom
+  setTextParams (obj, font, align = 'center', baseline = 'middle') {
+    obj.font = font; obj.textAlign = align; obj.textBaseline = baseline
+  },
+
+// ### Math
 
   // Return random int/float in [0,max) or [min,max) or [-r/2,r/2)
   randomInt: (max) => Math.floor(Math.random() * max),
@@ -152,17 +191,17 @@ const util = {
   // Calculate the lerp scale given lo/hi pair and a number between them.
   lerpScale: (number, lo, hi) => (number - lo) / (hi - lo),
 
-  // ### Arrays, Objects and Iteration
+// ### Arrays, Objects and Iteration
 
   // Shim for Object.setPrototypeOf for legacy use.
   // Support for `__proto__` currently greater, oddly enough.
-  setPrototypeOf (obj, prototype) {
-    if (Object.setPrototypeOf)
-      Object.setPrototypeOf(obj, prototype)
-    else
-      obj.__proto__ = prototype // eslint-disable-line
-    return obj
-  },
+  // setPrototypeOf (obj, prototype) {
+  //   if (Object.setPrototypeOf)
+  //     Object.setPrototypeOf(obj, prototype)
+  //   else
+  //     obj.__proto__ = prototype // eslint-disable-line
+  //   return obj
+  // },
 
   // Two iterators, soo \o functional! :)
   // ```
@@ -201,7 +240,7 @@ const util = {
     if (Type === Array)
       return array1.concat(this.convertArray(array2, Array))
     const array = new Type(array1.length + array2.length)
-    // Note typedArray.set() allows any Array or TypedArray arg
+    // NOTE: typedArray.set() allows any Array or TypedArray arg
     array.set(array1); array.set(array2, array1.length)
     return array
   },
@@ -225,22 +264,10 @@ const util = {
 
   // [Deep clone](http://goo.gl/MIaTxU) an obj or array. Clever!
   deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
-
   // Compare Objects or Arrays via JSON string. TypedArrays !== Arrays
   objectsEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
-
-  // Merge from's key/val pairs into to
-  // REMIND: use Object.assign
-  copyTo (toObj, fromObj) {
-    Object.keys(fromObj).forEach((k) => { toObj[k] = fromObj[k] })
-  },
-
-  // Returns new array (of this type) of unique elements in this *sorted* array.
-  // Sort or clone & sort if needed.
-  uniq (array) {
-    const f = (ai, i, a) => ai !== a[i - 1] // a[-1] ok, is undefined, no error
-    return array.filter(f)
-  },
+  // Use JSON to return printable string of an object, array, other
+  objectToString: (obj) => JSON.stringify(obj),
 
   // Create random array of floats between min/max.
   // Array Type allows conversion to Float32Array or integers (Int32Array etc)
@@ -249,9 +276,6 @@ const util = {
     for (let i = 0; i < length; i++) { a[i] = this.randomFloat2(min, max) }
     return a
   },
-
-  // Create an array of properties from an array of objects
-  propArray: (array, propName) => array.map((a) => a[propName]),
 
   // Create a histogram, given an array, a bin size, and a
   // min bin defaulting to min of of the array.
@@ -284,41 +308,87 @@ const util = {
   aMin: (array) => array.reduce((a, b) => Math.min(a, b)),
   aSum: (array) => array.reduce((a, b) => a + b),
   aAvg: (array) => util.aSum(array) / array.length,
+  oneOf: (array) => array[util.randomInt(array.length)],
+  // Create an array of properties from an array of objects
+  aProps: (array, propName) => array.map((a) => a[propName]),
 
-  // You'd think this wasn't necessary, and I always forget. Damn.
-  // Note this, like sort, sorts in place. Clone array if needed.
+  // You'd think this wasn't necessary, but I always forget. Damn.
+  // NOTE: this, like sort, sorts in place. Clone array if needed.
   sortNums (array, ascending = true) {
     return array.sort((a, b) => ascending ? a - b : b - a)
   },
   // Sort an array of objects w/ fcn(obj) as compareFunction.
   // If fcn is a string, convert to propFcn.
-  // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
-  // for better approach, thanks Nick!
   sortObjs (array, fcn, ascending = true) {
     if (typeof fcn === 'string') fcn = this.propFcn(fcn)
-    const comp = (a, b) => {
-      if (fcn(a) > fcn(b)) return 1
-      if (fcn(a) < fcn(b)) return -1
-      return 0
-    }
+    const comp = (a, b) => fcn(a) - fcn(b)
     return array.sort((a, b) => ascending ? comp(a, b) : -comp(a, b))
   },
   // Randomize array in-place. Use clone() first if new array needed
   // The array is returned for chaining; same as input array.
+  // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
+  // for better approach, thanks Nick!
   shuffle (array) { array.sort((a, b) => Math.random() < 0.5); return array },
+  // Returns new array (of this type) of unique elements in this *sorted* array.
+  // Sort or clone & sort if needed.
+  uniq (array, f = this.identity) {
+    if (this.isString(f)) f = this.propFcn(f)
+    return array.filter((ai, i, a) => (i === 0) || (f(ai) !== f(a[i - 1])))
+  },
+
+  // Binary search:
+  // Return array index of item, where array is sorted.
+  // If item not found, return index for item for array to remain sorted.
+  // f is used to return an integer for sorting, defaults to identity.
+  // If f is a string, it is the object property to sort by.
+  // Adapted from underscore's _.sortedIndex.
+  sortedIndex (array, item, f = this.identity) {
+    if (this.isString(f)) f = this.propFcn(f)
+    const value = f(item)
+    // Why not array.length - 1? Because we can insert 1 after end of array.
+    let [low, high] = [0, array.length]
+    while (low < high) {
+      const mid = (low + high) >>> 1 // floor (low+high)/2
+      if (f(array[mid]) < value) { low = mid + 1 } else { high = mid }
+    }
+    return low
+  },
+  // Return index of value in array with given property or -1 if not found.
+  // Binary search if f isnt null
+  // Property can be string or function.
+  // Use property = identity to compare objs directly.
+  indexOf (array, item, property) {
+    if (!property) return array.indexOf(item)
+    const i = this.sortedIndex(array, item, property)
+    return array[i] === item ? i : -1
+  },
+  // True if item is in array. Binary search if f given
+  contains (array, item, f) { return this.indexOf(array, item, f) >= 0 },
+  // Remove an item from an array. Binary search if f given
+  // Array unchanged if item not found.
+  removeItem (array, item, f) {
+    const i = this.indexOf(array, item, f)
+    if (i >= 0) array.splice(i, 1)
+  },
+  // Insert an item in a sorted array
+  insertItem (array, item, f) {
+    const i = this.sortedIndex(array, item, f)
+    if (array[i] === item) this.error('insertItem: item already in array')
+    array.splice(i, 0, item)
+  },
 
   // Return array composed of f(a1i, a2i) called pairwise on both arrays
   aPairwise: (a1, a2, f) => a1.map((val, i) => f(val, a2[i])),
-  aPairSum: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a + b),
-  aPairDif: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a - b),
-  aPairMul: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a * b),
-  aPairEq: (a1, a2) => util.aPairDif(a1, a2).every((a) => a === 0),
+  arraysAdd: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a + b),
+  arraysSub: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a - b),
+  arraysMul: (a1, a2) => util.aPairwise(a1, a2, (a, b) => a * b),
+  arraysEqual: (a1, a2) => util.arraysSub(a1, a2).every((a) => a === 0),
 
   // Return a "ramp" (array of uniformly ascending/descending floats)
   // in [start,stop] with numItems (positive integer > 1).
   // OK for start>stop. Will always include start/stop w/in float accuracy.
   aRamp (start, stop, numItems) {
-    // Note: start + step*i, where step is (stop-start)/(numItems-1),
+    // NOTE: start + step*i, where step is (stop-start)/(numItems-1),
     // has float accuracy problems, must recalc step each iteration.
     if (numItems <= 1) this.error('aRamp: numItems must be > 1')
     const a = []
@@ -329,7 +399,7 @@ const util = {
   // Integer version of aRamp, start & stop integers, rounding each element.
   // Default numItems yields unit step between start & stop.
   aIntRamp (start, stop, numItems = (Math.abs(stop - start) + 1)) {
-    return this.aRamp(start, stop, numItems).map(a => Math.round(a))
+    return this.aRamp(start, stop, numItems).map((a) => Math.round(a))
   },
 
   // Return an array normalized (lerp) between lo/hi values
@@ -347,7 +417,7 @@ const util = {
     return this.normalize(array, lo, hi).map((n) => Math.round(n))
   },
 
-  // ### Async
+// ### Async
 
   // Return Promise for getting an image.
   // - use: imagePromise('./path/to/img').then(img => imageFcn(img))
@@ -356,7 +426,7 @@ const util = {
       const img = new Image()
       img.crossOrigin = 'Anonymous'
       img.onload = () => resolve(img)
-      img.onerror = () => reject(`Could not load image ${url}`)
+      img.onerror = () => reject(this.error(`Could not load image ${url}`))
       img.src = url
     })
   },
@@ -369,8 +439,9 @@ const util = {
       const xhr = new XMLHttpRequest()
       xhr.open(method, url) // POST mainly for security and large files
       xhr.responseType = type
+      window.xhr = xhr
       xhr.onload = () => resolve(xhr.response)
-      xhr.onerror = () => reject(xhr.responseText)
+      xhr.onerror = () => reject(this.error(xhr.responseText))
       xhr.send()
     })
   },
@@ -403,7 +474,7 @@ const util = {
   // util.runGenerator( main )
   // ```
 
-  // ### Canvas/Image
+// ### Canvas/Image
 
   // Get an image in this page by its ID
   getCanvasByID: (id) => document.getElementById(id),
@@ -414,7 +485,7 @@ const util = {
     return can
   },
   // As above, but returing the context object.
-  // Note ctx.canvas is the canvas for the ctx, and can be use as an image.
+  // NOTE: ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx (width, height, ctxType = '2d') {
     const can = this.createCanvas(width, height)
     return can.getContext(ctxType === '2d' ? '2d' : 'webgl')
@@ -441,24 +512,97 @@ const util = {
     return ctx
   },
 
-  // Get element (i.e. canvas) relative x,y position from event/mouse position.
-  getEventXY (element, evt) { // http://goo.gl/356S91
-    const rect = element.getBoundingClientRect()
-    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+  setCtxSmoothing (ctx, smoothing) {
+    // Don'cha love  standards!
+    const aliases = ['imageSmoothingEnabled', 'mozImageSmoothingEnabled', 'oImageSmoothingEnabled', 'webkitImageSmoothingEnabled', 'msImageSmoothingEnabled']
+    for (const name of aliases)
+      if (ctx[name])
+        return (ctx[name] = smoothing) // lets hope the first one works. Sheesh!
   },
 
-  // Convert an image to a context. img may be a canvas.
-  // - x, y are origin in image, default to 0, 0.
-  // - width, height are size of context, default to image's width, height
-  // - thus default is entire image
+  // Install identity transform for this context.
+  // Call ctx.restore() to revert to previous transform.
+  setIdentity (ctx) {
+    ctx.save() // NOTE: Does not change state, only saves current state.
+    ctx.setTransform(1, 0, 0, 1, 0, 0) // or ctx.resetTransform()
+  },
+
+  // Convert an image, or part of an image, to a context.
+  // img may be another canvas.
+  // * x, y are top/left in image, default to 0, 0.
+  // * width, height are size of context, default to image's width, height
+  // * thus default is entire image
   //
-  // Note: to convert a ctx to an "image" (drawImage) use ctx.canvas
-  imageToCtx (img, x = 0, y = 0, width = img.width, height = img.height) {
-    if ((x + width > img.width) || (y + height > img.height))
-      this.error('imageToCtx: parameters outside of image')
-    const ctx = this.createCtx(width, height)
-    ctx.drawImage(img, x, y, width, height, 0, 0, width, height)
-    return ctx
+  // NOTE: to convert a ctx to an "image" (drawImage) use ctx.canvas.
+  // [See MDN drawImage, third form](https://goo.gl/a5b87N)
+  // NOTE: this will distort the origional image, due to browser assumptions.
+  // Use imageToPixels for undistorted image content.
+  //
+  // Not used yet.
+  // imageToCtx (img, x = 0, y = 0, width = img.width, height = img.height) {
+  //   if ((x + width > img.width) || (y + height > img.height))
+  //     this.error('imageToCtx: parameters outside of image')
+  //   const ctx = this.createCtx(width, height)
+  //   ctx.drawImage(img, x, y, width, height, 0, 0, width, height)
+  //   return ctx
+  // },
+
+// ### WebGL
+
+  // Convert a canvas to a gl context, with given attributes.
+  // Attributes [listed here](
+  // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.2).
+  // For images, attribute `premultipliedAlpha: false` useful.
+  createGLContext (canvas, attributes = {}) {
+    const gl = canvas.getContext('webgl', attributes)
+    if (!gl) util.error('webgl getContext error')
+    return gl
+  },
+
+  // Use webgl texture to convert img to Uint8Array w/o alpha premultiply
+  // or color profile modification.
+  // Img can be Image, ImageData, Canvas: [See MDN](https://goo.gl/a3oyRA)
+  // flipY is used to invert image to "upright".
+  imageToPixels (img, flipY = false) {
+    // Create the gl context using the image width and height
+    const {width, height} = img
+    const gl = util.createGLContext(util.createCanvas(width, height), {
+      premultipliedAlpha: false
+    })
+
+    // Create and initialize the texture.
+    const texture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    if (flipY) // Mainly used for "pictures" rather than "data"
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+    // Insure [no color profile applied](https://goo.gl/BzBVJ9):
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE)
+    // Insure no [alpha premultiply](http://goo.gl/mejNCK).
+    // False is the default, but lets make sure!
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
+
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+
+    // Create the pixel buffer for returned data
+    const pixels = new Uint8Array(4 * width * height)
+    // .. and the framebuffer used for the texture
+    const framebuffer = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
+
+    // See if it all worked. Apparently not async.
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+    if (status !== gl.FRAMEBUFFER_COMPLETE)
+      util.error(`imageToPixels: status not FRAMEBUFFER_COMPLETE: ${status}`)
+    // If all OK, read back the pixels of the image
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+
+    // Unbind the framebuffer and return
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    return pixels
   }
 
 }

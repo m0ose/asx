@@ -1,4 +1,5 @@
 import util from 'lib/util.js'
+window.pps = util.pps
 
 class Agent {
   constructor (myAgentSet) {
@@ -25,13 +26,13 @@ class AgentSet extends Array {
 // else {
 //   p.color = [Math.random() * 255, Math.random() * 255, Math.random() * 255] }
 
-util.copyTo(window, { Agent, AgentSet, util })
+util.toWindow({ Agent, AgentSet, util })
 
 const as = window.as = new AgentSet()
 as.setDefault('color', 'red')
 const a = window.a = as.create()
 
-util.copyTo(window, { as, a })
+util.toWindow({ as, a })
 
 console.log('a.color', a.getColor())
 util.pps(as, 'as')

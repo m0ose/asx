@@ -16,7 +16,7 @@ System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/util.js', 'node_modules/l
     }],
     execute: function () {
 
-      util.toWindow({ DataSet, util, OofA, LZMA, pako });
+      util.toWindow({ DataSet, util, OofA, LZMA, pako, pps: util.pps });
 
       // Tests for lib/ modules. Replace eventually with testing libraries.
 

@@ -25,6 +25,11 @@
                 </a>
               
                 
+                <a class="source" href="Animator.html">
+                  Animator.js
+                </a>
+              
+                
                 <a class="source" href="Color.html">
                   Color.js
                 </a>
@@ -40,8 +45,23 @@
                 </a>
               
                 
+                <a class="source" href="Model.html">
+                  Model.js
+                </a>
+              
+                
                 <a class="source" href="OofA.html">
                   OofA.js
+                </a>
+              
+                
+                <a class="source" href="Patch.html">
+                  Patch.js
+                </a>
+              
+                
+                <a class="source" href="Patches.html">
+                  Patches.js
                 </a>
               
                 
@@ -87,7 +107,7 @@
               <p>A <strong>DataSet</strong> is an object with width/height and an array
 whose length = width * height</p>
 <p>The data array can be a TypedArray or a javascript Array
-Note that it is very much like an ImageData object!</p>
+Notice that it is very much like an ImageData object!</p>
 
             </div>
             
@@ -581,7 +601,7 @@ Does nothing if current data is already of this Type.</p>
               </div>
               <p>Concatinate a dataset of equal height to my right to my east.
 New DataSet is of same type as this.</p>
-<p>Note: concatWest is dataset.concatEast(this)</p>
+<p>NOTE: concatWest is dataset.concatEast(this)</p>
 
             </div>
             
@@ -611,7 +631,7 @@ New DataSet is of same type as this.</p>
               </div>
               <p>Concatinate a dataset of equal width to my south, returning new DataSet.
 New DataSet is of same type as this.</p>
-<p>Note: concatNorth is dataset.concatSouth(this)</p>
+<p>NOTE: concatNorth is dataset.concatSouth(this)</p>
 
             </div>
             
@@ -715,7 +735,7 @@ dataset of same size.</p>
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> y = y0; y &lt; h; y++) {
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> x = x0; x &lt; w; x++) {
         <span class="hljs-keyword">this</span>.neighborhood(x, y, n)
-        array.push(u.aSum(u.aPairMul(kernel, n)) * factor)
+        array.push(u.aSum(u.arraysMul(kernel, n)) * factor)
       }
     }
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet(w - x0, h - y0, array)

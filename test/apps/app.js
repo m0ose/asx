@@ -1,4 +1,6 @@
 import util from 'lib/util.js'
+window.util = util
+util.toWindow({util, pps: util.pps})
 // import {pps} from './util.js'
 
 // Case 3: Prototypal Inheritance Stack

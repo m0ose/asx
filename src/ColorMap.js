@@ -8,10 +8,10 @@ import util from './util.js'
 import Color from './Color.js'
 
 const ColorMap = {
-  // ### Color Array Utilities
+// ### Color Array Utilities
   // Several utilities for creating color arrays
 
-  // ### Gradients
+// ### Gradients
 
   // Ask the browser to use the canvas gradient feature
   // to create nColors given the gradient color stops and locs.
@@ -38,7 +38,7 @@ const ColorMap = {
     return util.ctxToImageData(ctx).data
   },
 
-  // ### Array Conversion Utilities
+// ### Array Conversion Utilities
 
   // Convert a Uint8Array into Array of 4 element typedColors.
   // Useful for converting ImageData objects like gradients to colormaps.
@@ -46,7 +46,9 @@ const ColorMap = {
   typedArrayToTypedColors (typedArray) {
     const array = []
     util.step(typedArray.length, 4,
-      (i) => array.push(Color.typedColor(typedArray.subarray(i, i + 4))))
+      // Note: can't share subarray as color's typed array:
+      // it's buffer is for entire array, not just subarray.
+      (i) => array.push(Color.typedColor(...typedArray.subarray(i, i + 4))))
     array.typedArray = typedArray
     return array
   },
@@ -81,7 +83,7 @@ const ColorMap = {
     return this.permuteArrays(...ramps)
   },
 
-  // ### ColorMaps
+// ### ColorMaps
 
   // ColorMaps are Arrays of TypedColors with these additional methods. Webgl
   // ready if made w/ `typedArrayToTypedColors` or `arraysToColors` above.
@@ -124,7 +126,7 @@ const ColorMap = {
       const index = Math.round(util.lerp(0, this.length - 1, scale))
       return this[index]
     },
-    // Return the typedArray used to create the typedColors,
+    // Return the Uint8 array used to create the typedColors,
     // undefined if not webgl ready.
     webglArray () { return this.typedArray },
 
@@ -171,12 +173,12 @@ const ColorMap = {
     closestColor (r, g, b) { return this.closestIndex(r, g, b) }
   },
 
-  // ### Utilities for constructing ColorMaps
+// ### Utilities for constructing ColorMaps
 
   // Convert an array of rgb(a) Arrays or TypedColors to a webgl-ready colormap.
   basicColorMap (colors) {
     colors = this.arraysToColors(colors)
-    util.setPrototypeOf(colors, this.ColorMapProto)
+    Object.setPrototypeOf(colors, this.ColorMapProto)
     return colors
   },
   // Create a gray map (gray: r=g=b)
@@ -191,7 +193,7 @@ const ColorMap = {
   //
   // numRs, numGs, numBs are numbers, the number of steps beteen 0-255.
   // Ex: numRs = 3, corresponds to 0, 128, 255.
-  // Note the defaults: rgbColorCube(6) creates a `6 * 6 * 6` cube.
+  // NOTE: the defaults: rgbColorCube(6) creates a `6 * 6 * 6` cube.
   rgbColorCube (numRs, numGs = numRs, numBs = numRs) {
     const array = this.permuteRGBColors(numRs, numGs, numBs)
     const map = this.basicColorMap(array)
@@ -222,7 +224,7 @@ const ColorMap = {
   gradientColorMap (nColors, stops, locs) {
     const uint8arrays = this.gradientImageData(nColors, stops, locs)
     const typedColors = this.typedArrayToTypedColors(uint8arrays)
-    util.setPrototypeOf(typedColors, this.ColorMapProto)
+    Object.setPrototypeOf(typedColors, this.ColorMapProto)
     return typedColors
   },
   // The most popular MatLab gradient, "jet":
