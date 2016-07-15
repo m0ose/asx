@@ -29,3 +29,8 @@ const ds10f = ds.resample(10, 10, false, Float32Array)
 console.log('resample ds 10x10 (floats trimmed)', util.fixedArray(ds10f.data))
 const ds10i = new Uint8Array(ds10f.data.buffer)
 util.toWindow({ ds, du, ctx, ds22, ds33, dseast, dssouth, ds10f, ds10i })
+
+console.time('convolve')
+let dsLarge = DataSet.emptyDataSet(1000, 1000, Float64Array)
+dsLarge = dsLarge.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6)
+console.timeEnd('convolve')
