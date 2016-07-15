@@ -1,9 +1,11 @@
-System.register(['lib/AgentSet.js', 'lib/Patch.js', 'lib/Patches.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js', 'lib/util.js'], function (_export, _context) {
+System.register(['lib/Animator.js', 'lib/AgentSet.js', 'lib/Patch.js', 'lib/Patches.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js', 'lib/util.js'], function (_export, _context) {
   "use strict";
 
-  var AgentSet, patchProto, Patches, Color, ColorMap, Model, util;
+  var Animator, AgentSet, patchProto, Patches, Color, ColorMap, Model, util;
   return {
-    setters: [function (_libAgentSetJs) {
+    setters: [function (_libAnimatorJs) {
+      Animator = _libAnimatorJs.default;
+    }, function (_libAgentSetJs) {
       AgentSet = _libAgentSetJs.default;
     }, function (_libPatchJs) {
       patchProto = _libPatchJs.default;
@@ -19,10 +21,11 @@ System.register(['lib/AgentSet.js', 'lib/Patch.js', 'lib/Patches.js', 'lib/Color
       util = _libUtilJs.default;
     }],
     execute: function () {
-      window.pps = util.pps; // Import the lib/ mmodules via relative paths
+      // Import the lib/ mmodules via relative paths
 
+      window.pps = util.pps;
 
-      const modules = { AgentSet, Patches, Color, ColorMap, Model, util };
+      const modules = { AgentSet, Patches, patchProto, Color, ColorMap, Model, Animator, util };
       util.toWindow(modules);
       console.log(Object.keys(modules).join(' '));
 
@@ -58,31 +61,92 @@ System.register(['lib/AgentSet.js', 'lib/Patch.js', 'lib/Patches.js', 'lib/Color
       // console.log('foos.setBreed(bar0)', Object.keys(bar0))
       // util.toWindow({ zot0, bar0 })
 
-      const model = new Model('layers');
+      Model.prototype.setup = function () {
+        this.cmap = ColorMap.rgbColorCube(8, 8, 4);
+        // this.patches.forEach((p, i, ps) => { p.neighbors = ps.neighbors(p) })
+        // this.patches.forEach((p, i, ps) => { p.neighbors4 = ps.neighbors(p) })
+      };
+      Model.prototype.step = function () {
+        for (const p of this.patches) {
+          if (p.agentSet === this.patches) // let breeds be static color
+            p.setColor(this.cmap.randomColor());
+          // patches.neighbors(p)
+          // p.neighbors4 // see if performance degraded by getter function call
+        }
+        if (this.anim.ticks === 300) {
+          console.log(this.anim.toString());
+          this.stop();
+        }
+      };
+      // const [size, max, min] = [4, 50, -50]
+      const [size, max, min] = [4, 50, -50];
+      const opts = { patchSize: size, minX: min, maxX: max, minY: min, maxY: max };
+      const model = new Model('layers', opts);
       const world = model.world;
-      util.toWindow({ model, world });
+      const patches = model.patches;
+      util.toWindow({ model, world, patches });
+      if (size !== 1) util.addToDom(patches.pixels.ctx.canvas);
+      model.start();
+      // patches.importDrawing('./test/data/redfish128t.png')
+      // patches.importColors('./test/data/redfish128t.png')
 
-      const patches = new Patches(model, patchProto, 'patches');
-      // util.repeat(5, (i) => patches.add({}))
-      util.toWindow({ Patches, patches });
+      model.patchBreeds('houses roads');
+      const houses = patches.breeds.houses;
+      const roads = patches.breeds.roads;
+      util.toWindow({ houses, roads, p: patches[0], h: houses[0], r: roads[0] });
+      houses.own('address sqfeet');
+      roads.own('lanes name');
+      houses.setDefault('color', Color.typedColor(0, 255, 0));
+      roads.setDefault('color', Color.typedColor(0, 0, 0));
 
-      const cmap = ColorMap.rgbColorCube(8, 8, 4);
-      // const cmap = ColorMap.gradientColorMap(256, ColorMap.jetColors)
-      // const cmap = ColorMap.cssColorMap(ColorMap.basicColorNames)
-      for (const p of patches) p.setColor(cmap.randomColor());
-      // for (const p of patches) p.setColor(Color.randomTypedColor())
-      patches.draw(model.contexts.patches);
+      // util.repeat(Math.round(patches.length/10), (i) =>
+      //  roads.setBreed(patches.oneOf())
+      // patches.filter((p) => Math.abs(p.x) === Math.abs(p.y))
+      //   .forEach((p) => {
+      //     roads.setBreed(p)
+      //     // p.setColor(p.color) // set default color
+      //     p.neighbors.forEach((n) => roads.setBreed(n))
+      //   })
+      patches.forEach(p => {
+        // avoid patches.filter, causes Patches ctor.
+        if (Math.abs(p.x) === Math.abs(p.y)) {
+          roads.setBreed(p);
+          p.neighbors.forEach(n => roads.setBreed(n));
+        }
+      });
+      roads.forEach(r => r.setColor(r.color));
+      // roads.setBreed(patches[0])
+      // roads.setBreed(patches[1])
+      houses.setBreed(patches[10]);
+      houses.setBreed(patches[11]);
+      houses.setBreed(patches[12]);
 
-      const ctx = model.contexts.patches;
-      const can = ctx.canvas;
-      const pixels = patches.pixels;
-      const pctx = patches.pixels.ctx;
-      const pcan = pctx.canvas;
-      util.toWindow({ cmap, ctx, can, pixels, pctx, pcan });
-      util.addToDom(pcan);
+      // // const patches = new Patches(model, patchProto, 'patches')
+      // const patches = model.patches
+      // console.log(patches)
+      // // util.repeat(5, (i) => patches.add({}))
+      // util.toWindow({ Patches, patches })
+      //
+      // const cmap = ColorMap.rgbColorCube(8, 8, 4)
+      // // const cmap = ColorMap.gradientColorMap(256, ColorMap.jetColors)
+      // // const cmap = ColorMap.cssColorMap(ColorMap.basicColorNames)
+      // for (const p of patches) p.setColor(cmap.randomColor())
+      // // for (const p of patches) p.setColor(Color.randomTypedColor())
+      // patches.draw(model.contexts.patches)
 
-      console.log('gradient: 25 values using the 9 jetColor gradient stops:');
-      console.log(ColorMap.gradientColorMap(25, ColorMap.jetColors).toString());
+      // const ctx = model.contexts.patches
+      // const can = ctx.canvas
+      // const pixels = patches.pixels
+      // const pctx = patches.pixels.ctx
+      // const pcan = pctx.canvas
+      // util.toWindow({ cmap, ctx, can, pixels, pctx, pcan })
+      // util.addToDom(pcan)
+      //
+      // console.log('gradient: 25 values using the 9 jetColor gradient stops:')
+      // console.log(ColorMap.gradientColorMap(25, ColorMap.jetColors).toString())
+      //
+      // const anim = new Animator(model)
+      // util.toWindow({ anim })
     }
   };
 });

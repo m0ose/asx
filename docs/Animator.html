@@ -164,12 +164,13 @@ in setup() to change default settings</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>start/stop model, often used for debugging and resetting model</p>
+              <p>start/stop model, called by Model.
+Often used for debugging and resetting model.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  start () {
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.stopped) <span class="hljs-keyword">return</span> <span class="hljs-comment">// avoid multiple starts</span>
+    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.stopped) <span class="hljs-keyword">return</span> <span class="hljs-comment">// avoid multiple starts</span>
     <span class="hljs-keyword">this</span>.resetTimes()
     <span class="hljs-keyword">this</span>.stopped = <span class="hljs-literal">false</span>
     <span class="hljs-keyword">this</span>.animate()
@@ -240,11 +241,11 @@ in setup() to change default settings</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>step and draw the model once, mainly debugging</p>
+              <p>step and draw the model once</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  once () { <span class="hljs-keyword">this</span>.step(); <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.draw() }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  once () { <span class="hljs-keyword">this</span>.step(); <span class="hljs-keyword">this</span>.draw() }</pre></div></div>
             
         </li>
         
@@ -324,14 +325,15 @@ in setup() to change default settings</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Animation via setTimeout and requestAnimationFrame</p>
+              <p>Animation via setTimeout and requestAnimationFrame.
+Arrow functions are required for callbacks for lexical scope.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  animateSteps () {
     <span class="hljs-keyword">this</span>.step()
     <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.stopped)
-      <span class="hljs-keyword">this</span>.timeoutHandle = setTimeout(<span class="hljs-keyword">this</span>.animateSteps, <span class="hljs-number">10</span>)
+      <span class="hljs-keyword">this</span>.timeoutHandle = setTimeout(() =&gt; <span class="hljs-keyword">this</span>.animateSteps(), <span class="hljs-number">10</span>)
   }
   animateDraws () {
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.drawsPerSec() &lt; <span class="hljs-keyword">this</span>.rate) { <span class="hljs-comment">// throttle drawing to @rate</span>
@@ -339,9 +341,23 @@ in setup() to change default settings</p>
       <span class="hljs-keyword">this</span>.draw()
     }
     <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.stopped)
-      <span class="hljs-keyword">this</span>.animHandle = requestAnimationFrame(<span class="hljs-keyword">this</span>.animateDraws)
-  }
-  animate () {
+      <span class="hljs-keyword">this</span>.animHandle = requestAnimationFrame(() =&gt; <span class="hljs-keyword">this</span>.animateDraws())
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Called once by start() to get animateSteps &amp; animateDraws iterating.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  animate () {
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.multiStep) <span class="hljs-keyword">this</span>.animateSteps()
     <span class="hljs-keyword">this</span>.animateDraws()
   }

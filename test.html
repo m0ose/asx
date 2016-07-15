@@ -1,13 +1,13 @@
 <html>
 <head>
   <title>asx</title>
-  <script src="node_modules/systemjs/dist/system.js"></script>
+  <script src="etc/system.js"></script>
 </script>
 </head>
 <body>
   <script>
     var app = document.location.search.substring(1) || 'app'
-    app = `test/lib/${app}`
+    app = `test/lib/${app}.js`
     console.log('running', app)
     System.import(app);
   </script>

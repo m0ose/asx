@@ -21,9 +21,10 @@ class Animator {
     Object.assign(this, {rate, multiStep})
     this.resetTimes()
   }
-  // start/stop model, often used for debugging and resetting model
+  // start/stop model, called by Model.
+  // Often used for debugging and resetting model.
   start () {
-    if (this.stopped) return // avoid multiple starts
+    if (!this.stopped) return // avoid multiple starts
     this.resetTimes()
     this.stopped = false
     this.animate()
@@ -45,8 +46,8 @@ class Animator {
   // Two handlers used by animation loop
   step () { this.ticks++; this.model.step() }
   draw () { this.draws++; this.model.draw() }
-  // step and draw the model once, mainly debugging
-  once () { this.step(); return this.draw() }
+  // step and draw the model once
+  once () { this.step(); this.draw() }
   // Get current time, with high resolution timer if available
   now () { return performance.now() }
   // Time in ms since starting animator
@@ -64,11 +65,12 @@ class Animator {
   toString () {
     return `ticks: ${this.ticks}, draws: ${this.draws}, rate: ${this.rate} tps/dps: ${this.ticksPerSec()}/${this.drawsPerSec()}`
   }
-  // Animation via setTimeout and requestAnimationFrame
+  // Animation via setTimeout and requestAnimationFrame.
+  // Arrow functions are required for callbacks for lexical scope.
   animateSteps () {
     this.step()
     if (!this.stopped)
-      this.timeoutHandle = setTimeout(this.animateSteps, 10)
+      this.timeoutHandle = setTimeout(() => this.animateSteps(), 10)
   }
   animateDraws () {
     if (this.drawsPerSec() < this.rate) { // throttle drawing to @rate
@@ -76,8 +78,9 @@ class Animator {
       this.draw()
     }
     if (!this.stopped)
-      this.animHandle = requestAnimationFrame(this.animateDraws)
+      this.animHandle = requestAnimationFrame(() => this.animateDraws())
   }
+  // Called once by start() to get animateSteps & animateDraws iterating.
   animate () {
     if (this.multiStep) this.animateSteps()
     this.animateDraws()

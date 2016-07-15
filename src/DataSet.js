@@ -137,8 +137,6 @@ class DataSet {
     return new DataSet(this.width, this.height, this.data.map(f))
   }
 
-  // Return empty array of this dataset's type
-
   // Return the column of data at position x as this array's type
   col (x) {
     const [w, h, data] = [this.width, this.height, this.data]

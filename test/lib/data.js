@@ -1,82 +1,86 @@
-System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/AgentSet.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/util.js', 'node_modules/lzma/src/lzma_worker.js', 'node_modules/lzma/src/lzma.js', 'node_modules/pako/dist/pako.js'], function (_export, _context) {
+System.register(['lib/DataSet.js', 'lib/util.js', 'node_modules/lzma/src/lzma_worker.js', 'node_modules/lzma/src/lzma.js', 'node_modules/pako/dist/pako.js'], function (_export, _context) {
   "use strict";
 
-  var OofA, DataSet, AgentSet, Color, ColorMap, util, LZMA, lzma, pako;
+  var DataSet, util, lzma, LZMA, pako;
   return {
-    setters: [function (_libOofAJs) {
-      OofA = _libOofAJs.default;
-    }, function (_libDataSetJs) {
+    setters: [function (_libDataSetJs) {
       DataSet = _libDataSetJs.default;
-    }, function (_libAgentSetJs) {
-      AgentSet = _libAgentSetJs.default;
-    }, function (_libColorJs) {
-      Color = _libColorJs.default;
-    }, function (_libColorMapJs) {
-      ColorMap = _libColorMapJs.default;
     }, function (_libUtilJs) {
       util = _libUtilJs.default;
     }, function (_node_modulesLzmaSrcLzma_workerJs) {
-      LZMA = _node_modulesLzmaSrcLzma_workerJs.default;
+      lzma = _node_modulesLzmaSrcLzma_workerJs.default;
     }, function (_node_modulesLzmaSrcLzmaJs) {
-      lzma = _node_modulesLzmaSrcLzmaJs.default;
+      LZMA = _node_modulesLzmaSrcLzmaJs.default;
     }, function (_node_modulesPakoDistPakoJs) {
       pako = _node_modulesPakoDistPakoJs.default;
     }],
     execute: function () {
 
-      const modules = { DataSet, util, OofA, AgentSet, Color, ColorMap, LZMA, lzma, pako }; // Import the lib/ mmodules via relative paths
+      // const lzma = new LZMA('node_modules/lzma/src/lzma_worker.js')
+      // const lzma = new LZMA()
+
+      const modules = { DataSet, util, LZMA, lzma, pako, pps: util.pps }; // Import the lib/ mmodules via relative paths
 
       util.toWindow(modules);
-      window.pps = util.pps;
+      // window.pps = util.pps
       console.log(Object.keys(modules).join(' '));
 
-      const imageUrl = 'test/data/redfish128t.png';
+      const imageUrl = 'test/data/redfish128t.png'; // 26k
+      // function compress (compressor, uint8Array, level = 9) {
+      //   const compressedArray = compressor.compress
+      //     ? new Uint8Array(compressor.compress(uint8Array, { level }))
+      //     : pako.deflate(uint8Array, level)
+      //   return compressedArray
+      // }
+      // util.toWindow({compress, imageUrl})
 
-      const array8toUint8 = array => new Uint8Array(new Int8Array(array).buffer);
-      const uint8toArray8 = uint8s => util.convertArray(new Int8Array(uint8s.buffer), Array);
+      // const array8toUint8 = (array) => new Uint8Array(new Int8Array(array).buffer)
+      // const uint8toArray8 = (uint8s) =>
+      //   util.convertArray(new Int8Array(uint8s.buffer), Array)
 
       util.imagePromise(imageUrl).then(img => {
+        // debugger
         const pixels = util.imageToPixels(img, true);
-        const pixelsbas64 = util.bufferToBase64(pixels);
-        const pix = LZMA.compress(pixels, 9);
-        console.log('LZMA: pixels compression', pixels.length, pix.length);
-        const pixd = LZMA.decompress(pix);
-        console.log('LZMA: pixels = pixd', util.arraysEqual(pixels, pixd));
-        const pixInt8 = new Int8Array(pix);
-        console.log('LZMA: pix = pixInt8', util.arraysEqual(pix, pixInt8));
-        const pixUint8 = new Uint8Array(pix); // Uint & Int same values
-        const pixd8 = LZMA.decompress(new Int8Array(pixUint8.buffer));
-        console.log('LZMA: pixels = pixd8', util.arraysEqual(pixels, pixd8));
-        const pixbase64 = util.bufferToBase64(pixUint8);
-        console.log('LZMA: base64 compression', pixelsbas64.length, pixbase64.length);
-        util.toWindow({
-          img, pixels, pixelsbas64, pix, pixInt8, pixUint8, pixbase64, pixd, pixd8
-        });
-        console.log('img', img, 'pixels', pixels.length);
-      }).catch(response => console.log(response));
+        const pixc = lzma.compress(pixels, 9); // sync, returns Array
+        util.toWindow({ img, pixels, pixc });
+        console.log('lzma: compression pixels/pixc', pixels.length, pixc.length);
+        const pixd = lzma.decompress(pixc); // sync, returns Array
+        console.log('lzma: pixels = pixd', util.arraysEqual(pixels, pixd));
+        util.toWindow({ img, pixels, pixc, pixd });
 
-      // http://stackoverflow.com/questions/18522687/how-to-get-the-pixel-data-of-an-png-downloaded-using-xmlhttprequest-xhr2
-      // util.xhrPromise(imageUrl, 'arraybuffer', 'GET')
-      // .then((arraybuffer) => {
-      //   console.log(arraybuffer)
-      //   const xpixels = new Uint8Array(arraybuffer)
-      //   util.toWindow({ arraybuffer, xpixels })
-      //   console.log('arraybuffer', arraybuffer, 'xpixels', xpixels.length)
-      // })
-      // .catch((response) => console.log(response))
-      // // NOTE: xpixels.length === size of .png file
+        // const pixcInt8 = new Int8Array(pixc)
+        // console.log('lzma: pixc = pixInt8', util.arraysEqual(pixc, pixcInt8))
+        // const pixcUint8 = new Uint8Array(pixc) // Uint & Int same values
+        // const pixd8 = lzma.decompress(new Int8Array(pixcUint8.buffer))
+        // console.log('lzma: pixels = pixd8', util.arraysEqual(pixels, pixd8))
 
-      const id = new ImageData(10, 5);
-      util.repeat(id.data.length, i => {
-        id.data[i] = i;
-      });
-      const idpx = util.imageToPixels(id);
-      const idbase64 = util.bufferToBase64(idpx);
-      util.toWindow({ id, idpx, idbase64 });
+        const pixcUint8 = new Uint8Array(pixc); // Uint & Int same values
+        const pixels64 = util.bufferToBase64(pixels);
+        const pixc64 = util.bufferToBase64(pixcUint8);
+        console.log('lzma: base64 pixels/pixc size', pixels64.length, pixc64.length);
+        util.toWindow({ pixcUint8, pixels64, pixc64 });
+        // console.log('img', img, 'pixels', pixels.length)
 
-      const blob = new Blob([idpx], { type: 'application/octet-binary' });
-      const bloburl = URL.createObjectURL(blob);
-      util.toWindow({ blob, bloburl });
+        const pixels64c = lzma.compress(pixels64, 9);
+        const pixc64c = lzma.compress(pixc64, 9);
+        console.log('lzma: string compression', pixels64c.length, pixc64c.length);
+        util.toWindow({ pixels64c, pixc64c });
+
+        // const pixels64cd = lzma.decompress(pixels64c)
+        // const pixc64cd = lzma.decompress(pixc64c)
+        // console.log('lzma: string decompression', pixels64cd.length, pixc64cd.length)
+        // util.toWindow({ pixels64cd, pixc64cd })
+      }).catch(error => console.log(error));
+
+      // const id = new ImageData(10, 5)
+      // util.repeat(id.data.length, (i) => { id.data[i] = i })
+      // const idpx = util.imageToPixels(id)
+      // const idbase64 = util.bufferToBase64(idpx)
+      // util.toWindow({ id, idpx, idbase64 })
+      //
+      // const blob = new Blob([idpx], {type: 'application/octet-binary'})
+      // const bloburl = URL.createObjectURL(blob)
+      // util.toWindow({ blob, bloburl })
     }
   };
 });

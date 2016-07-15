@@ -35,7 +35,7 @@ const ColorMap = {
     // Draw the gradient, returning the image data TypedArray
     ctx.fillStyle = grad
     ctx.fillRect(0, 0, nColors, 1)
-    return util.ctxToImageData(ctx).data
+    return util.ctxImageData(ctx).data
   },
 
 // ### Array Conversion Utilities
@@ -121,7 +121,7 @@ const ColorMap = {
     //
     // Ex: scaleColor(25, 0, 50) returns the color in the middle of the colormap
     scaleColor (number, min, max) {
-      util.clamp(number, min, max)
+      number = util.clamp(number, min, max)
       const scale = util.lerpScale(number, min, max)
       const index = Math.round(util.lerp(0, this.length - 1, scale))
       return this[index]
@@ -183,9 +183,9 @@ const ColorMap = {
   },
   // Create a gray map (gray: r=g=b)
   // These are typically 256 entries but can be smaller
-  // by passing a size parameter.
-  grayColorMap (size = 256) {
-    const ramp = util.aIntRamp(0, 255, size)
+  // by passing a size parameter and the min/max range.
+  grayColorMap (min = 0, max = 255, size = max - min + 1) {
+    const ramp = util.aIntRamp(min, max, size)
     return this.basicColorMap(ramp.map((i) => [i, i, i]))
   },
 
@@ -247,7 +247,21 @@ const ColorMap = {
     const map = this.basicColorMap(array)
     map.cssNames = cssArray
     return map
-  }
+  },
+
+// ### Shared Global ColorMaps
+
+  // The shared global colormaps are lazy evaluated to minimize memory use.
+  LZMap (name, map) {
+    Object.defineProperty(this, name, {value: map, enumerable: true})
+    return map
+  },
+  get Gray () { return this.LZMap('Gray', this.grayColorMap()) },
+  get Jet () {
+    return this.LZMap('Jet', this.gradientColorMap(256, this.jetColors))
+  },
+  get Rgb256 () { return this.LZMap('Rgb256', this.rgbColorCube(8, 8, 4)) },
+  get Rgb () { return this.LZMap('Rgb', this.rgbColorCube(16)) }
 
 }
 

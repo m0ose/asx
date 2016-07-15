@@ -214,7 +214,7 @@ Locs are floats from 0-1, default is equally spaced.</p>
             
             <div class="content"><div class='highlight'><pre>    ctx.fillStyle = grad
     ctx.fillRect(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, nColors, <span class="hljs-number">1</span>)
-    <span class="hljs-keyword">return</span> util.ctxToImageData(ctx).data
+    <span class="hljs-keyword">return</span> util.ctxImageData(ctx).data
   },</pre></div></div>
             
         </li>
@@ -473,7 +473,7 @@ Used to match data directly to a color as in MatLab.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    scaleColor (number, min, max) {
-      util.clamp(number, min, max)
+      number = util.clamp(number, min, max)
       <span class="hljs-keyword">const</span> scale = util.lerpScale(number, min, max)
       <span class="hljs-keyword">const</span> index = <span class="hljs-built_in">Math</span>.round(util.lerp(<span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.length - <span class="hljs-number">1</span>, scale))
       <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[index]
@@ -655,12 +655,12 @@ use the best match.</p>
               </div>
               <p>Create a gray map (gray: r=g=b)
 These are typically 256 entries but can be smaller
-by passing a size parameter.</p>
+by passing a size parameter and the min/max range.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  grayColorMap (size = <span class="hljs-number">256</span>) {
-    <span class="hljs-keyword">const</span> ramp = util.aIntRamp(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, size)
+            <div class="content"><div class='highlight'><pre>  grayColorMap (min = <span class="hljs-number">0</span>, max = <span class="hljs-number">255</span>, size = max - min + <span class="hljs-number">1</span>) {
+    <span class="hljs-keyword">const</span> ramp = util.aIntRamp(min, max, size)
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.basicColorMap(ramp.map((i) =&gt; [i, i, i]))
   },</pre></div></div>
             
@@ -834,7 +834,44 @@ See <a href="https://goo.gl/tolSnS">Mozilla Color Docs</a> for <em>lots</em> mor
     <span class="hljs-keyword">const</span> map = <span class="hljs-keyword">this</span>.basicColorMap(array)
     map.cssNames = cssArray
     <span class="hljs-keyword">return</span> map
-  }
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <h3 id="shared-global-colormaps">Shared Global ColorMaps</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>The shared global colormaps are lazy evaluated to minimize memory use.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  LZMap (name, map) {
+    <span class="hljs-built_in">Object</span>.defineProperty(<span class="hljs-keyword">this</span>, name, {value: map, enumerable: <span class="hljs-literal">true</span>})
+    <span class="hljs-keyword">return</span> map
+  },
+  get Gray () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Gray'</span>, <span class="hljs-keyword">this</span>.grayColorMap()) },
+  get Jet () {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Jet'</span>, <span class="hljs-keyword">this</span>.gradientColorMap(<span class="hljs-number">256</span>, <span class="hljs-keyword">this</span>.jetColors))
+  },
+  get Rgb256 () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Rgb256'</span>, <span class="hljs-keyword">this</span>.rgbColorCube(<span class="hljs-number">8</span>, <span class="hljs-number">8</span>, <span class="hljs-number">4</span>)) },
+  get Rgb () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Rgb'</span>, <span class="hljs-keyword">this</span>.rgbColorCube(<span class="hljs-number">16</span>)) }
 
 }
 

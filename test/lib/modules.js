@@ -28,7 +28,6 @@ System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/AgentSet.js', 'lib/Color.
       console.log('DataSet, util, OofA, AgentSet, Color, ColorMap');
       console.log('ds, u, oofa, aset, color, cmap');
 
-      // const as = AgentSet.AsSet([]) // []
       // const as0 = Object.create(AgentSet) // []
       //
       // const size = 1e1

@@ -1,52 +1,46 @@
 import util from './util.js'
 
-// AgentSets are arrays that are factories for their agents/objects.
+// AgentSets are arrays that are factories for their own agents/objects.
 // They are the base for Patches, Turtles and Links.
 
-// Vocab: AgentSets are NetLogo collections: Patches, Turtles, and Links
+// Vocab: AgentSets are NetLogo collections: Patches, Turtles, and Links.
 // Agent is an object in an AgentSet: Patch, Turtle, Link.
 
 class AgentSet extends Array {
-  // AgentSet "class method": Convert an array to an agentset.
-  // This is not the constructor for an AgentSet but gives the array
-  // the prototype of AgentSet, thus is somewhat incomplete.
-  // See asSet() method below.
-  static AsSet (array, Set = AgentSet) {
-    return Object.setPrototypeOf(array, Set.prototype)
-  }
-
   // Create an empty `AgentSet` and initialize the `ID` counter for add().
   // If baseSet is supplied, the new agentset is a subarray of baseSet.
   // This sub-array feature is how breeds are managed, see class `Model`
   constructor (model, agentProto, name, baseSet = null) {
     console.log('AgentSet ctor', arguments)
-    // Because JS itself calls the Array ctor, skip if not AgentSet ctor.
+    // Because es6 JavaScript Array itself calls the Array ctor
+    // (ex: slice() returning a new array), skip if not AgentSet ctor.
     if (typeof model === 'number') {
       super(model) // model is a number, return Array of that size
     } else {
-      super(0)
-      Object.assign(this, {model, name, baseSet})
+      super(0) // create empty array
+      baseSet = baseSet || this // if not a breed, set baseSet to this
+      // AgentSets know their model, name, baseSet, world.
+      Object.assign(this, {model, name, baseSet, world: model.world})
+      // Create a proto for our agents by having a defaults and instance layer
       this.agentProto = agentProto.init(this)
-      // // Each agent will know its breed, and breed.model:
-      // this.defaults = {breed: this}
-      // Object.setPrototypeOf(this.defaults, agentProto)
-      // Non-breed mainSets know their "children" and keep the ID global
+      // Link our agents to us
+      this.agentProto.agentSet = this
+      // BaseSets know their breeds and keep the ID global
       if (this.isBaseSet()) {
-        // this.breeds = [] // maybe obj w name: this
-        this.breeds = {} // maybe obj w name: this
+        this.breeds = {} // will contain breedname: breed entries
         this.ID = 0
+      // Breeds add themselves to baseSet.
       } else {
-        // this.baseSet.breeds.push(this)
         this.baseSet.breeds[name] = this
       }
-      // Keep a list of this set's variables
+      // Keep a list of this set's variables; see `own` below
       this.ownVariables = ['id']
     }
   }
 
   // Is this a baseSet or a derived "breed"
-  isBreedSet () { return this.baseSet !== null }
-  isBaseSet () { return this.baseSet === null }
+  isBreedSet () { return this.baseSet !== this }
+  isBaseSet () { return this.baseSet === this }
 
   // Abstract method used by subclasses to create and add their instances.
   create () {}
@@ -54,21 +48,14 @@ class AgentSet extends Array {
   // the `id` property to all agents. Increment `ID`.
   // Returns the object for chaining. The set will be sorted by `id`.
   add (o) {
-    // Object.setPrototypeOf(Object.getPrototypeOf(o), this.defaults)
     if (this.isBreedSet())
       this.baseSet.add(o)
     else
       o.id = this.ID++
-    // Object.setPrototypeOf(o, this.defaults)
-    // this.ownVariables.forEach((v) => {
-    //   if (o[v] === undefined) { o[v] = null }
-    // })
     this.push(o)
     return o
   }
-  // Remove an agent from the agentset, returning the agentset.
-  // This does not change ID, an agentset can have gaps in terms of their ids.
-  // Assumes set is sorted by `id`.
+  // Remove an agent from the agentset, returning the agentset for chaining.
   remove (o) {
     // Remove me from my baseSet
     if (this.isBreedSet()) util.removeItem(this.baseSet, o, 'id')
@@ -81,11 +68,11 @@ class AgentSet extends Array {
   setDefault (name, value) { this.agentProto[name] = value }
   getDefault (name) { this.agentProto[name] }
   // Declare variables of an agent class.
-  // Vars = a string of space separated names
-  own (vars) {
+  // `varnames` is a string of space separated names
+  own (varnames) {
     if (this.isBreedSet())
       this.ownVariables = util.clone(this.baseSet.ownVariables)
-    for (const name of vars.split(' ')) {
+    for (const name of varnames.split(' ')) {
       this.ownVariables.push(name)
     }
   }
@@ -93,36 +80,34 @@ class AgentSet extends Array {
   // Move an agent from its AgentSet/breed to be in this AgentSet/breed.
   // REMIND: match NetLogo sematics in terms of own variables.
   setBreed (a) { // change agent a to be in this breed
-    // Remove/insert breeds (not mainSets) from their agentsets
-    if (a.breed.isBreedSet()) util.removeItem(a.breed, a, 'id')
+    // Return if `a` is already of my breed
+    if (a.agentSet === this) return
+    // Remove/insert breeds (not baseSets) from their agentsets
+    if (a.agentSet.isBreedSet()) util.removeItem(a.agentSet, a, 'id')
     if (this.isBreedSet()) util.insertItem(this, a, 'id')
-    // Make list of a's vars and my ownvars.
-    const avars = Object.keys(a)
-    // First remove a's vars not in my ownVariables
+
+    // Make list of `a`'s vars and my ownvars.
+    const avars = a.agentSet.ownVariables
+    // First remove `a`'s vars not in my ownVariables
     for (const avar of avars)
       if (!this.ownVariables.includes(avar))
         delete a[avar]
-    // Now add ownVariables to a's vars, default to 0.
+    // Now add ownVariables to `a`'s vars, default to 0.
     // If ownvar already in avars, it is not modified.
     for (const ownvar of this.ownVariables)
       if (!avars.includes(ownvar))
         a[ownvar] = 0 // NOTE: NL uses 0, maybe we should use null?
 
-    // Finally give a my defaults
-
-    // Object.setPrototypeOf(a, this.agentClass.prototype)
-    // delete a[k] for own k,v of a when proto[k]?
-    return a
+    // Give `a` my defaults/statics
+    return Object.setPrototypeOf(a, this.agentProto)
   }
 
-  // Method to convert an array to the same AgentSet type as this's.
-  // Always called with "this": `this.asSet(array)`. Mainly used when
-  // an AgentSet method calls this.someArrayMethod which returns a new array.
+  // Method to convert an array to the same AgentSet type as this.
   asSet (array) {
     return Object.setPrototypeOf(array, Object.getPrototypeOf(this))
   }
 
-// ### General Array of Objects methods, could be its own MixIn
+// ### General Array of Objects methods
 
   // Return true if there are no items in this set, false if not empty.
   empty () { return this.length === 0 }
@@ -140,7 +125,6 @@ class AgentSet extends Array {
   // Default is to clone entire agentset
   clone (begin = 0, end = this.length) {
     return this.slice(begin, end) // Wow, returns an agentset rather than Array!
-    // return this.asSet(this.slice(begin, end))
   }
   // Return this agentset sorted by the reporter in ascending/descending order.
   // If reporter is a string, convert to a fcn returning that property.
@@ -172,7 +156,7 @@ class AgentSet extends Array {
   // The max version of the above
   maxOneOf (reporter) { return this.minOrMaxOf(false, reporter) }
 
-  // Return n random agents.
+  // Return n random agents as agentset.
   // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
   // for better approach for large n.
   nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
@@ -188,7 +172,7 @@ class AgentSet extends Array {
   // Return a new agentset of the n min/max agents of the value of reporter,
   // in ascending order.
   // If reporter is a string, convert to a fcn returning that property
-  // NOTE:we do not manage ties, see NetLogo docs.
+  // NOTE: we do not manage ties, see NetLogo docs.
   minOrMaxNOf (min, n, reporter) {
     if (n > this.length) util.error('min/max nOf: n larger than agentset')
     const as = this.clone().sortBy(reporter)
@@ -198,6 +182,5 @@ class AgentSet extends Array {
   maxNOf (n, reporter) { return this.minOrMaxNOf(false, n, reporter) }
 
 }
-// Object.setPrototypeOf(AgentSet, Array.prototype)
 
 export default AgentSet

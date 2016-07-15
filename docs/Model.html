@@ -93,10 +93,41 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> Patches <span class="hljs-keyword">from</span> <span class="hljs-string">'./Patches.js'</span>
+<span class="hljs-keyword">import</span> patchProto <span class="hljs-keyword">from</span> <span class="hljs-string">'./Patch.js'</span>
+<span class="hljs-keyword">import</span> Animator <span class="hljs-keyword">from</span> <span class="hljs-string">'./Animator.js'</span>
+<span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Class Model is the primary interface for modelers, integrating
+all the parts of a model. It also contains NetLogo’s <code>observer</code> methods.</p>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Model</span> </span>{
-  <span class="hljs-keyword">static</span> defaultWorld () {
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Model</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Static class methods for default settings.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> defaultWorld () {
     <span class="hljs-keyword">return</span> {
       patchSize: <span class="hljs-number">13</span>,
       minX: <span class="hljs-number">-16</span>,
@@ -112,87 +143,7 @@
       links: { z: <span class="hljs-number">30</span>, ctx: <span class="hljs-string">'2d'</span> },
       turtles: { z: <span class="hljs-number">40</span>, ctx: <span class="hljs-string">'2d'</span> }
     }
-  }
-
-  <span class="hljs-keyword">constructor</span> (div, worldOptions = {}, contextOptions = {}) {
-    <span class="hljs-keyword">const</span> world = Model.defaultWorld()
-    <span class="hljs-built_in">Object</span>.assign(world, worldOptions)
-    <span class="hljs-keyword">this</span>.setWorld(world)
-
-    <span class="hljs-keyword">this</span>.setDiv(div)
-
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.div) { <span class="hljs-comment">// otherwise 'headless'</span>
-      <span class="hljs-keyword">const</span> contexts = Model.defaultContexts()
-      <span class="hljs-built_in">Object</span>.assign(contexts, contextOptions)
-      <span class="hljs-keyword">this</span>.setContexts(contexts, <span class="hljs-keyword">this</span>.world.pxWidth, <span class="hljs-keyword">this</span>.world.pxHeight)
-    }
-  }
-
-  setWorld (world) {
-    world.numX = world.maxX - world.minX + <span class="hljs-number">1</span>
-    world.numY = world.maxY - world.minY + <span class="hljs-number">1</span>
-    world.pxWidth = world.numX * world.patchSize
-    world.pxHeight = world.numY * world.patchSize
-    world.minXcor = world.minX - <span class="hljs-number">0.5</span>
-    world.maxXcor = world.maxX + <span class="hljs-number">0.5</span>
-    world.minYcor = world.minY - <span class="hljs-number">0.5</span>
-    world.maxYcor = world.maxY + <span class="hljs-number">0.5</span>
-    <span class="hljs-keyword">this</span>.world = world
-  }
-
-  setDiv (div) {
-    div = util.isString(div) ? <span class="hljs-built_in">document</span>.getElementById(div) : div
-    <span class="hljs-keyword">if</span> (div) { <span class="hljs-comment">// can be null for headless</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-2">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>
-              <p>el.setAttribute ‘style’ erases existing style, el.style.xx does not</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      div.style.position = <span class="hljs-string">'relative'</span>
-      div.style.width = <span class="hljs-keyword">this</span>.world.pxWidth
-      div.style.height = <span class="hljs-keyword">this</span>.world.pxHeight
-    }
-    <span class="hljs-keyword">this</span>.div = div
-  }
-
-  setContexts (contexts, width, height) { <span class="hljs-comment">// foo:null =&gt; no layer for foo</span>
-    util.forAll(contexts, (val, key) =&gt; {
-      <span class="hljs-keyword">if</span> (val === <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>
-      <span class="hljs-keyword">const</span> {ctx: ctxType, z: zIndex} = val
-      <span class="hljs-keyword">const</span> ctx = util.createCtx(width, height, ctxType)
-      <span class="hljs-keyword">this</span>.setCtxTransform(ctx)
-      <span class="hljs-built_in">Object</span>.assign(ctx.canvas.style, {
-        position: <span class="hljs-string">'absolute'</span>, top: <span class="hljs-number">0</span>, left: <span class="hljs-number">0</span>, width, height, zIndex
-      })
-      <span class="hljs-keyword">this</span>.div.appendChild(ctx.canvas)
-      contexts[key] = ctx</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-3">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
-              </div>
-              <p>if (key === ‘drawing’)</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    })
-    <span class="hljs-keyword">this</span>.contexts = contexts
-  }
-  setCtxTransform (ctx) {</pre></div></div>
+  }</pre></div></div>
             
         </li>
         
@@ -203,16 +154,387 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>ctx.canvas.width = this.world.pxWidth
-ctx.canvas.height = this.world.pxHeight</p>
+              <p>The Model constructor takes a DOM div and overrides for defaults</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    ctx.save()
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span> (div, worldOptions = {}, contextOptions = {}) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Create this model’s <code>world</code> object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.world = Model.defaultWorld()
+    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>.world, worldOptions)
+    <span class="hljs-keyword">this</span>.setWorld()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Store and initialize the model’s div and contexts.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.div = div
+    <span class="hljs-keyword">this</span>.setDiv()
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.div) { <span class="hljs-comment">// otherwise 'headless'</span>
+      <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.contexts) {
+        <span class="hljs-keyword">const</span> contexts = Model.defaultContexts()
+        <span class="hljs-built_in">Object</span>.assign(contexts, contextOptions)
+        <span class="hljs-keyword">this</span>.initContexts(contexts)
+      }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Initialize the model by calling the methods used to reset the model.
+Similar to calling NetLogo’s <code>clear</code> methods.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.reset()
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>(Re)initialize the model.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  reset (restart = <span class="hljs-literal">false</span>) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.anim) <span class="hljs-keyword">this</span>.anim.stop()
+    <span class="hljs-keyword">this</span>.setWorld()
+    <span class="hljs-keyword">this</span>.setDiv()
+    <span class="hljs-keyword">this</span>.setContexts()
+
+    <span class="hljs-keyword">this</span>.anim = <span class="hljs-keyword">new</span> Animator(<span class="hljs-keyword">this</span>)
+    <span class="hljs-keyword">this</span>.refreshLinks = <span class="hljs-keyword">this</span>.refreshTurtles = <span class="hljs-keyword">this</span>.refreshPatches = <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">this</span>.patches = <span class="hljs-keyword">new</span> Patches(<span class="hljs-keyword">this</span>, patchProto, <span class="hljs-string">'patches'</span>)
+
+    <span class="hljs-keyword">this</span>.setup()
+    <span class="hljs-keyword">if</span> (restart) <span class="hljs-keyword">this</span>.start()
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Add additional world variables derived from constructor’s <code>worldOptions</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setWorld () {
+    <span class="hljs-keyword">const</span> world = <span class="hljs-keyword">this</span>.world
+    world.numX = world.maxX - world.minX + <span class="hljs-number">1</span>
+    world.numY = world.maxY - world.minY + <span class="hljs-number">1</span>
+    world.pxWidth = world.numX * world.patchSize
+    world.pxHeight = world.numY * world.patchSize
+    world.minXcor = world.minX - <span class="hljs-number">0.5</span>
+    world.maxXcor = world.maxX + <span class="hljs-number">0.5</span>
+    world.minYcor = world.minY - <span class="hljs-number">0.5</span>
+    world.maxYcor = world.maxY + <span class="hljs-number">0.5</span>
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Adjust the modle’s <code>div</code> for adding layers of canvases.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setDiv () {
+    <span class="hljs-keyword">let</span> div = <span class="hljs-keyword">this</span>.div
+    div = util.isString(div) ? <span class="hljs-built_in">document</span>.getElementById(div) : div
+    <span class="hljs-keyword">if</span> (div) { <span class="hljs-comment">// can be null for headless</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Note: el.setAttribute ‘style’ erases existing style,
+el.style.xx does not</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      div.style.position = <span class="hljs-string">'relative'</span>
+      div.style.width = <span class="hljs-keyword">this</span>.world.pxWidth
+      div.style.height = <span class="hljs-keyword">this</span>.world.pxHeight
+    }
+    <span class="hljs-keyword">this</span>.div = div
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Initialize layers of canvas contexts within <code>div</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  initContexts (contexts) {
+    util.forAll(contexts, (val, key) =&gt; {
+      <span class="hljs-keyword">if</span> (val === <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>
+      <span class="hljs-keyword">const</span> ctx = util.createCtx(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, val.ctx)
+      <span class="hljs-built_in">Object</span>.assign(ctx.canvas.style, {
+        position: <span class="hljs-string">'absolute'</span>, top: <span class="hljs-number">0</span>, left: <span class="hljs-number">0</span>, zIndex: val.z
+      })
+      <span class="hljs-keyword">this</span>.div.appendChild(ctx.canvas)
+      contexts[key] = ctx
+    })
+    <span class="hljs-keyword">this</span>.contexts = contexts
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Adjust contexts to current width/height, setting their transform.
+Set patches anti-aliasing off so as to have “crisp” pixels.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setContexts () {
+    <span class="hljs-keyword">const</span> { pxWidth: width, pxHeight: height } = <span class="hljs-keyword">this</span>.world
+    util.forAll(<span class="hljs-keyword">this</span>.contexts, (ctx, key) =&gt; {
+      <span class="hljs-keyword">if</span> (ctx === <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>
+      <span class="hljs-built_in">Object</span>.assign(ctx.canvas, { width, height })
+      <span class="hljs-built_in">Object</span>.assign(ctx.canvas.style, { width, height })
+      <span class="hljs-keyword">this</span>.setCtxTransform(ctx)
+      <span class="hljs-keyword">if</span> (key === <span class="hljs-string">'patches'</span>) util.setCtxSmoothing(ctx, <span class="hljs-literal">false</span>)
+    })
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Set the context transforms to be Patch coordinates.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setCtxTransform (ctx) {
+    ctx.save()
     ctx.scale(<span class="hljs-keyword">this</span>.world.patchSize, -<span class="hljs-keyword">this</span>.world.patchSize)
     ctx.translate(-<span class="hljs-keyword">this</span>.world.minXcor, -<span class="hljs-keyword">this</span>.world.maxYcor)
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h3 id="user-model-creation">User Model Creation</h3>
+<p>A user’s model is made by subclassing Model and over-riding these
+three abstract methods. <code>super</code> need not be called.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Initialize model resources (images, files) here.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  startup () {} <span class="hljs-comment">// called by constructor</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Initialize your model variables and defaults here.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setup () {} <span class="hljs-comment">// called by constructor and reset</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Update/step your model here</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  step () {} <span class="hljs-comment">// called each step of the animation</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Start/stop the animation</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  start () { <span class="hljs-keyword">this</span>.anim.start() }
+  stop () { <span class="hljs-keyword">this</span>.anim.stop() }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Animate once by <code>step(); draw()</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  once () { <span class="hljs-keyword">this</span>.stop(); <span class="hljs-keyword">this</span>.anim.once() } <span class="hljs-comment">// stop is no-op if already stopped</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Change the patch size, does not require a restart or stop/start</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setPatchSize (size) {
+    <span class="hljs-keyword">this</span>.world.patchSize = size
+    <span class="hljs-keyword">this</span>.setWorld()
+    <span class="hljs-keyword">this</span>.setDiv()
+    <span class="hljs-keyword">this</span>.setContexts()
+    <span class="hljs-keyword">this</span>.patches.setPixels()
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Change the world parameters. Requires a reset.
+Resets Patches, Turtles, Links &amp; reinitializes canvases.
+If restart argument is true (default), will restart after resetting.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  resizeWorld (worldOptions, restart = <span class="hljs-literal">true</span>) {
+    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>.world, worldOptions)
+    <span class="hljs-keyword">this</span>.setWorld(<span class="hljs-keyword">this</span>.world)
+    <span class="hljs-keyword">this</span>.reset(restart)
   }
 
+  draw (force = <span class="hljs-keyword">this</span>.anim.stopped || <span class="hljs-keyword">this</span>.anim.draws === <span class="hljs-number">1</span>) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.div) {
+      <span class="hljs-keyword">if</span> (force || <span class="hljs-keyword">this</span>.refreshPatches) <span class="hljs-keyword">this</span>.patches.draw(<span class="hljs-keyword">this</span>.contexts.patches)
+    }
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Breeds: create subarrays of Patches, Agentss, Links</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  patchBreeds (breedNames) {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> breedName <span class="hljs-keyword">of</span> breedNames.split(<span class="hljs-string">' '</span>)) {
+      <span class="hljs-keyword">this</span>[breedName] = <span class="hljs-keyword">new</span> Patches(<span class="hljs-keyword">this</span>, patchProto, breedName, <span class="hljs-keyword">this</span>.patches)
+    }
+  }
 }
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Model</pre></div></div>

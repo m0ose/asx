@@ -90,8 +90,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>import AgentSet from ‘./AgentSet.js’</p>
-
+              
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> Color <span class="hljs-keyword">from</span> <span class="hljs-string">'./Color.js'</span></pre></div></div>
@@ -105,9 +104,12 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>import util from ‘./util.js’</p>
+              <p>Objects within AgentSets use “prototypal inheritance”.
+The PatchProto is given to Patches for use creating Patch objects.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> PatchProto = {</pre></div></div>
             
         </li>
         
@@ -118,26 +120,16 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>const PatchVariables = {
-  id: null,         // unique id, set by agentset’s add() method
-  breed: null,      // set by the agentset constructor owning me
-  neighbors: null,  // 8 patches surrounding me
-  neighbors4: null, // 4 patches north, east, south, west of me
-  pRect: null,      // Performance: cached rect of larger neighborhoods
-  label: null,      // text for this patch, if any
-  labelOffset: [0, 0],  // text offset from the patch center
-  color: Color.typedColor(0, 0, 0),     // the patch color
-  labelColor: Color.typedColor(0, 0, 0) // the label color
-}</p>
+              <p>Initialize a Patch given its Patches AgentSet.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> PatchProto = {
-  init (breed) {
+            <div class="content"><div class='highlight'><pre>  init (agentSet) {
     <span class="hljs-keyword">const</span> defaults = <span class="hljs-keyword">this</span>.baseVariables()
-    defaults.breed = breed
-    defaults.world = breed.world
-    <span class="hljs-built_in">Object</span>.setPrototypeOf(defaults, <span class="hljs-keyword">this</span>)</pre></div></div>
+    defaults.world = agentSet.world
+    <span class="hljs-built_in">Object</span>.setPrototypeOf(defaults, <span class="hljs-keyword">this</span>)
+    <span class="hljs-keyword">return</span> defaults
+  },</pre></div></div>
             
         </li>
         
@@ -148,26 +140,21 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Object.assign(defaults, breed.model.world)</p>
+              <p>Return an object that will initially be the “default” variables
+layer in a patch prototype stack.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> defaults
-  },
-  baseVariables () { <span class="hljs-comment">// Core variables for patches. Not 'own' variables.</span>
+            <div class="content"><div class='highlight'><pre>  baseVariables () { <span class="hljs-comment">// Core variables for patches. Not 'own' variables.</span>
     <span class="hljs-keyword">return</span> {
-      id: <span class="hljs-literal">null</span>,         <span class="hljs-comment">// unique id, set by agentset's add() method</span>
-      breed: <span class="hljs-literal">null</span>,      <span class="hljs-comment">// set by the agentset constructor owning me</span>
-      neighbors: <span class="hljs-literal">null</span>,  <span class="hljs-comment">// 8 patches surrounding me</span>
-      neighbors4: <span class="hljs-literal">null</span>, <span class="hljs-comment">// 4 patches north, east, south, west of me</span>
-      pRect: <span class="hljs-literal">null</span>,      <span class="hljs-comment">// Performance: cached rect of larger neighborhoods</span>
-      label: <span class="hljs-literal">null</span>,      <span class="hljs-comment">// text for this patch, if any</span>
+      id: <span class="hljs-literal">null</span>,           <span class="hljs-comment">// unique id, set by agentset's add() method</span>
+      agentSet: <span class="hljs-literal">null</span>,     <span class="hljs-comment">// my agentset, set by the constructor owning me</span>
+      label: <span class="hljs-literal">null</span>,        <span class="hljs-comment">// text for this patch, if any</span>
       labelOffset: [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>],  <span class="hljs-comment">// text offset from the patch center</span>
-      color: Color.typedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>),     <span class="hljs-comment">// the patch color</span>
-      labelColor: Color.typedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>) <span class="hljs-comment">// the label color</span>
+      labelColor: Color.typedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>), <span class="hljs-comment">// the label color</span>
+      color: Color.typedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)       <span class="hljs-comment">// the patch color</span>
     }
-  },
-  get x () {</pre></div></div>
+  },</pre></div></div>
             
         </li>
         
@@ -178,13 +165,16 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>const {numX, minX} = this.world</p>
+              <p>Getter/setter for x,y derived from patch id.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> (<span class="hljs-keyword">this</span>.id % <span class="hljs-keyword">this</span>.world.numX) + <span class="hljs-keyword">this</span>.world.minX
+            <div class="content"><div class='highlight'><pre>  get x () {
+    <span class="hljs-keyword">return</span> (<span class="hljs-keyword">this</span>.id % <span class="hljs-keyword">this</span>.world.numX) + <span class="hljs-keyword">this</span>.world.minX
   },
-  get y () {</pre></div></div>
+  get y () {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.world.maxY - <span class="hljs-built_in">Math</span>.floor(<span class="hljs-keyword">this</span>.id / <span class="hljs-keyword">this</span>.world.numX)
+  },</pre></div></div>
             
         </li>
         
@@ -195,14 +185,57 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>const {numX, maxY} = this.breed.world</p>
+              <p>Getter/setter for neighbors of this patch.
+Uses lazy evaluation to promote neighbors to instance variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.world.maxY - <span class="hljs-built_in">Math</span>.floor(<span class="hljs-keyword">this</span>.id / <span class="hljs-keyword">this</span>.world.numX)
+            <div class="content"><div class='highlight'><pre>  get neighbors () { <span class="hljs-comment">// lazy promote neighbors from getter to instance prop.</span>
+    <span class="hljs-keyword">const</span> n = <span class="hljs-keyword">this</span>.agentSet.baseSet.neighbors(<span class="hljs-keyword">this</span>)
+    <span class="hljs-built_in">Object</span>.defineProperty(<span class="hljs-keyword">this</span>, <span class="hljs-string">'neighbors'</span>, {value: n, enumerable: <span class="hljs-literal">true</span>})
+    <span class="hljs-keyword">return</span> n
   },
-  setColor (typedColor) {
-    <span class="hljs-keyword">this</span>.breed.pixels.data32[<span class="hljs-keyword">this</span>.id] = typedColor.getPixel()
+  get neighbors4 () {
+    <span class="hljs-keyword">const</span> n = <span class="hljs-keyword">this</span>.agentSet.baseSet.neighbors4(<span class="hljs-keyword">this</span>)
+    <span class="hljs-built_in">Object</span>.defineProperty(<span class="hljs-keyword">this</span>, <span class="hljs-string">'neighbors4'</span>, {value: n, enumerable: <span class="hljs-literal">true</span>})
+    <span class="hljs-keyword">return</span> n
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Manage colors by directly setting pixels in Patches pixels object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setColor (typedColor) {
+    <span class="hljs-keyword">this</span>.agentSet.baseSet.pixels.data32[<span class="hljs-keyword">this</span>.id] = typedColor.getPixel()
+  },
+  getColor (typedColor) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet.baseSet.pixels.data32[<span class="hljs-keyword">this</span>.id]
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Return patch dx, dy from my position. Return undefined if off-world.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  patchAt (dx, dy) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet.baseSet.patch(<span class="hljs-keyword">this</span>.x + dx, <span class="hljs-keyword">this</span>.y + dy)
   }
 }
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PatchProto</pre></div></div>
