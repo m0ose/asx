@@ -142,6 +142,10 @@ class Patches extends AgentSet {
   }
   // Return the patch at x,y where both are valid integer patch coordinates.
   patchXY (x, y) { return this[this.patchIndex(x, y)] }
+  pixelXYtoPatchXY (x, y) {
+    const {patchSize, minXcor, maxYcor} = this.world
+    return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
+  }
 
   // Return a random valid float x,y point in patch space
   randomPt () {

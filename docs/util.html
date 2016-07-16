@@ -50,6 +50,11 @@
                 </a>
               
                 
+                <a class="source" href="Mouse.html">
+                  Mouse.js
+                </a>
+              
+                
                 <a class="source" href="OofA.html">
                   OofA.js
                 </a>
@@ -553,7 +558,7 @@ and <a href="http://goo.gl/79RlVc">here</a></p>
             
             <div class="content"><div class='highlight'><pre>  getEventXY (element, evt) { <span class="hljs-comment">// http://goo.gl/356S91</span>
     <span class="hljs-keyword">const</span> rect = element.getBoundingClientRect()
-    <span class="hljs-keyword">return</span> { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+    <span class="hljs-keyword">return</span> [ evt.clientX - rect.left, evt.clientY - rect.top ]
   },</pre></div></div>
             
         </li>

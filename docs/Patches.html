@@ -50,6 +50,11 @@
                 </a>
               
                 
+                <a class="source" href="Mouse.html">
+                  Mouse.js
+                </a>
+              
+                
                 <a class="source" href="OofA.html">
                   OofA.js
                 </a>
@@ -491,7 +496,11 @@ Return undefined if off-world</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  patchXY (x, y) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[<span class="hljs-keyword">this</span>.patchIndex(x, y)] }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  patchXY (x, y) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[<span class="hljs-keyword">this</span>.patchIndex(x, y)] }
+  pixelXYtoPatchXY (x, y) {
+    <span class="hljs-keyword">const</span> {patchSize, minXcor, maxYcor} = <span class="hljs-keyword">this</span>.world
+    <span class="hljs-keyword">return</span> [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
+  }</pre></div></div>
             
         </li>
         

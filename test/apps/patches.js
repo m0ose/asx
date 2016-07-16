@@ -1,6 +1,7 @@
 // Import the lib/ mmodules via relative paths
 import ColorMap from 'lib/ColorMap.js'
 import Model from 'lib/Model.js'
+import Mouse from 'lib/Mouse.js'
 import util from 'lib/util.js'
 window.pps = util.pps
 
@@ -11,15 +12,22 @@ console.log(Object.keys(modules).join(' '))
 class PatchModel extends Model {
   setup () {
     this.anim.setRate(60)
-    this.cmap = ColorMap.Rgb256
-    // this.cmap = ColorMap.Jet
+    this.cmap = ColorMap.Rgb256 // this.cmap = ColorMap.Jet
+    this.mouse = new Mouse(this, true)
+    this.mouse.start()
     for (const p of this.patches) {
       p.ran = util.randomFloat(1.0)
     }
   }
   step () {
-    this.patches.diffuse('ran', 0.1, this.cmap)
-    // this.patches.diffuse4('ran', 0.1, this.cmap)
+    if (this.mouse.down) {
+      console.log('mouse', this.mouse.x, this.mouse.y)
+      const {x, y} = this.mouse
+      const p = this.patches.patch(x, y)
+      const pRect = patches.patchesInRadius(p, 4)
+      for (const n of pRect) n.ran = 1
+    }
+    this.patches.diffuse('ran', 0.05, this.cmap)
     if (this.anim.ticks === 500) {
       console.log(this.anim.toString())
       this.stop()

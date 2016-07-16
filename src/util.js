@@ -151,7 +151,7 @@ const util = {
   // Get element (i.e. canvas) relative x,y position from event/mouse position.
   getEventXY (element, evt) { // http://goo.gl/356S91
     const rect = element.getBoundingClientRect()
-    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+    return [ evt.clientX - rect.left, evt.clientY - rect.top ]
   },
 
   // Set the text font, align and baseline drawing parameters.

@@ -9,9 +9,9 @@
     var app = document.location.search.substring(1) || 'app'
     app = `test/lib/${app}.js`
     console.log('running', app)
-    System.import(app);
+    System.import(app)
   </script>
-  <!-- <canvas id="can" width="300" height="200"></canvas> -->
   <div id='layers'> </div>
+  <!-- <canvas id="can" width="300" height="200"></canvas> -->
 </body>
 </html>

@@ -27,7 +27,7 @@ console.log('ds, u, oofa, aset, color, cmap')
 //
 // util.toWindow({ as, as0, as1, a })
 
-const size = 1e6 // ran in console, apparently better pro
+const size = 1e6
 const uint8 = new Uint8ClampedArray(size * 4) // 112M
 const array8s = [] // 122M 10M overhead 10B per subarr
 util.step(uint8.length, 4, (i) => array8s.push(uint8.subarray(i, i + 4)))

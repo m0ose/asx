@@ -1,7 +1,7 @@
-System.register(['lib/AgentSet.js', 'lib/Animator.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/DataSet.js', 'lib/Model.js', 'lib/OofA.js', 'lib/Patch.js', 'lib/Patches.js', 'lib/util.js'], function (_export, _context) {
+System.register(['lib/AgentSet.js', 'lib/Animator.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/DataSet.js', 'lib/Model.js', 'lib/Mouse.js', 'lib/OofA.js', 'lib/Patch.js', 'lib/Patches.js', 'lib/util.js'], function (_export, _context) {
   "use strict";
 
-  var AgentSet, Animator, Color, ColorMap, DataSet, Model, OofA, Patch, Patches, util;
+  var AgentSet, Animator, Color, ColorMap, DataSet, Model, Mouse, OofA, Patch, Patches, util;
   return {
     setters: [function (_libAgentSetJs) {
       AgentSet = _libAgentSetJs.default;
@@ -15,6 +15,8 @@ System.register(['lib/AgentSet.js', 'lib/Animator.js', 'lib/Color.js', 'lib/Colo
       DataSet = _libDataSetJs.default;
     }, function (_libModelJs) {
       Model = _libModelJs.default;
+    }, function (_libMouseJs) {
+      Mouse = _libMouseJs.default;
     }, function (_libOofAJs) {
       OofA = _libOofAJs.default;
     }, function (_libPatchJs) {
@@ -25,15 +27,27 @@ System.register(['lib/AgentSet.js', 'lib/Animator.js', 'lib/Color.js', 'lib/Colo
       util = _libUtilJs.default;
     }],
     execute: function () {
-      // Import the lib/ mmodules via relative paths
-
 
       const modules = {
         AgentSet, Animator, Color, ColorMap, DataSet,
-        Model, OofA, Patch, Patches, util,
+        Mouse, Model, OofA, Patch, Patches, util,
         pps: util.pps
-      };
+      }; // Import the lib/ mmodules via relative paths
+
       util.toWindow(modules);
+
+      // const el = document.getElementById('layers')
+      // util.toWindow({el})
+      // el.style.width = 400
+      // el.style.height = 400
+      // const mouse = new Mouse(el, (evt) => { console.log(mouse) })
+
+      const model = new Model('layers');
+      const mouse = new Mouse(model, true, evt => {
+        console.log(mouse);
+      });
+      mouse.start();
+      util.toWindow({ model, mouse });
     }
   };
 });
