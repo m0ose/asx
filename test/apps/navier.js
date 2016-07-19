@@ -26,7 +26,7 @@ class PatchModel extends Model {
       this.dens.data[i] = Math.random()
       this.dens_prev.data[i] = this.dens.data[i]
       this.u.data[i] = Math.random() * 5 - 2.5
-      this.v.data[i] = Math.random() * 2 
+      this.v.data[i] = Math.random() * 2
     }
     // this.cmap = ColorMap.Jet
     for (const p of this.patches) {
@@ -64,7 +64,7 @@ class PatchModel extends Model {
     this.swapDensity()
     this.dens = this.dens_prev.convolve([0,1,0, 1,2,1, 0,1,0], 1/6)
     this.swapDensity()
-    this.advect()
+    this.advect(this.dens_prev, this.dens)
   }
 
   diffuseStamMethod (diff = 1) {
@@ -100,19 +100,23 @@ class PatchModel extends Model {
     this.dens = tmp
   }
 
-  advect () {
-    for (var i = 0; i < this.dens.width; i++) {
-      for (var j = 0; j < this.dens.height; j++) {
+  advect (X0, X) {
+    for (var i = 0; i < X.width; i++) {
+      for (var j = 0; j < X.height; j++) {
         const [dudt, dvdt] = [this.u.getXY(i, j) * (-this.dt), this.v.getXY(i, j) * (-this.dt)]
         const [x2, y2] = [dudt + i, dvdt + j]
-        if (this.dens.inBounds(x2, y2)) {
-          const val = this.dens_prev.sample(x2, y2)
-          this.dens.setXY(i, j, val)
+        if (X.inBounds(x2, y2)) {
+          const val = X0.sample(x2, y2)
+          X.setXY(i, j, val)
         } else {
-          this.dens.setXY(i,j, 0)
+          X.setXY(i, j, 0)
         }
       }
     }
+  }
+
+  project () {
+
   }
 }
 
