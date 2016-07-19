@@ -28,8 +28,14 @@ class DataSet {
 
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
-    if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1)))
+    if (!this.inBounds(x, y))
       u.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
+  }
+
+  inBounds (x, y) {
+    if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1)))
+      return false
+    return true
   }
 
   type () { return this.data.constructor }

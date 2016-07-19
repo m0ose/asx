@@ -10,23 +10,27 @@ util.toWindow(modules)
 console.log(Object.keys(modules).join(' '))
 
 class PatchModel extends Model {
+
   setup () {
     util.error = console.warn
     this.anim.setRate(60)
     this.cmap = ColorMap.Rgb256
-    this.dt = 0.01
+    this.dt = 1
     this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
     this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
+    this.u = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
+    this.v = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
+    this.u_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
+    this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
     for (var i = 0; i < this.dens.data.length; i++) {
       this.dens.data[i] = Math.random()
       this.dens_prev.data[i] = this.dens.data[i]
+      this.u.data[i] = Math.random() * 5 - 2.5
+      this.v.data[i] = Math.random() * 2 
     }
     // this.cmap = ColorMap.Jet
     for (const p of this.patches) {
-      p.dens = 0.0
-      p.v = 0.0
-      p.u_prev = 0.0
-      p.v_prev = 0.0
+      p.dens = 1.0
     }
   }
 
@@ -41,17 +45,8 @@ class PatchModel extends Model {
 
   step () {
     console.log('.')
-    // diffuse densities
-    // this.patches.diffuse('dens', 0.1 * this.dt, this.cmap)
-    this.dens = this.dens.convolve([0,1,0, 1,2,1, 0,1,0], 1/6)
-    // this.diffuseStamMethod()
-    // this.setBounds(this.dens)
-    // this.setBounds(this.dens_prev)
-
-    let tmp = this.dens_prev
-    //this.dens_prev = this.dens
-    //this.dens = tmp
-    //this.advect()
+    //
+    this.densityStep()
     // goes at end
     // update prev values
     this.putDataSetOnPatches(this.dens, 'dens')
@@ -65,13 +60,20 @@ class PatchModel extends Model {
     }
   }
 
+  densityStep () {
+    this.swapDensity()
+    this.dens = this.dens_prev.convolve([0,1,0, 1,2,1, 0,1,0], 1/6)
+    this.swapDensity()
+    this.advect()
+  }
+
   diffuseStamMethod (diff = 1) {
     const d = this.dens
     const d0 = this.dens_prev
     const a = this.dt * d.width * d.height * diff
     for (var k = 0; k < 20; k++) {
       for (var i = 1; i < d.width - 1; i++) {
-        for (var j = 1; j < d.width - 1; j++) {
+        for (var j = 1; j < d.height - 1; j++) {
           const val = (d0.getXY(i, j) + a * (d.getXY(i - 1, j) +
                   d.getXY(i + 1, j) + d.getXY(i, j - 1) +
                   d.getXY(i, j + 1))) / (1 + 4 * a)
@@ -92,18 +94,25 @@ class PatchModel extends Model {
     }
   }
 
+  swapDensity () {
+    const tmp = this.dens_prev
+    this.dens_prev = this.dens
+    this.dens = tmp
+  }
+
   advect () {
-    /*for (const p of this.patches) {
-      const vel = [p.u, p.v].map((a) => { return a / -this.dt }) // -[u,v]/dt
-      const pos2 = [vel[0] + p.x, vel[1] + p.y]
-      try {
-        p.dens = this.bilinearSample(pos2[0], pos2[1], 'dens_prev')
-      } catch (err) {
-        console.error(p, p.x, p.y, err)
-        return
+    for (var i = 0; i < this.dens.width; i++) {
+      for (var j = 0; j < this.dens.height; j++) {
+        const [dudt, dvdt] = [this.u.getXY(i, j) * (-this.dt), this.v.getXY(i, j) * (-this.dt)]
+        const [x2, y2] = [dudt + i, dvdt + j]
+        if (this.dens.inBounds(x2, y2)) {
+          const val = this.dens_prev.sample(x2, y2)
+          this.dens.setXY(i, j, val)
+        } else {
+          this.dens.setXY(i,j, 0)
+        }
       }
     }
-    */
   }
 }
 
