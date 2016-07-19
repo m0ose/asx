@@ -62,25 +62,10 @@ class PatchModel extends Model {
 
   densityStep () {
     this.swapDensity()
-    this.dens = this.dens_prev.convolve([0,1,0, 1,2,1, 0,1,0], 1/6)
+    this.diffusionStamMethod(this.dens_prev, this.dens)
+    // this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
     this.swapDensity()
     this.advect(this.dens_prev, this.dens)
-  }
-
-  diffuseStamMethod (diff = 1) {
-    const d = this.dens
-    const d0 = this.dens_prev
-    const a = this.dt * d.width * d.height * diff
-    for (var k = 0; k < 20; k++) {
-      for (var i = 1; i < d.width - 1; i++) {
-        for (var j = 1; j < d.height - 1; j++) {
-          const val = (d0.getXY(i, j) + a * (d.getXY(i - 1, j) +
-                  d.getXY(i + 1, j) + d.getXY(i, j - 1) +
-                  d.getXY(i, j + 1))) / (1 + 4 * a)
-          d.setXY(i, j, val)
-        }
-      }
-    }
   }
 
   setBounds (ds) {
@@ -117,6 +102,29 @@ class PatchModel extends Model {
 
   project () {
 
+  }
+
+  //
+  // this is the diffuse step from the paper
+  //   im not using it at the moment
+  // It looks right but doesn't seem to work right
+  diffusionStamMethod (D0, D, diff = 1) {
+    const a = this.dt * diff
+    for (var k = 0; k < 20; k++) {
+      for (var i = 1; i < D.width - 1; i++) {
+        for (var j = 1; j < D.height - 1; j++) {
+          const val = (D0.getXY(i, j) +
+                  a * (
+                    D.getXY(i - 1, j) +
+                    D.getXY(i + 1, j) +
+                    D.getXY(i, j - 1) +
+                    D.getXY(i, j + 1)
+                  )) / (1 + 4 * a)
+          D.setXY(i, j, val)
+        }
+      }
+      this.setBounds(D)
+    }
   }
 }
 
