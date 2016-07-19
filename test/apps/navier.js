@@ -14,7 +14,7 @@ class PatchModel extends Model {
     util.error = console.warn
     this.anim.setRate(60)
     this.cmap = ColorMap.Rgb256
-    this.dt = 1.0
+    this.dt = 0.01
     this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
     this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
     for (var i = 0; i < this.dens.data.length; i++) {
@@ -43,11 +43,14 @@ class PatchModel extends Model {
     console.log('.')
     // diffuse densities
     // this.patches.diffuse('dens', 0.1 * this.dt, this.cmap)
-    // this.dens = this.dens.convolve([0,1,0, 1,2,1, 0,1,0], 1/6)
-    this.diffuseStamMethod()
+    this.dens = this.dens.convolve([0,1,0, 1,2,1, 0,1,0], 1/6)
+    // this.diffuseStamMethod()
+    // this.setBounds(this.dens)
+    // this.setBounds(this.dens_prev)
+
     let tmp = this.dens_prev
-    this.dens_prev = this.dens
-    this.dens = tmp
+    //this.dens_prev = this.dens
+    //this.dens = tmp
     //this.advect()
     // goes at end
     // update prev values
@@ -62,10 +65,10 @@ class PatchModel extends Model {
     }
   }
 
-  diffuseStamMethod () {
+  diffuseStamMethod (diff = 1) {
     const d = this.dens
     const d0 = this.dens_prev
-    const a = this.dt * d.width * d.height
+    const a = this.dt * d.width * d.height * diff
     for (var k = 0; k < 20; k++) {
       for (var i = 1; i < d.width - 1; i++) {
         for (var j = 1; j < d.width - 1; j++) {
@@ -75,6 +78,17 @@ class PatchModel extends Model {
           d.setXY(i, j, val)
         }
       }
+    }
+  }
+
+  setBounds (ds) {
+    for (var i = 0; i < this.dens.width; i++) {
+      ds.setXY(i, 0, ds.sample(i, 1))
+      ds.setXY(i, ds.height - 1, ds.sample(i, ds.height - 2))
+    }
+    for (var j = 0; j < this.dens.height; j++) {
+      ds.setXY(0, j, ds.sample(1, j))
+      ds.setXY(ds.width - 1, j, ds.sample(ds.width - 2, j))
     }
   }
 
