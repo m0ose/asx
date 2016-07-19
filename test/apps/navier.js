@@ -64,16 +64,16 @@ class PatchModel extends Model {
 
   addForces () {
     for (let i = 0; i < 10; i++) {
-      this.dens.setXY(64+i, 64, 0.5)
-      this.u.setXY(64+i,64,-10)
-      this.v.setXY(64+i,64,-3)
+      this.dens.setXY(32+i, 32, 0.5)
+      this.u.setXY(32+i, 32,-5)
+      this.v.setXY(32+i, 32, -5)
     }
   }
 
   densityStep () {
     this.swapDensity()
-    // this.diffusionStamMethod(this.dens_prev, this.dens)
-    this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
+    this.diffusionStamMethod(this.dens_prev, this.dens)
+    // this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
     this.swapDensity()
     this.advect(this.dens_prev, this.dens)
   }
@@ -159,7 +159,7 @@ class PatchModel extends Model {
       for (let j = 1; j < U.height - 1; j++) {
         var gradX = U.getXY(i + 1, j) - U.getXY(i - 1, j)
         var gradY = V.getXY(i, j + 1) - V.getXY(i, j - 1)
-        div.setXY(i, j, h * gradX + gradY)
+        div.setXY(i, j, h * (gradX + gradY))
         p.setXY(i, j, 0)
       }
     }
@@ -215,7 +215,7 @@ class PatchModel extends Model {
 }
 
 // const [div, size, max, min] = ['layers', 4, 50, -50]
-const [div, size, max, min] = ['layers', 2, 64, -64]
+const [div, size, max, min] = ['layers', 10, 32, -32]
 const opts =
   {patchSize: size, minX: min, maxX: max, minY: min, maxY: max}
 const model = new PatchModel(div, opts)
