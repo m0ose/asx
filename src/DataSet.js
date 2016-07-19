@@ -71,17 +71,20 @@ class DataSet {
     // [bilinear sampling](http://en.wikipedia.org/wiki/Bilinear_interpolation)
     // The diagram shows the three lerps
     this.checkXY(x, y)
-    const [x0, y0] = [Math.floor(x), Math.floor(y)]
+    const x0 = Math.floor(x)
+    const y0 = Math.floor(y)
     const i = this.toIndex(x0, y0)
     const w = this.width
-    const [dx, dy] = [(x - x0), (y - y0)] // dx, dy = 0 if x, y on boundary
-    const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary
+    const dx = (x - x0)
+    const dy = (y - y0)
+    const dx1 = 1 - dx
+    const dy1 = 1 - dy
     const f00 = this.data[i]
     // Edge case: fij is 0 if beyond data array; undefined -> 0.
     // This cancels the given component's factor in the result.
-    const f10 = this.data[i + 1] || 0 // 0 at bottom right corner
-    const f01 = this.data[i + w] || 0 // 0 at all bottom row
-    const f11 = this.data[i + 1 + w] || 0 // 0 at end of next to bottom row
+    var f10 = this.data[i + 1] || 0 // 0 at bottom right corner
+    var f01 = this.data[i + w] || 0 // 0 at all bottom row
+    var f11 = this.data[i + 1 + w] || 0 // 0 at end of next to bottom row
     // This is a bit involved but:
     // ```
     // If dx = 0; dx1 = 1, dy != 0
