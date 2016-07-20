@@ -17,14 +17,26 @@ class PatchModel extends Model {
     this.anim.setRate(24)
     this.cmap = ColorMap.Jet
     this.dt = 1
-    this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
-    this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
-    this.u = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
-    this.v = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
-    this.u_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
-    this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float64Array)
+    this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
+    this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
+    this.u = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
+    this.v = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
+    this.u_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
+    this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
+    this.windHeading = Math.PI/2
     for (const p of this.patches) {
       p.dens = 0
+    }
+    //
+    // for testing mouse
+    var la = document.getElementById('layers')
+    la.getBoundingClientRect()
+    la.onclick = (ev)=>{
+      var bnd = la.getBoundingClientRect(la)
+      var dx =  ev.x - bnd.width/2 - bnd.left
+      var dy = ev.y - bnd.height/2 - bnd.top
+      this.windHeading = Math.atan2(-dy,-dx)
+      console.log(dx,dy)
     }
   }
 
@@ -52,7 +64,7 @@ class PatchModel extends Model {
       p.setColor(this.cmap.scaleColor(p.dens, 0, 1))
     }
     // this.patches.diffuse4('ran', 0.1, this.cmap)
-    if (this.anim.ticks >= 300) {
+    if (this.anim.ticks >= 3000) {
       console.log(this.anim.toString())
       this.stop()
     }
@@ -64,9 +76,11 @@ class PatchModel extends Model {
 
   addForces () {
     for (let i = 0; i < 10; i++) {
-      this.dens.setXY(32+i, 32, 0.5)
-      this.u.setXY(32+i, 32,-5)
-      this.v.setXY(32+i, 32, -5)
+      this.dens.setXY(28 + i, 32  , 1)
+      this.u.setXY(28 + i , 32 , 30*Math.cos(this.windHeading) )
+      this.v.setXY(28 + i , 32 , 30*Math.sin(this.windHeading) )
+      //this.u.setXY(28+i,32,40)
+      //this.v.setXY(28+i,32,40)
     }
   }
 
@@ -95,6 +109,7 @@ class PatchModel extends Model {
   }
 
   setBounds (ds, type) {
+    //return
     if (type == this.BOUNDS_TYPES.DENSITY) {
       for (let i = 0; i < this.dens.width; i++) {
         ds.setXY(i, 0, ds.bilinear(i, 1))
@@ -150,17 +165,16 @@ class PatchModel extends Model {
   }
 
   project () {
-    const p = this.u_prev//DataSet.emptyDataSet(this.u.width, this.u.height, Float64Array)
-    const div = this.v_prev//DataSet.emptyDataSet(this.u.width, this.u.height, Float64Array)
+    const p = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
+    const div = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
     const U = this.u
     const V = this.v
-    const h = 0.5 * Math.hypot(U.width, U.height)
-    for (let i = 1; i < U.width - 1; i++) {
-      for (let j = 1; j < U.height - 1; j++) {
+    const h = -0.5 * Math.hypot(U.width, U.height)
+    for (let i = 0; i < U.width; i++) {
+      for (let j = 0; j < U.height; j++) {
         var gradX = U.getXY(i + 1, j) - U.getXY(i - 1, j)
         var gradY = V.getXY(i, j + 1) - V.getXY(i, j - 1)
         div.setXY(i, j, h * (gradX + gradY))
-        p.setXY(i, j, 0)
       }
     }
     this.setBounds(div, this.BOUNDS_TYPES.V)
