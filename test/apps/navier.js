@@ -35,7 +35,7 @@ class PatchModel extends Model {
       var bnd = la.getBoundingClientRect(la)
       var dx =  ev.x - bnd.width/2 - bnd.left
       var dy = ev.y - bnd.height/2 - bnd.top
-      this.windHeading = Math.atan2(-dy,-dx)
+      this.windHeading = Math.atan2(dy,dx)
       console.log(dx,dy)
     }
   }
@@ -75,19 +75,22 @@ class PatchModel extends Model {
   }
 
   addForces () {
-    for (let i = 0; i < 10; i++) {
-      this.dens.setXY(28 + i, 32  , 1)
-      this.u.setXY(28 + i , 32 , 30*Math.cos(this.windHeading) )
-      this.v.setXY(28 + i , 32 , 30*Math.sin(this.windHeading) )
-      //this.u.setXY(28+i,32,40)
-      //this.v.setXY(28+i,32,40)
+    var w = this.world.maxX - this.world.minX
+    var h = this.world.maxY - this.world.minY
+
+    for (let i = 0; i <= 6; i += 2) {
+      for (let j = 0; j <= 6; j += 2) {
+        this.dens.setXY(w/2 + i, h/2 + j, 1)
+        this.u.setXY(w/2 + i , h/2 + j, 30 * Math.cos(this.windHeading) )
+        this.v.setXY(w/2 + i , h/2 + j, 30 * Math.sin(this.windHeading) )
+      }
     }
   }
 
   densityStep () {
     this.swapDensity()
-    this.diffusionStamMethod(this.dens_prev, this.dens)
-    // this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
+    //this.diffusionStamMethod(this.dens_prev, this.dens)
+    this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
     this.swapDensity()
     this.advect(this.dens_prev, this.dens)
   }
@@ -229,7 +232,7 @@ class PatchModel extends Model {
 }
 
 // const [div, size, max, min] = ['layers', 4, 50, -50]
-const [div, size, max, min] = ['layers', 10, 32, -32]
+const [div, size, max, min] = ['layers', 4, 64, -64]
 const opts =
   {patchSize: size, minX: min, maxX: max, minY: min, maxY: max}
 const model = new PatchModel(div, opts)
