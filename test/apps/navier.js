@@ -40,7 +40,6 @@ class PatchModel extends Model {
       var dx =  ev.x - bnd.width/2 - bnd.left
       var dy = ev.y - bnd.height/2 - bnd.top
       this.windHeading = Math.atan2(dy,dx)
-      console.log(dx,dy)
     }
   }
 
@@ -54,7 +53,6 @@ class PatchModel extends Model {
   }
 
   step () {
-    console.log('step')
     //
     this.addForces()
     this.addDensity()
@@ -64,13 +62,12 @@ class PatchModel extends Model {
   }
 
   drawStep () {
-    console.log('ticks', this.anim.ticks)
     this.putDataSetOnPatches(this.dens, 'dens')
     for (const p of this.patches) {
       p.setColor(this.cmap.scaleColor(p.dens, 0, 1))
     }
     // this.patches.diffuse4('ran', 0.1, this.cmap)
-    if (this.anim.ticks >= 30) {
+    if (this.anim.ticks >= 90) {
       console.log(this.anim.toString())
       this.stop()
     }
@@ -93,7 +90,6 @@ class PatchModel extends Model {
   }
 
   densityStep () {
-    console.log('dens')
     this.swapDensity()
     //this.diffusionStamMethod(this.dens_prev, this.dens)
     this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
@@ -102,7 +98,6 @@ class PatchModel extends Model {
   }
 
   velocityStep () {
-    console.log('vel')
     // add source here
     this.swap('u', 'u_prev')
     //this.u = this.u_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
@@ -119,7 +114,6 @@ class PatchModel extends Model {
   }
 
   setBoundary (ds, type) {
-    console.log('bnds')
     //return
     if (type == this.BOUNDS_TYPES.DENSITY) {
       for (let i = 0; i < this.dens.width; i++) {
@@ -176,7 +170,6 @@ class PatchModel extends Model {
   }
 
   project () {
-    console.log('project')
     const p = this.P
     const div = this.DIV
     const U = this.u
@@ -202,7 +195,7 @@ class PatchModel extends Model {
         }
       }
     }
-    //this.setBoundary(p, this.BOUNDS_TYPES.U)
+    this.setBoundary(p, this.BOUNDS_TYPES.U)
     const wScale = 0.5 / U.width
     const hScale = 0.5 / U.height
     for (let i = 1; i < U.width - 1; i++) {
@@ -215,8 +208,8 @@ class PatchModel extends Model {
         V.setXY(i, j, v2)
       }
     }
-    //this.setBoundary(U, this.BOUNDS_TYPES.U)
-    //this.setBoundary(V, this.BOUNDS_TYPES.V)
+    this.setBoundary(U, this.BOUNDS_TYPES.U)
+    this.setBoundary(V, this.BOUNDS_TYPES.V)
   }
 
   //
