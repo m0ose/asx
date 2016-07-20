@@ -172,16 +172,16 @@ class PatchModel extends Model {
   }
 
   project () {
-    const p = this.P
-    const div = this.DIV
-    const U = this.u
-    const V = this.v
-    const h = -0.5 * Math.hypot(U.width, U.height)
+    var p = this.P
+    var div = this.DIV
+    var U = this.u
+    var V = this.v
+    var h = -0.5 * Math.hypot(U.width, U.height)
     var i, j, k
     for (i = 0; i < U.width; i++) {
       for (j = 0; j < U.height; j++) {
-        let gradX = U.getXY(i + 1, j) - U.getXY(i - 1, j)
-        let gradY = V.getXY(i, j + 1) - V.getXY(i, j - 1)
+        var gradX = U.getXY(i + 1, j) - U.getXY(i - 1, j)
+        var gradY = V.getXY(i, j + 1) - V.getXY(i, j - 1)
         div.setXY(i, j, h * (gradX + gradY))
         p.setXY(i, j, 0)
       }
@@ -192,7 +192,7 @@ class PatchModel extends Model {
     for (k = 0; k < this.solverIterations; k++) {
       for (i = 1; i < U.width - 1; i++) {
         for (j = 1; j < U.height - 1; j++) {
-          let val = div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)
+          var val = div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)
           val = val / 4
           p.setXY(i, j, val)
         }
@@ -200,8 +200,8 @@ class PatchModel extends Model {
     }
     this.setBoundary(p, this.BOUNDS_TYPES.U)
     var pdx, pdy, v1, v2
-    const wScale = 0.5 / U.width
-    const hScale = 0.5 / U.height
+    var wScale = 0.5 / U.width
+    var hScale = 0.5 / U.height
     for (i = 1; i < U.width - 1; i++) {
       for (j = 1; j < U.height - 1; j++) {
         pdx = p.getXY(i + 1, j) - p.getXY(i - 1, j)
