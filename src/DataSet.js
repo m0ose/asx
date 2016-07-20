@@ -20,10 +20,13 @@ class DataSet {
   // constructor: Stores the three DataSet components.
   // Checks data is right size, throws an error if not.
   constructor (width, height, data) {
-    if (data.length !== width * height)
+    if (data.length !== width * height) {
       u.error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
-    else
-      [this.width, this.height, this.data] = [width, height, data]
+    } else {
+      this.width = width
+      this.height = height
+      this.data = data
+    }
   }
 
   // Checks x,y are within DataSet. Throw error if not.
@@ -249,9 +252,10 @@ class DataSet {
   //
   // Use ds.convertType to convert to typed array
   convolve (kernel, factor = 1, crop = false) {
-    const [x0, y0, h, w] = crop
-      ? [1, 1, this.height - 1, this.width - 1]
-      : [0, 0, this.height, this.width]
+    const x0 = crop ? 1 : 0
+    const y0 = crop ? 1 : 0
+    const h = crop ? this.height - 1 : this.height
+    const w = crop ? this.width - 1 : this.width
     const Constructor = this.data.constructor
     const newDS = new DataSet(w, h, new Constructor(w * h))
     for (let y = y0; y < h; y++) {

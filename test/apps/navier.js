@@ -17,12 +17,16 @@ class PatchModel extends Model {
     this.anim.setRate(24)
     this.cmap = ColorMap.Jet
     this.dt = 1
+    this.solverIterations = 3
     this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.u = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.v = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.u_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
+    this.P = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
+    this.DIV = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
+
     this.windHeading = Math.PI/2
     for (const p of this.patches) {
       p.dens = 0
@@ -50,21 +54,23 @@ class PatchModel extends Model {
   }
 
   step () {
+    console.log('step')
     //
     this.addForces()
     this.addDensity()
     this.velocityStep()
     this.densityStep()
-    this.drawStep()
+    setTimeout(this.drawStep.bind(this),1)
   }
 
   drawStep () {
+    console.log('ticks', this.anim.ticks)
     this.putDataSetOnPatches(this.dens, 'dens')
     for (const p of this.patches) {
       p.setColor(this.cmap.scaleColor(p.dens, 0, 1))
     }
     // this.patches.diffuse4('ran', 0.1, this.cmap)
-    if (this.anim.ticks >= 3000) {
+    if (this.anim.ticks >= 30) {
       console.log(this.anim.toString())
       this.stop()
     }
@@ -77,7 +83,6 @@ class PatchModel extends Model {
   addForces () {
     var w = this.world.maxX - this.world.minX
     var h = this.world.maxY - this.world.minY
-
     for (let i = 0; i <= 6; i += 2) {
       for (let j = 0; j <= 6; j += 2) {
         this.dens.setXY(w/2 + i, h/2 + j, 1)
@@ -88,6 +93,7 @@ class PatchModel extends Model {
   }
 
   densityStep () {
+    console.log('dens')
     this.swapDensity()
     //this.diffusionStamMethod(this.dens_prev, this.dens)
     this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
@@ -96,6 +102,7 @@ class PatchModel extends Model {
   }
 
   velocityStep () {
+    console.log('vel')
     // add source here
     this.swap('u', 'u_prev')
     //this.u = this.u_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
@@ -111,7 +118,8 @@ class PatchModel extends Model {
     this.project()
   }
 
-  setBounds (ds, type) {
+  setBoundary (ds, type) {
+    console.log('bnds')
     //return
     if (type == this.BOUNDS_TYPES.DENSITY) {
       for (let i = 0; i < this.dens.width; i++) {
@@ -168,44 +176,47 @@ class PatchModel extends Model {
   }
 
   project () {
-    const p = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
-    const div = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
+    console.log('project')
+    const p = this.P
+    const div = this.DIV
     const U = this.u
     const V = this.v
     const h = -0.5 * Math.hypot(U.width, U.height)
     for (let i = 0; i < U.width; i++) {
       for (let j = 0; j < U.height; j++) {
-        var gradX = U.getXY(i + 1, j) - U.getXY(i - 1, j)
-        var gradY = V.getXY(i, j + 1) - V.getXY(i, j - 1)
+        let gradX = U.getXY(i + 1, j) - U.getXY(i - 1, j)
+        let gradY = V.getXY(i, j + 1) - V.getXY(i, j - 1)
         div.setXY(i, j, h * (gradX + gradY))
+        p.setXY(i, j, 0)
       }
     }
-    this.setBounds(div, this.BOUNDS_TYPES.V)
-    this.setBounds(p, this.BOUNDS_TYPES.U)
+    this.setBoundary(div, this.BOUNDS_TYPES.V)
+    this.setBoundary(p, this.BOUNDS_TYPES.U)
     //
-    for (let k = 0; k < 20; k++) {
+    for (let k = 0; k < this.solverIterations; k++) {
       for (let i = 1; i < U.width - 1; i++) {
         for (let j = 1; j < U.height - 1; j++) {
-          var val = (div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)) / 4
+          let val = div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)
+          val = val / 4
           p.setXY(i, j, val)
         }
       }
-      this.setBounds(p, this.BOUNDS_TYPES.U)
     }
+    //this.setBoundary(p, this.BOUNDS_TYPES.U)
     const wScale = 0.5 / U.width
     const hScale = 0.5 / U.height
     for (let i = 1; i < U.width - 1; i++) {
       for (let j = 1; j < U.height - 1; j++) {
-        var pdx = p.getXY(i + 1, j) - p.getXY(i - 1, j)
-        var pdy = p.getXY(i, j + 1) - p.getXY(i, j - 1)
-        var v1 = U.getXY(i, j) - wScale * pdx
-        var v2 = V.getXY(i, j) - hScale * pdy
+        const pdx = p.getXY(i + 1, j) - p.getXY(i - 1, j)
+        const pdy = p.getXY(i, j + 1) - p.getXY(i, j - 1)
+        const v1 = U.getXY(i, j) - wScale * pdx
+        const v2 = V.getXY(i, j) - hScale * pdy
         U.setXY(i, j, v1)
         V.setXY(i, j, v2)
       }
     }
-    this.setBounds(U, this.BOUNDS_TYPES.U)
-    this.setBounds(V, this.BOUNDS_TYPES.V)
+    //this.setBoundary(U, this.BOUNDS_TYPES.U)
+    //this.setBoundary(V, this.BOUNDS_TYPES.V)
   }
 
   //
@@ -213,7 +224,7 @@ class PatchModel extends Model {
   //
   diffusionStamMethod (D0, D, diff = 1) {
     const a = this.dt * diff
-    for (var k = 0; k < 20; k++) {
+    for (var k = 0; k < this.solverIterations; k++) {
       for (var i = 1; i < D.width - 1; i++) {
         for (var j = 1; j < D.height - 1; j++) {
           const val = (D0.getXY(i, j) +
@@ -226,9 +237,10 @@ class PatchModel extends Model {
           D.setXY(i, j, val)
         }
       }
-      this.setBounds(D, this.BOUNDS_TYPES.DENSITY)
     }
+    this.setBoundary(D, this.BOUNDS_TYPES.DENSITY)
   }
+
 }
 
 // const [div, size, max, min] = ['layers', 4, 50, -50]
