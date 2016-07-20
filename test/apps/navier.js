@@ -17,7 +17,7 @@ class PatchModel extends Model {
     this.anim.setRate(24)
     this.cmap = ColorMap.Jet
     this.dt = 1
-    this.solverIterations = 8
+    this.solverIterations = 12
     this.windHeading = Math.PI/2
     this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
@@ -40,6 +40,10 @@ class PatchModel extends Model {
       var dy = ev.y - bnd.height/2 - bnd.top
       this.windHeading = Math.atan2(dy,dx)
     }
+  }
+
+  indx (x,y) {
+    return x + y * this.u.width
   }
 
   // do this is order to draw them.
@@ -171,45 +175,68 @@ class PatchModel extends Model {
     }
   }
 
+
   project () {
+    this.projectStep1()
+    this.projectStep2()
+    this.projectStep3()
+  }
+
+  projectStep1 () {
     var p = this.P
     var div = this.DIV
     var U = this.u
     var V = this.v
     var h = -0.5 * Math.hypot(U.width, U.height)
-    var i, j, k
-    for (i = 0; i < U.width; i++) {
-      for (j = 0; j < U.height; j++) {
-        var gradX = U.getXY(i + 1, j) - U.getXY(i - 1, j)
-        var gradY = V.getXY(i, j + 1) - V.getXY(i, j - 1)
+    for (var i = 0; i < U.width; i++) {
+      for (var j = 0; j < U.height; j++) {
+        var gradX = U.data[this.indx(i + 1, j)] - U.data[this.indx(i - 1, j)]
+        var gradY = V.data[this.indx(i, j + 1)] - V.data[this.indx(i, j - 1)]
         div.setXY(i, j, h * (gradX + gradY))
         p.setXY(i, j, 0)
       }
     }
     this.setBoundary(div, this.BOUNDS_TYPES.V)
     this.setBoundary(p, this.BOUNDS_TYPES.U)
+  }
+
+  projectStep2 () {
+    var p = this.P
+    var div = this.DIV
     //
-    for (k = 0; k < this.solverIterations; k++) {
-      for (i = 1; i < U.width - 1; i++) {
-        for (j = 1; j < U.height - 1; j++) {
-          var val = div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)
+    for (var k = 0; k < this.solverIterations; k++) {
+      for (var i = 1; i < p.width - 1; i++) {
+        for (var j = 1; j < p.height - 1; j++) {
+          var indx = this.indx(i,j)
+          var val = div.data[indx]
+          val = val + p.data[indx + 1] + p.data[indx - 1]
+          val = val + p.data[indx - p.width] + p.data[indx + p.width]
+          //var val = div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)
           val = val / 4
-          p.setXY(i, j, val)
+          p.data[indx] = val
         }
       }
     }
     this.setBoundary(p, this.BOUNDS_TYPES.U)
+    this.setBoundary(div, this.BOUNDS_TYPES.V)
+  }
+
+  projectStep3 () {
+    var p = this.P
+    var U = this.u
+    var V = this.v
     var pdx, pdy, v1, v2
     var wScale = 0.5 / U.width
     var hScale = 0.5 / U.height
-    for (i = 1; i < U.width - 1; i++) {
-      for (j = 1; j < U.height - 1; j++) {
-        pdx = p.getXY(i + 1, j) - p.getXY(i - 1, j)
-        pdy = p.getXY(i, j + 1) - p.getXY(i, j - 1)
-        v1 = U.getXY(i, j) - wScale * pdx
-        v2 = V.getXY(i, j) - hScale * pdy
-        U.setXY(i, j, v1)
-        V.setXY(i, j, v2)
+    for (var i = 1; i < U.width - 1; i++) {
+      for (var j = 1; j < U.height - 1; j++) {
+        var indx = this.indx(i,j)
+        pdx = p.data[this.indx(i + 1, j)] - p.data[this.indx(i - 1, j)]
+        pdy = p.data[this.indx(i, j + 1)] - p.data[this.indx(i, j - 1)]
+        v1 = U.data[this.indx(i, j)] - wScale * pdx
+        v2 = V.data[this.indx(i, j)] - hScale * pdy
+        U.data[indx] = v1
+        V.data[indx] = v2
       }
     }
     this.setBoundary(U, this.BOUNDS_TYPES.U)
@@ -224,14 +251,14 @@ class PatchModel extends Model {
     for (var k = 0; k < this.solverIterations; k++) {
       for (var i = 1; i < D.width - 1; i++) {
         for (var j = 1; j < D.height - 1; j++) {
-          const val = (D0.getXY(i, j) +
+          const val = (D0.data[this.indx(i, j)] +
                   a * (
-                    D.getXY(i - 1, j) +
-                    D.getXY(i + 1, j) +
-                    D.getXY(i, j - 1) +
-                    D.getXY(i, j + 1)
+                    D.data[this.indx(i - 1, j)] +
+                    D.data[this.indx(i + 1, j)] +
+                    D.data[this.indx(i, j - 1)] +
+                    D.data[this.indx(i, j + 1)]
                   )) / (1 + 4 * a)
-          D.setXY(i, j, val)
+          D.data[this.indx(i, j)] = val
         }
       }
     }
