@@ -17,7 +17,8 @@ class PatchModel extends Model {
     this.anim.setRate(24)
     this.cmap = ColorMap.Jet
     this.dt = 1
-    this.solverIterations = 3
+    this.solverIterations = 8
+    this.windHeading = Math.PI/2
     this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.u = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
@@ -26,8 +27,6 @@ class PatchModel extends Model {
     this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.P = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
     this.DIV = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
-
-    this.windHeading = Math.PI/2
     for (const p of this.patches) {
       p.dens = 0
     }
@@ -90,6 +89,7 @@ class PatchModel extends Model {
   }
 
   densityStep () {
+    this.addSource(this.dens, this.dens_prev)
     this.swapDensity()
     //this.diffusionStamMethod(this.dens_prev, this.dens)
     this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
@@ -98,7 +98,8 @@ class PatchModel extends Model {
   }
 
   velocityStep () {
-    // add source here
+    this.addSource(this.u, this.u_prev)
+    this.addSource(this.v, this.v_prev)
     this.swap('u', 'u_prev')
     //this.u = this.u_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
     this.diffusionStamMethod(this.u_prev, this.u)
@@ -137,13 +138,14 @@ class PatchModel extends Model {
     }
   }
 
-  swapDensity () {
-    this.swap('dens', 'dens_prev')
+  addSource (x0, x) {
+    for (var i = 0; i < x0.data.length; i++) {
+      x.data[i] += x0.data[i] * this.dt
+    }
   }
 
-  swapVelocities () {
-    this.swap('u', 'u_prev')
-    this.swap('v', 'v_prev')
+  swapDensity () {
+    this.swap('dens', 'dens_prev')
   }
 
   swap (key1, key2) {
@@ -196,14 +198,15 @@ class PatchModel extends Model {
       }
     }
     this.setBoundary(p, this.BOUNDS_TYPES.U)
+    var pdx, pdy, v1, v2
     const wScale = 0.5 / U.width
     const hScale = 0.5 / U.height
     for (let i = 1; i < U.width - 1; i++) {
       for (let j = 1; j < U.height - 1; j++) {
-        const pdx = p.getXY(i + 1, j) - p.getXY(i - 1, j)
-        const pdy = p.getXY(i, j + 1) - p.getXY(i, j - 1)
-        const v1 = U.getXY(i, j) - wScale * pdx
-        const v2 = V.getXY(i, j) - hScale * pdy
+        pdx = p.getXY(i + 1, j) - p.getXY(i - 1, j)
+        pdy = p.getXY(i, j + 1) - p.getXY(i, j - 1)
+        v1 = U.getXY(i, j) - wScale * pdx
+        v2 = V.getXY(i, j) - hScale * pdy
         U.setXY(i, j, v1)
         V.setXY(i, j, v2)
       }
