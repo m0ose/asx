@@ -71,7 +71,7 @@ class DataSet {
     // [bilinear sampling](http://en.wikipedia.org/wiki/Bilinear_interpolation)
     // The diagram shows the three lerps
     this.checkXY(x, y)
-    // const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next 2 lines for speed
+    // const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next line for speed
     const x0 = Math.floor(x), y0 = Math.floor(y)
     const i = this.toIndex(x0, y0)
     const w = this.width
