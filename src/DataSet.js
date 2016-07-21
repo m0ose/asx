@@ -231,14 +231,12 @@ class DataSet {
     return array
   }
 
-  // Return a new Array dataset convolved with the given kernel 3x3 matrix.
-  // See [Convolution article](https://goo.gl/gCfXmU)
+  // Return a new dataset of this array type convolved with the
+  // given kernel 3x3 matrix. See [Convolution article](https://goo.gl/gCfXmU)
   //
   // If cropped, do not convolve the edges, returning a smaller dataset.
   // If not, convolve the edges by extending edge values, returning
   // dataset of same size.
-  //
-  // Use ds.convertType to convert to typed array
   convolve (kernel, factor = 1, crop = false) {
     const [x0, y0, h, w] = crop
       ? [1, 1, this.height - 1, this.width - 1]

@@ -11,6 +11,7 @@ class Patches extends AgentSet {
     this.world = model.world
     this.populate()
     this.setPixels()
+    this.labels = [] // sparse array for labels
   }
   // Set up all the patches.
   populate () {
@@ -63,14 +64,14 @@ class Patches extends AgentSet {
     const {id, x, y} = patch
     const offsets = this.neighborsOffsets(x, y)
     offsets.forEach((o, i, a) => { a[i] = this[o + id] })
-    return this.asSet(offsets)
+    return this.asAgentSet(offsets)
   }
   // Return my 4 patch neighbors
   neighbors4 (patch) {
     const {id, x, y} = patch
     const offsets = this.nighbors4Offsets(x, y)
     offsets.forEach((o, i, a) => { a[i] = this[o + id] })
-    return this.asSet(offsets)
+    return this.asAgentSet(offsets)
   }
 
   // Patches in rectangle dx, dy from p, dx, dy integers.
@@ -86,14 +87,14 @@ class Patches extends AgentSet {
         const pnext = this.patchXY(x, y)
         if (meToo || p !== pnext) rect.push(pnext)
       }
-    return this.asSet(rect)
+    return this.asAgentSet(rect)
   }
   // Patches in circle r from p, r integer.
   patchesInRadius (p, radius, meToo = true) {
     const rect = this.patchesInRect(p, radius, radius, meToo)
     const rSq = radius * radius
     const distSq = (p1) => util.distanceSq(p1.x, p1.y, p.x, p.y)
-    return rect.filter(p1 => distSq(p1) <= rSq)
+    return rect.filter(p1 => distSq(p1) <= rSq) // REMIND: perf vs forEach?
   }
 
   // Draw the patches onto the ctx using the pixel image data colors.
@@ -102,6 +103,12 @@ class Patches extends AgentSet {
     pixels.ctx.putImageData(pixels.imageData, 0, 0)
     if (pixels.are1x1) return
     util.fillCtxWithImage(ctx, pixels.ctx.canvas)
+    for (const i in this.labels) {
+      const label = this.labels[i]
+      const {labelOffset: offset, labelColor: color} = this[i]
+      const [x, y] = this.patchXYToPixelXY(...this.patchIndexToXY(i))
+      util.ctxDrawText(ctx, label, x + offset[0], y + offset[1], color.getCss())
+    }
   }
   // Draws, or "imports" an image URL into the drawing layer.
   // The image is scaled to fit the drawing layer.
@@ -136,15 +143,25 @@ class Patches extends AgentSet {
     return this.patchXY(Math.round(x), Math.round(y))
   }
   // Return the patch id/index given valid integer x,y in patch coords
-  patchIndex (x, y) {
+  patchXYToIndex (x, y) {
     const {minX, maxY, numX} = this.world
     return (x - minX) + (numX * (maxY - y))
   }
+  // Return the patch x,y patch coords given a valid patches id/index
+  patchIndexToXY (ix) {
+    const {minX, maxY, numX} = this.world
+    return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
+  }
   // Return the patch at x,y where both are valid integer patch coordinates.
-  patchXY (x, y) { return this[this.patchIndex(x, y)] }
-  pixelXYtoPatchXY (x, y) {
+  patchXY (x, y) { return this[this.patchXYToIndex(x, y)] }
+  // Convert to/from pixel coords & patch coords
+  pixelXYToPatchXY (x, y) {
     const {patchSize, minXcor, maxYcor} = this.world
     return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
+  }
+  patchXYToPixelXY (x, y) {
+    const {patchSize, minXcor, maxYcor} = this.world
+    return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
   }
 
   // Return a random valid float x,y point in patch space
@@ -155,6 +172,14 @@ class Patches extends AgentSet {
   }
   // Return a random patch.
   randomPatch () { return this.oneOf() }
+
+  // Set label. Removes label if label `falsey`
+  setLabel (patch, label) {
+    if (label)
+      this.labels[patch.id] = label
+    else
+      delete this.labels[patch.id]
+  }
 
   // Diffuse the value of patch variable `p.v` by distributing `rate` percent
   // of each patch's value of `v` to its neighbors.

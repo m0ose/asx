@@ -13,8 +13,7 @@ class PatchModel extends Model {
   setup () {
     this.anim.setRate(60)
     this.cmap = ColorMap.Rgb256 // this.cmap = ColorMap.Jet
-    this.mouse = new Mouse(this, true)
-    this.mouse.start()
+    this.mouse = new Mouse(this, true).start()
     for (const p of this.patches) {
       p.ran = util.randomFloat(1.0)
     }
@@ -38,8 +37,7 @@ class PatchModel extends Model {
 const [div, size, max, min] = ['layers', 2, 100, -100]
 const opts =
   {patchSize: size, minX: 2 * min, maxX: 2 * max, minY: min, maxY: max}
-const model = new PatchModel(div, opts)
-model.start()
+const model = new PatchModel(div, opts).start()
 
 // debugging
 const world = model.world

@@ -17,11 +17,18 @@ class Model {
     }
   }
   static defaultContexts () {
-    return { // NOTE: Text Layer?
+    return {
       patches: { z: 10, ctx: '2d' },
       drawing: { z: 20, ctx: '2d' },
       links: { z: 30, ctx: '2d' },
       turtles: { z: 40, ctx: '2d' }
+    }
+  }
+  static defaultFontParams () {
+    return {
+      font: '10px sans-serif',
+      align: 'center',
+      baseline: 'middle'
     }
   }
 
@@ -86,6 +93,7 @@ class Model {
     }
     this.div = div
   }
+
   // Initialize layers of canvas contexts within `div`.
   initContexts (contexts) {
     util.forAll(contexts, (val, key) => {
@@ -107,6 +115,7 @@ class Model {
       if (ctx === null) return
       Object.assign(ctx.canvas, { width, height })
       Object.assign(ctx.canvas.style, { width, height })
+      this.setFont(key)
       this.setCtxTransform(ctx)
       if (key === 'patches') util.setCtxSmoothing(ctx, false)
     })
@@ -116,6 +125,13 @@ class Model {
     ctx.save()
     ctx.scale(this.world.patchSize, -this.world.patchSize)
     ctx.translate(-this.world.minXcor, -this.world.maxYcor)
+  }
+  // Set the text params for a given named agentset.
+  // See [reference](http://goo.gl/AvEAq)
+  setFont (name, font = '10px sans-serif', align = 'center', baseline = 'middle') {
+    const ctx = this.contexts[name]
+    if (!ctx) util.error(`Model.setFont: no context named "${name}"`)
+    util.ctxTextParams(ctx, font, align, baseline)
   }
 
 // ### User Model Creation
@@ -129,9 +145,9 @@ class Model {
   // Update/step your model here
   step () {} // called each step of the animation
 
-  // Start/stop the animation
-  start () { this.anim.start() }
-  stop () { this.anim.stop() }
+  // Start/stop the animation. Return model for chaining.
+  start () { this.anim.start(); return this }
+  stop () { this.anim.stop(); return this }
   // Animate once by `step(); draw()`.
   once () { this.stop(); this.anim.once() } // stop is no-op if already stopped
 

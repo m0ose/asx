@@ -11,7 +11,7 @@ class AgentSet extends Array {
   // If baseSet is supplied, the new agentset is a subarray of baseSet.
   // This sub-array feature is how breeds are managed, see class `Model`
   constructor (model, agentProto, name, baseSet = null) {
-    console.log('AgentSet ctor', arguments)
+    // console.log('AgentSet ctor', arguments)
     // Because es6 JavaScript Array itself calls the Array ctor
     // (ex: slice() returning a new array), skip if not AgentSet ctor.
     if (typeof model === 'number') {
@@ -103,9 +103,16 @@ class AgentSet extends Array {
   }
 
   // Method to convert an array to the same AgentSet type as this.
-  asSet (array) {
+  asAgentSet (array) {
     return Object.setPrototypeOf(array, Object.getPrototypeOf(this))
   }
+  asArray (agentSet = this) {
+    return Object.setPrototypeOf(agentSet, Array.prototype)
+  }
+  afilter (callback) {
+    // const array = this.asArray()
+    return this.asArray().filter(callback)
+  } // avoid AgentSet & subclass ctors
 
 // ### General Array of Objects methods
 
@@ -119,6 +126,8 @@ class AgentSet extends Array {
   all (reporter) { return this.every(reporter) }
   // Return property values for key from this array's objects
   props (key) { return this.map((a) => a[key]) }
+
+  // Replacements for array methods to avoid calling AgentSet ctor
 
   // Return shallow copy of a protion of this agentset
   // [See Array.slice](https://goo.gl/Ilgsok)
@@ -167,7 +176,7 @@ class AgentSet extends Array {
       const o = this.oneOf()
       if (!(o in result)) result.push(o)
     }
-    return this.asSet(result)
+    return this.asAgentSet(result)
   }
   // Return a new agentset of the n min/max agents of the value of reporter,
   // in ascending order.

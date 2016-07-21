@@ -20,7 +20,7 @@ console.log(Object.keys(modules).join(' '))
 // util.toWindow({ foos, a })
 //
 // util.repeat(4, (i) => foos.add({}))
-// foos.asSet(a)
+// foos.asAgentSet(a)
 //
 // const bars = new AgentSet({}, {}, 'bars', foos)
 // util.repeat(2, (i) => bars.add({}))

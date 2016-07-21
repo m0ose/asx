@@ -9,7 +9,7 @@ console.log('util, Color, ColorMap')
 console.log('u, c, cmap')
 
 const tc = Color.typedColor(255, 0, 0)
-console.log('typedColor tc: color', tc.toString(), 'string', tc.getString(), 'pixel', tc.getPixel())
+console.log('typedColor tc: color', tc.toString(), 'string', tc.getCss(), 'pixel', tc.getPixel())
 
 const tcstr = Color.toTypedColor('red')
 const tcpix = Color.toTypedColor(4278190335) // red
@@ -28,7 +28,7 @@ const gic = ColorMap.typedArrayToTypedColors(gid)
 console.log('gradientImageColors', util.arraysToString(gic))
 
 const c0 = gic[0]
-console.log('color0', c0, c0.getPixel(), c0.getString())
+console.log('color0', c0, c0.getPixel(), c0.getCss())
 
 const rgbs = ColorMap.permuteRGBColors(2, 2, 3)
 console.log('permuteRGBColors(2,2,3)', util.arraysToString(rgbs))

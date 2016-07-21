@@ -24,6 +24,7 @@
     "docs": "docco -o ./docs/ ./src/*.js",
 
     "git-diff": "git diff README.md package.json src test/apps",
+    "git-diff-staged": "git diff --staged README.md package.json src test/apps",
     "git-prep": "npm run all && git add . && git status",
     "git-commit": "git commit -v && git push origin master"
   },

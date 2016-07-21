@@ -20,7 +20,7 @@ class Mouse {
   // Initialize variables to 'off'
   resetParams () { this.x = this.y = null; this.moved = this.down = false }
 
-  // Start/stop the mouseListeners.
+  // Start/stop the mouseListeners. Return mouse for chaining.
   start () { // Note: multiple calls safe
     const [div, body] = [this.div, document.body]
     div.addEventListener('mousedown', this.downHandler)
@@ -28,6 +28,7 @@ class Mouse {
     if (!this.toggleMove)
       div.addEventListener('mousemove', this.moveHandler)
     this.resetParams()
+    return this
   }
   stop () { // Note: multiple calls safe
     const [div, body] = [this.div, document.body]
@@ -35,6 +36,7 @@ class Mouse {
     body.removeEventListener('mouseup', this.upHandler)
     div.removeEventListener('mousemove', this.moveHandler)
     this.resetParams()
+    return this
   }
 
   // Handlers for eventListeners
@@ -55,7 +57,7 @@ class Mouse {
   // set x, y to be event location in patch coordinates.
   setXY (e) {
     const [pixX, pixY] = util.getEventXY(this.div, e)
-    ;[this.x, this.y] = this.model.patches.pixelXYtoPatchXY(pixX, pixY)
+    ;[this.x, this.y] = this.model.patches.pixelXYToPatchXY(pixX, pixY)
   }
 
 }

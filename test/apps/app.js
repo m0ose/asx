@@ -38,3 +38,27 @@ util.pps(a, 'a')
 util.pps(b, 'b')
 // pps(a, 'a')
 // pps(b, 'b')
+
+class DataSet6 {
+  constructor (width, height, data) {
+    if (data.length !== width * height)
+      util.error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
+    else
+      [this.width, this.height, this.data] = [width, height, data]
+  }
+}
+class DataSet5 {
+  constructor (width, height, data) {
+    if (data.length !== width * height) {
+      util.error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
+    } else {
+      this.width = width
+      this.height = height
+      this.data = data
+    }
+  }
+}
+
+let w = 100, h = 100, d = new Array(w * h), num = 1e5
+util.timeit(i=>new DataSet6(w, h, d), num)
+util.timeit(i=>new DataSet5(w, h, d), num)

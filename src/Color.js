@@ -105,9 +105,7 @@ const Color = {
   // TypedArrays, and css/canvas2d strings.
 
   // Create typedColor from r,g,b,a. Use `toTypedColor()` below for strings etc.
-  // // Shortcut: If r is TypedArray, use it as the typedColor.
   typedColor (r, g, b, a = 255) {
-    // const u8array = r.buffer ? r : new Uint8ClampedArray([r, g, b, a])
     const u8array = new Uint8ClampedArray([r, g, b, a])
     u8array.pixelArray = new Uint32Array(u8array.buffer) // one element array
     // Make this an instance of TypedColorProto
@@ -129,7 +127,7 @@ const Color = {
     const tc = this.typedColor(0, 0, 0, 0)
     if (util.isInteger(any)) tc.setPixel(any)
     else if (Array.isArray(any) || util.isTypedArray(any)) tc.setColor(...any)
-    else if (typeof any === 'string') tc.setString(any)
+    else if (typeof any === 'string') tc.setCss(any)
     else util.error('toTypedColor: invalid argument')
     return tc
   },
@@ -142,7 +140,7 @@ const Color = {
   transparent: null
 }
 
-// Prototype for typedColor.
+// Prototype for typedColor. Getters/setters for usability, may be slower.
 const TypedColorProto = {
   // Inherit from Uint8ClampedArray
   __proto__: Uint8ClampedArray.prototype,
@@ -151,7 +149,9 @@ const TypedColorProto = {
     this.checkColorChange()
     this[0] = r; this[1] = g; this[2] = b; this[3] = a
   },
-  // No need for getColor, it *is* the typed Uint8 array
+  // No real need for getColor, it *is* the typed Uint8 array
+  set rgb (rgbaArray) { this.setColor(...rgbaArray) },
+  get rgb () { return this },
 
   // Set the typedColor to a new pixel value
   setPixel (pixel) {
@@ -160,24 +160,29 @@ const TypedColorProto = {
   },
   // Get the pixel value
   getPixel () { return this.pixelArray[0] },
+  get pixel () { return this.getPixel() },
+  set pixel (pixel) { this.setPixel(pixel) },
 
   // Set pixel/rgba values to equivalent of the css string.
   // 'red', '#f00', 'ff0000', 'rgb(255,0,0)', etc.
   //
   // Does *not* set the chached this.string, which will be lazily evaluated
-  // to its common triString by getString(). The above would all return '#f00'.
-  setString (string) {
+  // to its common triString by getCss(). The above would all return '#f00'.
+  setCss (string) {
     return this.setColor(...Color.stringToUint8s(string))
   },
   // Return the triString for this typedColor, cached in the @string value
-  getString () {
+  getCss () {
     if (this.string == null) this.string = Color.triString(...this)
     return this.string
   },
+  get css () { return this.getCss() },
+  set css (string) { this.setCss(string) },
+
   // Housekeeping when the color is modified.
   checkColorChange () {
     // Reset string on color change.
-    this.string = null // will be lazy evaluated via getString.
+    this.string = null // will be lazy evaluated via getCss.
   },
   // Return true if color is same value as myself, comparing pixels
   equals (color) { return this.getPixel() === color.getPixel() },

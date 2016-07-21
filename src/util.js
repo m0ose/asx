@@ -551,6 +551,29 @@ const util = {
     ctx.setTransform(1, 0, 0, 1, 0, 0) // or ctx.resetTransform()
   },
 
+// ### Canvas 2D Context Text Drawing
+
+  // Draw string of the given color at the xy location, in ctx pixel coords.
+  // Push/pop identity transform.
+  ctxDrawText (ctx, string, x, y, cssColor) {
+    // console.log(string, x, y, cssColor)
+    this.setIdentity(ctx)
+    ctx.fillStyle = cssColor
+    ctx.fillText(string, x, y)
+    ctx.restore()
+  },
+  // Set the element text align and baseline drawing parameters
+  //
+  // * font is a HTML/CSS string like: "9px sans-serif"
+  // * align is left right center start end
+  // * baseline is top hanging middle alphabetic ideographic bottom
+  //
+  // See [reference](http://goo.gl/AvEAq) and
+  // [web-safe fonts](http://goo.gl/unmCw)
+  ctxTextParams (ctx, font, align = 'center', baseline = 'middle') {
+    ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
+  },
+
   // Convert an image, or part of an image, to a context.
   // img may be another canvas.
   // * x, y are top/left in image, default to 0, 0.
