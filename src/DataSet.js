@@ -47,7 +47,7 @@ class DataSet {
   toXY (i) { return [i % this.width, Math.floor(i / this.width)] }
 
   // Get dataset value at x,y, checking that x,y valid
-  getXY (x, y) { return this.data[this.toIndex(x, y)] }
+  getXY (x, y) { return this.data[this.toIndex(Math.floor(x), Math.floor(y))] }
 
   // Set the data value at x,y to num
   setXY (x, y, num) { this.data[this.toIndex(Math.floor(x), Math.floor(y))] = num }
