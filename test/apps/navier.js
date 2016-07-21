@@ -70,8 +70,10 @@ class PatchModel extends Model {
       p.setColor(this.cmap.scaleColor(p.dens, 0, 1))
     }
     // this.patches.diffuse4('ran', 0.1, this.cmap)
-    if (this.anim.ticks >= 90) {
+    if (this.anim.ticks % 30 === 0) {
       console.log(this.anim.toString())
+    }
+    if (this.anim.ticks === 600) {
       this.stop()
     }
   }
@@ -86,8 +88,8 @@ class PatchModel extends Model {
     for (let i = 0; i <= 6; i += 2) {
       for (let j = 0; j <= 6; j += 2) {
         this.dens.setXY(w/2 + i, h/2 + j, 1)
-        this.u.setXY(w/2 + i , h/2 + j, 30 * Math.cos(this.windHeading) )
-        this.v.setXY(w/2 + i , h/2 + j, 30 * Math.sin(this.windHeading) )
+        this.u.setXY(w/2 + i , h/2 + j, 10 * Math.cos(this.windHeading) )
+        this.v.setXY(w/2 + i , h/2 + j, 10 * Math.sin(this.windHeading) )
       }
     }
   }
@@ -167,7 +169,8 @@ class PatchModel extends Model {
         var y2 = dvdt + j
         if (X.inBounds(x2, y2)) {
           var val = X0.bilinear(x2, y2)
-          X.setXY(i, j, val)
+          X.data[this.indx(i, j)] = val
+          //X.setXY(i, j, val)
         } else {
           X.setXY(i, j, 0)
         }
@@ -207,7 +210,7 @@ class PatchModel extends Model {
     for (var k = 0; k < this.solverIterations; k++) {
       for (var i = 1; i < p.width - 1; i++) {
         for (var j = 1; j < p.height - 1; j++) {
-          var indx = this.indx(i,j)
+          var indx = this.indx(i, j)
           var val = div.data[indx]
           val = val + p.data[indx + 1] + p.data[indx - 1]
           val = val + p.data[indx - p.width] + p.data[indx + p.width]
