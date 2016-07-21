@@ -50,7 +50,7 @@ class DataSet {
   getXY (x, y) { return this.data[this.toIndex(x, y)] }
 
   // Set the data value at x,y to num
-  setXY (x, y, num) { this.data[this.toIndex(x, y)] = num }
+  setXY (x, y, num) { this.data[this.toIndex(Math.floor(x), Math.floor(y))] = num }
 
   // Wrapper for sampling, defaults to "nearest"
   sample (x, y, useNearest = true) {

@@ -272,9 +272,9 @@ class PatchModel extends Model {
 }
 
 // const [div, size, max, min] = ['layers', 4, 50, -50]
-const [div, size, max, min] = ['layers', 4, 64, -64]
+const [div, size, max, min] = ['layers', 4, 128, 128]
 const opts =
-  {patchSize: size, minX: min, maxX: max, minY: min, maxY: max}
+  {patchSize: size, minX: 0, maxX: max, minY: 0, maxY: max}
 const model = new PatchModel(div, opts)
 model.start()
 
