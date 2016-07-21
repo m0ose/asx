@@ -28,8 +28,14 @@ class DataSet {
 
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
-    if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1)))
+    if (!this.inBounds(x, y))
       u.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
+  }
+
+  inBounds (x, y) {
+    if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1)))
+      return false
+    return true
   }
 
   type () { return this.data.constructor }
@@ -65,11 +71,14 @@ class DataSet {
     // [bilinear sampling](http://en.wikipedia.org/wiki/Bilinear_interpolation)
     // The diagram shows the three lerps
     this.checkXY(x, y)
-    const [x0, y0] = [Math.floor(x), Math.floor(y)]
+    // const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next 2 lines for speed
+    const x0 = Math.floor(x), y0 = Math.floor(y)
     const i = this.toIndex(x0, y0)
     const w = this.width
-    const [dx, dy] = [(x - x0), (y - y0)] // dx, dy = 0 if x, y on boundary
-    const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary
+    // const [dx, dy] = [(x - x0), (y - y0)] // dx, dy = 0 if x, y on boundary. commented out for speed
+    // const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary
+    const dx = x - x0, dy = y - y0
+    const dx1 = 1 - dx, dy1 = 1 - dy
     const f00 = this.data[i]
     // Edge case: fij is 0 if beyond data array; undefined -> 0.
     // This cancels the given component's factor in the result.
@@ -238,9 +247,13 @@ class DataSet {
   // If not, convolve the edges by extending edge values, returning
   // dataset of same size.
   convolve (kernel, factor = 1, crop = false) {
-    const [x0, y0, h, w] = crop
-      ? [1, 1, this.height - 1, this.width - 1]
-      : [0, 0, this.height, this.width]
+    //const [x0, y0, h, w] = crop
+    //  ? [1, 1, this.height - 1, this.width - 1]
+    //  : [0, 0, this.height, this.width]
+    let x0 = 0, y0 = 0, h = this.height, w = this.width
+    if (crop) {
+      x0 = 1; y0 = 1; h = this.height -1; w = this.width - 1
+    }
     const Constructor = this.data.constructor
     const newDS = new DataSet(w, h, new Constructor(w * h))
     for (let y = y0; y < h; y++) {
