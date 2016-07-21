@@ -247,9 +247,10 @@ class DataSet {
   // If not, convolve the edges by extending edge values, returning
   // dataset of same size.
   convolve (kernel, factor = 1, crop = false) {
-    //const [x0, y0, h, w] = crop
+    // const [x0, y0, h, w] = crop
     //  ? [1, 1, this.height - 1, this.width - 1]
     //  : [0, 0, this.height, this.width]
+    // The above code was replaced by the below code for speed.
     let x0 = 0, y0 = 0, h = this.height, w = this.width
     if (crop) {
       x0 = 1; y0 = 1; h = this.height -1; w = this.width - 1
