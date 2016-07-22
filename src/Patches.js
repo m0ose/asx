@@ -1,5 +1,6 @@
-import AgentSet from './AgentSet.js'
 import util from './util.js'
+import AgentSet from './AgentSet.js'
+import DataSet from './DataSet.js'
 
 // Patches are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
@@ -129,6 +130,20 @@ class Patches extends AgentSet {
   installColors (img) {
     util.fillCtxWithImage(this.pixels.ctx, img)
     this.setImageData()
+  }
+
+  // Import/export DataSet to/from patch variable `patchVar`.
+  // `useNearest`: true for fast rounding to nearest; false for bi-linear.
+  importDataSet (dataSet, patchVar, useNearest = false) {
+    const {numX, numY} = this.world
+    const dataset = dataSet.resample(numX, numY, useNearest)
+    for (const patch of this)
+      patch[patchVar] = dataset.data[patch.id]
+  }
+  exportDataSet (patchVar) {
+    const {numX, numY} = this.world
+    const data = util.aProps(this, patchVar)
+    return new DataSet(numX, numY, data)
   }
 
   // Return true if x,y floats are within patch world.
