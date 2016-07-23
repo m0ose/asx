@@ -18,6 +18,7 @@ class PatchModel extends Model {
     this.cmap = ColorMap.Jet
     this.dt = 1
     this.solverIterations = 12
+    this.boundaryElasticity = 0.2
     this.windHeading = Math.PI/2
     this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
@@ -27,9 +28,13 @@ class PatchModel extends Model {
     this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.P = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
     this.DIV = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
+    this.boundaries = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     for (const p of this.patches) {
       p.dens = 0
     }
+    //
+    //
+    this.makeFakeBoundaries()
     //
     // for testing mouse
     var la = document.getElementById('layers')
@@ -42,7 +47,20 @@ class PatchModel extends Model {
     }
   }
 
-  indx (x,y) {
+  makeFakeBoundaries () {
+    const W = this.world
+    for (const p of this.patches) {
+      const y = Math.cos(p.x / 9) * 34 + 21 + Math.sin(p.x) * 4
+      const diff = p.y - y
+      if (diff > 0 && diff < 20) this.boundaries.setXY(p.x - W.minX, W.maxY - p.y, 1.0)
+      if (p.x <= W.minX || p.x >= W.maxX || p.y <= W.minY || p.y >= W.maxY) {
+        this.boundaries.setXY(p.x - W.minX, W.maxY - p.y, 1.0)
+      }
+    }
+
+  }
+
+  indx (x, y) {
     return x + y * this.u.width
   }
 
@@ -53,6 +71,7 @@ class PatchModel extends Model {
     for (var i = 0; i < this.patches.length; i++) {
       p = this.patches[i]
       p.dens = ds.getXY(p.x - W.minX, W.maxY - p.y)
+      if (this.boundaries.getXY(p.x - W.minX, W.maxY - p.y) > 0.0) p.dens = 4
     }
   }
 
@@ -123,24 +142,35 @@ class PatchModel extends Model {
 
   setBoundary (ds, type) {
     //return
-    if (type == this.BOUNDS_TYPES.DENSITY) {
-      for (let i = 0; i < this.dens.width; i++) {
-        ds.setXY(i, 0, ds.bilinear(i, 1))
-        ds.setXY(i, ds.height - 1, ds.bilinear(i, ds.height - 2))
-      }
-      for (let j = 0; j < this.dens.height; j++) {
-        ds.setXY(0, j, ds.bilinear(1, j))
-        ds.setXY(ds.width - 1, j, ds.bilinear(ds.width - 2, j))
-      }
-    } else if (type === this.BOUNDS_TYPES.V) {
-      for (let i = 0; i < this.dens.width; i++) {
-        ds.setXY(i, 0, 0)
-        ds.setXY(i, ds.height - 1, 0)
+    if (type === this.BOUNDS_TYPES.V) {
+      for (let i = 0; i < ds.width; i++) {
+        for (let j = 0; j < ds.height; j++) {
+          let me = this.boundaries.getXY(i,j)
+          let up = this.boundaries.getXY(i,j+1)
+          let dn = this.boundaries.getXY(i,j-1)
+          if (up > 0.0 || dn > 0.0) {
+            ds.setXY(i, j, -this.boundaryElasticity * ds.getXY(i, j))
+          }
+          if ( me > 0.0 ) {
+            ds.setXY(i, j, 0)
+          }
+        }
       }
     } else if (type === this.BOUNDS_TYPES.U) {
-      for (let j = 0; j < this.dens.height; j++) {
-        ds.setXY(0, j, 0)
-        ds.setXY(ds.width - 1, j, 0)
+      for (let i = 0; i < ds.width; i++) {
+        for (let j = 0; j < ds.height; j++) {
+          let me = this.boundaries.getXY(i,j)
+          //if (me <= 0.0) {
+            let lf = this.boundaries.getXY(i-1,j)
+            let rt = this.boundaries.getXY(i+1,j)
+            if (lf > 0.0 || rt > 0.0) {
+              ds.setXY(i, j, -this.boundaryElasticity * ds.getXY(i, j))
+            }
+            if ( me > 0.0 ) {
+              ds.setXY(i, j, 0)
+            }
+          //}
+        }
       }
     }
   }
@@ -266,20 +296,19 @@ class PatchModel extends Model {
         }
       }
     }
-    this.setBoundary(D, this.BOUNDS_TYPES.DENSITY)
+    //this.setBoundary(D, this.BOUNDS_TYPES.DENSITY)
   }
 
 }
 
 // const [div, size, max, min] = ['layers', 4, 50, -50]
-const [div, size, max, min] = ['layers', 4, 128, 128]
 const opts =
-  {patchSize: size, minX: 0, maxX: max, minY: 0, maxY: max}
-const model = new PatchModel(div, opts)
+  {patchSize: 4, minX: -64, maxX: 64, minY: -64, maxY: 64}
+const model = new PatchModel('layers', opts)
 model.start()
 
 // debugging
 const world = model.world
 const patches = model.patches
 util.toWindow({ model, world, patches, p: patches.oneOf() })
-if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)
+util.addToDom(patches.pixels.ctx.canvas)
