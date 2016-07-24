@@ -48,7 +48,7 @@ const ColorMap = {
     util.step(typedArray.length, 4,
       // Note: can't share subarray as color's typed array:
       // it's buffer is for entire array, not just subarray.
-      (i) => array.push(Color.typedColor(...typedArray.subarray(i, i + 4))))
+      (i) => array.push(Color.newTypedColor(...typedArray.subarray(i, i + 4))))
     array.typedArray = typedArray
     return array
   },
@@ -93,7 +93,7 @@ const ColorMap = {
     // Inherit from Array
     __proto__: Array.prototype,
     // Create a [sparse array](https://goo.gl/lQlq5k) of index[pixel] = pixel.
-    // Used by lookup below for exact match of a color within the colormap.
+    // Used by indexOf below for exact match of a color within the colormap.
     createIndex () {
       this.index = []
       util.repeat(this.length, (i) => {
@@ -109,7 +109,7 @@ const ColorMap = {
     // Return the index of a typedColor within the colormap,
     // undefined if no exact match.
     // Use the `closest` methods below for nearest, not exact, match.
-    lookup (color) {
+    indexOf (color) {
       if (this.index) return this.index[color.getPixel()]
       for (let i = 0; i < this.length; i++)
         if (color.equals(this[i])) return i
@@ -252,16 +252,16 @@ const ColorMap = {
 // ### Shared Global ColorMaps
 
   // The shared global colormaps are lazy evaluated to minimize memory use.
-  LZMap (name, map) {
+  LazyMap (name, map) {
     Object.defineProperty(this, name, {value: map, enumerable: true})
     return map
   },
-  get Gray () { return this.LZMap('Gray', this.grayColorMap()) },
+  get Gray () { return this.LazyMap('Gray', this.grayColorMap()) },
   get Jet () {
-    return this.LZMap('Jet', this.gradientColorMap(256, this.jetColors))
+    return this.LazyMap('Jet', this.gradientColorMap(256, this.jetColors))
   },
-  get Rgb256 () { return this.LZMap('Rgb256', this.rgbColorCube(8, 8, 4)) },
-  get Rgb () { return this.LZMap('Rgb', this.rgbColorCube(16)) }
+  get Rgb256 () { return this.LazyMap('Rgb256', this.rgbColorCube(8, 8, 4)) },
+  get Rgb () { return this.LazyMap('Rgb', this.rgbColorCube(16)) }
 
 }
 

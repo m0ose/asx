@@ -8,7 +8,7 @@ util.toWindow({ util, Color, ColorMap, pps: util.pps })
 console.log('util, Color, ColorMap')
 console.log('u, c, cmap')
 
-const tc = Color.typedColor(255, 0, 0)
+const tc = Color.newTypedColor(255, 0, 0)
 console.log('typedColor tc: color', tc.toString(), 'string', tc.getCss(), 'pixel', tc.getPixel())
 
 const tcstr = Color.toTypedColor('red')
@@ -43,23 +43,19 @@ console.log('basicmap prototypes'); util.pps(basicmap)
 const basicmap0 = basicmap[0]
 console.log('basicmap[0] prototypes', basicmap0); util.pps(basicmap0)
 
-console.log('lookup basicmap[5]', basicmap.lookup(basicmap[5]))
-basicmap.createIndex()
-console.log('lookup basicmap[5] w/ index', basicmap.lookup(basicmap[5]))
-
 console.log('random color', basicmap.randomColor())
 
 console.log('scaleColor(i, 0, 5) for i in [0, 5]')
 util.repeat(6, (i) => {
   const c = basicmap.scaleColor(i, 0, 5)
-  const ix = basicmap.lookup(c)
+  const ix = basicmap.indexOf(c)
   console.log('c', c, 'i', i, 'ix', ix)
 })
 
 const webglArray = basicmap.webglArray()
 console.log('webglArray', webglArray)
 
-const graymap = ColorMap.grayColorMap(16)
+const graymap = ColorMap.grayColorMap(0, 255, 16)
 console.log('graymap(16)', graymap.toString())
 
 const rgbcube = ColorMap.rgbColorCube(4, 4, 2)
@@ -88,7 +84,16 @@ const arrays432 = cube432.map(a => [a[0], a[1], a[2]])
 console.log('cube432', cube432.toString())
 console.log('arrays432', util.arraysToString(arrays432))
 
-util.toWindow({ gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432 })
+const rgb256 = ColorMap.Rgb256
+const lastcolor = rgb256[rgb256.length - 1]
+console.log('rgb256', util.arraysToString(rgb256))
+console.log('indexOf lastcolor', rgb256.indexOf(lastcolor))
+util.timeit(i => rgb256.indexOf(lastcolor), 1e5, 'indexOf w/o index')
+rgb256.createIndex()
+console.log('indexOf lastcolor w/ index', rgb256.indexOf(lastcolor))
+util.timeit(i => rgb256.indexOf(lastcolor), 1e5, 'indexOf w/ index')
+
+util.toWindow({ gid, gic, c0, rgbs, trgbs, basicmap, basicmap0, webglArray, graymap, rgbcube, rgbmap, hslmap, gradientmap, redorange, cssmap, cube432, arrays432, rgb256, lastcolor })
 
 util.repeat(5, (i) => {
   const r = Color.randomTypedColor()

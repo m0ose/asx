@@ -15,7 +15,7 @@ class LabelModel extends Model {
     this.trackColor = Color.toTypedColor('yellow')
     this.labeledPatches = this.patches.nOf(20)
 
-    this.patches.setDefault('labelColor', Color.typedColor(256, 0, 0))
+    this.patches.setDefault('labelColor', Color.newTypedColor(256, 0, 0))
     this.setFont('patches', 'italic bold 20px sans-serif')
 
     this.anim.setRate(60)

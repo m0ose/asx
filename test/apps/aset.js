@@ -81,8 +81,8 @@ const roads = patches.breeds.roads
 util.toWindow({ houses, roads, p: patches[0], h: houses[0], r: roads[0] })
 houses.own('address sqfeet')
 roads.own('lanes name')
-houses.setDefault('color', Color.typedColor(0, 255, 0))
-roads.setDefault('color', Color.typedColor(0, 0, 0))
+houses.setDefault('color', Color.newTypedColor(0, 255, 0))
+roads.setDefault('color', Color.newTypedColor(0, 0, 0))
 
 // util.repeat(Math.round(patches.length/10), (i) =>
 //  roads.setBreed(patches.oneOf())
