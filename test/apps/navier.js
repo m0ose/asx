@@ -201,6 +201,13 @@ class PatchModel extends Model {
           }
         }
       }
+    } else if (type === this.BOUNDS_TYPES.DENSITY) {
+      for (let i = 0; i < ds.width; i++) {
+        for (let j = 0; j < ds.height; j++) {
+          var isb = this.getXY(B, i, j) != 0
+          if (isb) ds.setXY(i, j, 0)
+        }
+      }
     }
   }
 
@@ -329,6 +336,7 @@ class PatchModel extends Model {
         }
       }
     }
+    this.setBoundary(D, this.BOUNDS_TYPES.DENSITY)
   }
 
 }
