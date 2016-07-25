@@ -116,10 +116,13 @@ const util = {
   },
 
   // Return a string representation of an array of arrays
-  arraysToString (arrays) {
-    let str = ''
-    this.repeat(arrays.length, (i) => { str += `[${arrays[i]}]` })
-    return str
+  // arraysToString (arrays) { return arrays.map(a => `[${a}]`).join(',') },
+  arraysToString: (arrays) => arrays.map(a => `[${a}]`).join(','),
+
+  // Return array of strings of fixed floats to given precision
+  fixedStrings (array, digits = 4) {
+    array = this.convertArray(array, Array) // Only Array stores strings.
+    return array.map((n) => n.toFixed(digits))
   },
 
   // Merge from's key/val pairs into to the global window namespace
@@ -267,9 +270,10 @@ const util = {
   // Return array's type (Array or TypedArray variant)
   arrayType (array) { return array.constructor },
 
-  // Return a new JavaScript Array of floats to a given precision.
+  // Return a new JavaScript Array of floats/strings to a given precision.
   // Fails for Float32Array due to float64->32 artifiacts, thus Array conversion
   fixedArray (array, digits = 4) {
+    array = this.convertArray(array, Array) // 64 bit rounding
     return array.map((n) => this.fixed(n, digits))
   },
 

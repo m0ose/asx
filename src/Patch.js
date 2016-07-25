@@ -19,9 +19,9 @@ const PatchProto = {
       agentSet: null,     // my agentset/breed, set by AgentSet ctor
       patches: null,      // my patches/baseSet, set by init()
       labelOffset: [0, 0],  // text pixel offset from the patch center
-      labelColor: Color.typedColor(0, 0, 0) // the label color
+      labelColor: Color.newTypedColor(0, 0, 0) // the label color
       // label: null,        // text for this patch, if any
-      // color: Color.typedColor(0, 0, 0)       // the patch color
+      // color: Color.newTypedColor(0, 0, 0)       // the patch color
     }
   },
 
@@ -51,9 +51,10 @@ const PatchProto = {
   setColor (typedColor) {
     this.patches.pixels.data32[this.id] = typedColor.getPixel()
   },
-  getColor (typedColor) {
-    return this.patches.pixels.data32[this.id]
+  getColor () {
+    return Color.toTypedColor(this.patches.pixels.data32[this.id])
   },
+  get color () { return this.getColor() },
 
   // Set label. Erase label via setting to undefined.
   setLabel (label) {

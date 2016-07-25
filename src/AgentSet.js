@@ -126,6 +126,10 @@ class AgentSet extends Array {
   all (reporter) { return this.every(reporter) }
   // Return property values for key from this array's objects
   props (key) { return this.map((a) => a[key]) }
+  // Return agents with reporter(agent) true
+  with (reporter) { this.filter(reporter) }
+  // Return count of agents with reporter(agent) true
+  count (reporter) { this.reduce((prev, p) => prev + reporter(p) ? 1 : 0, 0) }
 
   // Replacements for array methods to avoid calling AgentSet ctor
 

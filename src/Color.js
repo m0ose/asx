@@ -105,15 +105,18 @@ const Color = {
   // TypedArrays, and css/canvas2d strings.
 
   // Create typedColor from r,g,b,a. Use `toTypedColor()` below for strings etc.
-  typedColor (r, g, b, a = 255) {
+  newTypedColor (r, g, b, a = 255) {
     const u8array = new Uint8ClampedArray([r, g, b, a])
     u8array.pixelArray = new Uint32Array(u8array.buffer) // one element array
     // Make this an instance of TypedColorProto
     Object.setPrototypeOf(u8array, TypedColorProto)
     return u8array
   },
+  isTypedColor (color) {
+    return color.constructor === Uint8ClampedArray && color.pixelArray
+  },
   // Create a typedColor from a css string, pixel, JavaScript or Typed Array.
-  // Useful for
+  // Returns `any` if is typedColor already. Useful for
   // ```
   // css: `toTypedColor('#ff0a00')`
   // hsl: `toTypedColor('hsl(200,100%,50%)')`
@@ -122,9 +125,8 @@ const Color = {
   // JavaScript Arrays: `toTypedColor([255,0,0])`
   // ```
   toTypedColor (any) {
-    // if (util.isTypedArray(any) && any.length === 4)
-    //   return this.typedColor(any)
-    const tc = this.typedColor(0, 0, 0, 0)
+    if (this.isTypedColor(any)) return any
+    const tc = this.newTypedColor(0, 0, 0, 0)
     if (util.isInteger(any)) tc.setPixel(any)
     else if (Array.isArray(any) || util.isTypedArray(any)) tc.setColor(...any)
     else if (typeof any === 'string') tc.setCss(any)
@@ -134,7 +136,7 @@ const Color = {
   // Return a random rgb typedColor, a=255
   randomTypedColor () {
     const r255 = () => util.randomInt(256) // random int in [0,255]
-    return this.typedColor(r255(), r255(), r255())
+    return this.newTypedColor(r255(), r255(), r255())
   },
   // A static transparent color, set at end of file
   transparent: null
@@ -201,6 +203,6 @@ const TypedColorProto = {
   }
 }
 
-Color.transparent = Color.typedColor(0, 0, 0, 0)
+Color.transparent = Color.newTypedColor(0, 0, 0, 0)
 
 export default Color
