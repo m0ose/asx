@@ -18,7 +18,8 @@ class PatchModel extends Model {
     this.cmap = ColorMap.Jet
     this.dt = 1
     this.solverIterations = 12
-    this.windHeading = Math.PI/2
+    this.boundaryElasticity = 1
+    this.windHeading = Math.PI / 2
     this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.u = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
@@ -27,23 +28,43 @@ class PatchModel extends Model {
     this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     this.P = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
     this.DIV = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
+    this.boundaries = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
     for (const p of this.patches) {
       p.dens = 0
     }
     //
+    //
+    this.makeFakeBoundaries()
+    //
     // for testing mouse
     var la = document.getElementById('layers')
     la.getBoundingClientRect()
-    la.onclick = (ev)=>{
+    la.onclick = (ev) => {
       var bnd = la.getBoundingClientRect(la)
-      var dx =  ev.x - bnd.width/2 - bnd.left
-      var dy = ev.y - bnd.height/2 - bnd.top
-      this.windHeading = Math.atan2(dy,dx)
+      var dx = ev.x - bnd.width / 2 - bnd.left
+      var dy = ev.y - bnd.height / 2 - bnd.top
+      this.windHeading = Math.atan2(dy, dx)
     }
   }
 
-  indx (x,y) {
-    return x + y * this.u.width
+  makeFakeBoundaries () {
+    const W = this.world
+    for (const p of this.patches) {
+      const y = Math.cos(p.x / 9) * 34 + 21 + Math.sin(p.x) * 4
+      const diff = p.y - y
+      if (diff > 0 && diff < 20) this.boundaries.setXY(p.x - W.minX, W.maxY - p.y, 1.0)
+      if (p.x <= W.minX || p.x >= W.maxX || p.y <= W.minY || p.y >= W.maxY) {
+        this.boundaries.setXY(p.x - W.minX, W.maxY - p.y, 1.0)
+      }
+    }
+  }
+
+  indx (x, y) {
+    return Math.floor(x) + Math.floor(y) * this.u.width
+  }
+
+  getXY (ds, x, y) {
+    return ds.data[Math.floor(x) + Math.floor(y) * this.u.width]
   }
 
   // do this is order to draw them.
@@ -53,7 +74,12 @@ class PatchModel extends Model {
     for (var i = 0; i < this.patches.length; i++) {
       p = this.patches[i]
       p.dens = ds.getXY(p.x - W.minX, W.maxY - p.y)
+      if (this.boundaries.getXY(p.x - W.minX, W.maxY - p.y) > 0.0) p.dens = 4
     }
+  }
+
+  patchXY2DataSetXY (pat) {
+    return {x: pat.x - this.world.minX, y: this.world.maxY - pat.y}
   }
 
   step () {
@@ -62,7 +88,7 @@ class PatchModel extends Model {
     this.addDensity()
     this.velocityStep()
     this.densityStep()
-    setTimeout(this.drawStep.bind(this),1)
+    setTimeout(this.drawStep.bind(this), 1)
   }
 
   drawStep () {
@@ -79,6 +105,28 @@ class PatchModel extends Model {
     }
   }
 
+  // overload the agent script draw function. This is probably not the correct way
+  // Owen, how should this be done?
+  draw (force = this.anim.stopped || this.anim.draws === 1) {
+    if (this.div) {
+      if (force || this.refreshPatches) this.patches.draw(this.contexts.patches)
+    }
+    // vector
+    const ctx = this.contexts.patches
+    ctx.beginPath()
+    for (const p of this.patches) {
+      if (p.x % 5 === 0 && p.y % 5 === 0) {
+        var xy = this.patchXY2DataSetXY(p)
+        const u = this.getXY(this.u, xy.x, xy.y) // this.u.getXY(xy.x, xy.y)
+        const v = this.getXY(this.v, xy.x, xy.y) // this.v.getXY(xy.x, xy.y)
+        ctx.moveTo(p.x, p.y)
+        ctx.lineTo(p.x + u, p.y - v)
+      }
+    }
+    ctx.stroke()
+    ctx.closePath()
+  }
+
   addDensity () {
 
   }
@@ -88,9 +136,9 @@ class PatchModel extends Model {
     var h = this.world.maxY - this.world.minY
     for (let i = 0; i <= 6; i += 2) {
       for (let j = 0; j <= 6; j += 2) {
-        this.dens.setXY(w/2 + i, h/2 + j, 1)
-        this.u.setXY(w/2 + i , h/2 + j, 10 * Math.cos(this.windHeading) )
-        this.v.setXY(w/2 + i , h/2 + j, 10 * Math.sin(this.windHeading) )
+        this.dens.setXY(w / 2 + i, h / 2 + j, 1)
+        this.u.setXY(w / 2 + i, h / 2 + j, 10 * Math.cos(this.windHeading))
+        this.v.setXY(w / 2 + i, h / 2 + j, 10 * Math.sin(this.windHeading))
       }
     }
   }
@@ -98,7 +146,7 @@ class PatchModel extends Model {
   densityStep () {
     this.addSource(this.dens, this.dens_prev)
     this.swapDensity()
-    //this.diffusionStamMethod(this.dens_prev, this.dens)
+    // this.diffusionStamMethod(this.dens_prev, this.dens)
     this.dens = this.dens_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
     this.swapDensity()
     this.advect(this.dens_prev, this.dens)
@@ -108,10 +156,10 @@ class PatchModel extends Model {
     this.addSource(this.u, this.u_prev)
     this.addSource(this.v, this.v_prev)
     this.swap('u', 'u_prev')
-    //this.u = this.u_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
+    // this.u = this.u_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
     this.diffusionStamMethod(this.u_prev, this.u)
     this.swap('v', 'v_prev')
-    //this.v = this.v_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
+    // this.v = this.v_prev.convolve([0, 1, 0, 1, 2, 1, 0, 1, 0], 1 / 6 * this.dt)
     this.diffusionStamMethod(this.v_prev, this.v)
     this.project()
     this.swap('u', 'u_prev')
@@ -122,25 +170,41 @@ class PatchModel extends Model {
   }
 
   setBoundary (ds, type) {
-    //return
-    if (type == this.BOUNDS_TYPES.DENSITY) {
-      for (let i = 0; i < this.dens.width; i++) {
-        ds.setXY(i, 0, ds.bilinear(i, 1))
-        ds.setXY(i, ds.height - 1, ds.bilinear(i, ds.height - 2))
-      }
-      for (let j = 0; j < this.dens.height; j++) {
-        ds.setXY(0, j, ds.bilinear(1, j))
-        ds.setXY(ds.width - 1, j, ds.bilinear(ds.width - 2, j))
-      }
-    } else if (type === this.BOUNDS_TYPES.V) {
-      for (let i = 0; i < this.dens.width; i++) {
-        ds.setXY(i, 0, 0)
-        ds.setXY(i, ds.height - 1, 0)
+    const B = this.boundaries
+    if (type === this.BOUNDS_TYPES.V) {
+      for (let i = 0; i < ds.width; i++) {
+        for (let j = 0; j < ds.height; j++) {
+          const me = this.getXY(B, i, j) // this.boundaries.getXY(i,j)
+          const up = this.getXY(B, i, j + 1) // this.boundaries.getXY(i,j+1)
+          const dn = this.getXY(B, i, j - 1) // this.boundaries.getXY(i,j-1)
+          if (up > 0.0 || dn > 0.0) {
+            ds.setXY(i, j, -this.boundaryElasticity * ds.getXY(i, j))
+          }
+          if (me > 0.0) {
+            ds.setXY(i, j, 0)
+          }
+        }
       }
     } else if (type === this.BOUNDS_TYPES.U) {
-      for (let j = 0; j < this.dens.height; j++) {
-        ds.setXY(0, j, 0)
-        ds.setXY(ds.width - 1, j, 0)
+      for (let i = 0; i < ds.width; i++) {
+        for (let j = 0; j < ds.height; j++) {
+          const me = this.getXY(B, i, j)
+          const lf = this.getXY(B, i - 1, j) // this.boundaries.getXY(i-1,j)
+          const rt = this.getXY(B, i + 1, j) // this.boundaries.getXY(i+1,j)
+          if (lf > 0.0 || rt > 0.0) {
+            ds.setXY(i, j, -this.boundaryElasticity * ds.getXY(i, j))
+          }
+          if (me > 0.0) {
+            ds.setXY(i, j, 0)
+          }
+        }
+      }
+    } else if (type === this.BOUNDS_TYPES.DENSITY) {
+      for (let i = 0; i < ds.width; i++) {
+        for (let j = 0; j < ds.height; j++) {
+          var isb = (this.getXY(B, i, j) > 0)
+          if (isb) ds.setXY(i, j, 0)
+        }
       }
     }
   }
@@ -164,13 +228,17 @@ class PatchModel extends Model {
   advect (X0, X) {
     for (var i = 0; i < X.width; i++) {
       for (var j = 0; j < X.height; j++) {
-        var dudt = this.u.getXY(i, j) * (-this.dt)
-        var dvdt = this.v.getXY(i, j) * (-this.dt)
+        var dudt = this.getXY(this.u, i, j) * (-this.dt) // this.u.getXY(i, j) * (-this.dt)
+        var dvdt = this.getXY(this.v, i, j) * (-this.dt) // this.v.getXY(i, j) * (-this.dt)
         var x2 = dudt + i
         var y2 = dvdt + j
         if (X.inBounds(x2, y2)) {
           var val = X0.bilinear(x2, y2)
-          X.data[this.indx(i, j)] = val
+          if (this.getXY(this.boundaries, i, j) !== 0.0) {
+            X.data[this.indx(x2, y2)] = val
+          } else {
+            X.data[this.indx(i, j)] = val
+          }
           // X.setXY(i, j, val)
         } else {
           X.setXY(i, j, 0)
@@ -178,7 +246,6 @@ class PatchModel extends Model {
       }
     }
   }
-
 
   project () {
     this.projectStep1()
@@ -215,7 +282,7 @@ class PatchModel extends Model {
           var val = div.data[indx]
           val = val + p.data[indx + 1] + p.data[indx - 1]
           val = val + p.data[indx - p.width] + p.data[indx + p.width]
-          //var val = div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)
+          // var val = div.getXY(i, j) + p.getXY(i - 1, j) + p.getXY(i + 1, j) + p.getXY(i, j - 1) + p.getXY(i, j + 1)
           val = val / 4
           p.data[indx] = val
         }
@@ -234,7 +301,7 @@ class PatchModel extends Model {
     var hScale = 0.5 / U.height
     for (var i = 1; i < U.width - 1; i++) {
       for (var j = 1; j < U.height - 1; j++) {
-        var indx = this.indx(i,j)
+        var indx = this.indx(i, j)
         pdx = p.data[this.indx(i + 1, j)] - p.data[this.indx(i - 1, j)]
         pdy = p.data[this.indx(i, j + 1)] - p.data[this.indx(i, j - 1)]
         v1 = U.data[this.indx(i, j)] - wScale * pdx
@@ -272,14 +339,13 @@ class PatchModel extends Model {
 }
 
 // const [div, size, max, min] = ['layers', 4, 50, -50]
-const [div, size, max, min] = ['layers', 4, 128, 128]
 const opts =
-  {patchSize: size, minX: 0, maxX: max, minY: 0, maxY: max}
-const model = new PatchModel(div, opts)
+  {patchSize: 4, minX: -64, maxX: 64, minY: -64, maxY: 64}
+const model = new PatchModel('layers', opts)
 model.start()
 
 // debugging
 const world = model.world
 const patches = model.patches
 util.toWindow({ model, world, patches, p: patches.oneOf() })
-if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)
+util.addToDom(patches.pixels.ctx.canvas)
