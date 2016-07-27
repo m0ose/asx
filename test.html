@@ -23,7 +23,7 @@
             console.log('ok going to eval this stuff')
             var b = eval(rt)
             try {
-              eval(b)
+              Function(b)()
             } catch(er) {
               console.error(er)
               alert('failed to evaluate script')
