@@ -35,7 +35,8 @@ const PatchProto = {
 
   // Getter for neighbors of this patch.
   // Uses lazy evaluation to promote neighbors to instance variables.
-  // To avoid promotion, use `patches.neighbors(this)`
+  // To avoid promotion, use `patches.neighbors(this)`.
+  // Promotion makes getters not needed.
   get neighbors () { // lazy promote neighbors from getter to instance prop.
     const n = this.patches.neighbors(this)
     Object.defineProperty(this, 'neighbors', {value: n, enumerable: true})
@@ -47,23 +48,49 @@ const PatchProto = {
     return n
   },
 
-  // Manage colors by directly setting pixels in Patches pixels object
+  // Manage colors by directly setting pixels in Patches pixels object.
+  // With getter/setters, slight performance hit.
   setColor (typedColor) {
-    this.patches.pixels.data32[this.id] = typedColor.getPixel()
+    this.patches.pixels.data[this.id] = typedColor.getPixel()
   },
-  getColor () {
-    return Color.toTypedColor(this.patches.pixels.data32[this.id])
+  // Optimization: If shared color provided, sharedColor is modified and
+  // returned. Otherwise new color returned.
+  getColor (sharedColor = null) {
+    const pixel = this.patches.pixels.data[this.id]
+    if (sharedColor) {
+      sharedColor.pixel = pixel
+      return sharedColor
+    }
+    return Color.toTypedColor(pixel)
   },
+  // getSharedColor (typedColor) {
+  //   typedColor.setPixel(this.patches.pixels.data[this.id])
+  //   return typedColor
+  // },
+  // getColor () {
+  //   return Color.toTypedColor(this.patches.pixels.data[this.id])
+  // },
   get color () { return this.getColor() },
+  set color (typedColor) { return this.setColor(typedColor) },
 
   // Set label. Erase label via setting to undefined.
   setLabel (label) {
     this.patches.setLabel(this, label)
   },
+  getLabel () {
+    this.patches.getLabel(this)
+  },
+  get label () { return this.getLabel() },
+  set label (label) { return this.setColor(label) },
 
   // Return patch dx, dy from my position. Return undefined if off-world.
   patchAt (dx, dy) {
     return this.patches.patch(this.x + dx, this.y + dy)
-  }
+  },
+
+  setBreed (breed) { breed.setBreed(this) },
+  getBreed () { return this.agentSet },
+  get breed () { return this.getBreed() },
+  set breed (breed) { this.setBreed(breed) }
 }
 export default PatchProto

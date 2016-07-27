@@ -32,8 +32,8 @@ class Patches extends AgentSet {
   setImageData () {
     const pixels = this.pixels
     pixels.imageData = util.ctxImageData(pixels.ctx)
-    pixels.data = pixels.imageData.data
-    pixels.data32 = new Uint32Array(pixels.data.buffer)
+    pixels.data8 = pixels.imageData.data
+    pixels.data = new Uint32Array(pixels.data8.buffer)
   }
 
   // Return the offsets from a patch for its 8 element neighbors.
@@ -104,7 +104,7 @@ class Patches extends AgentSet {
     pixels.ctx.putImageData(pixels.imageData, 0, 0)
     if (pixels.are1x1) return
     util.fillCtxWithImage(ctx, pixels.ctx.canvas)
-    for (const i in this.labels) {
+    for (const i in this.labels) { // `for .. in`: skips sparse array gaps.
       const label = this.labels[i]
       const {labelOffset: offset, labelColor: color} = this[i]
       const [x, y] = this.patchXYToPixelXY(...this.patchIndexToXY(i))
@@ -188,12 +188,17 @@ class Patches extends AgentSet {
   // Return a random patch.
   randomPatch () { return this.oneOf() }
 
-  // Set label. Removes label if label `falsey`
+  // Get/Set label.
+  // Set removes label if label is null or undefined.
+  // Get returns undefined if no label.
   setLabel (patch, label) {
-    if (label)
-      this.labels[patch.id] = label
-    else
+    if (label == null) // null or undefined
       delete this.labels[patch.id]
+    else
+      this.labels[patch.id] = label
+  }
+  getLabel (patch) {
+    return this.labels[patch.id]
   }
 
   // Diffuse the value of patch variable `p.v` by distributing `rate` percent

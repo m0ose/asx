@@ -22,11 +22,11 @@ class FireModel extends Model {
     this.density = 60 // percent
     for (const p of this.patches) {
       if (p.x === this.world.minX)
-        this.ignight(p) // p.setColor(this.fireColor)
+        this.ignight(p)
       else if (util.randomInt(100) < this.density)
-        p.setColor(this.treeColor)
+        p.color = this.treeColor
       else
-        p.setColor(this.dirtColor)
+        p.color = this.dirtColor
     }
 
     this.burnedTrees = 0
@@ -37,7 +37,8 @@ class FireModel extends Model {
   step () {
     if (this.fires.length + this.embers.length === 0) {
       console.log('Stopping:', this.anim.toString())
-      console.log('Percent burned', this.burnedTrees / this.initialTrees * 100)
+      const percentBurned = this.burnedTrees / this.initialTrees * 100
+      console.log('Percent burned', percentBurned.toFixed(2))
       this.stop()
     }
 
@@ -56,7 +57,7 @@ class FireModel extends Model {
   isTree (p) { return p.color.equals(this.treeColor) }
 
   ignight (p) {
-    p.setColor(this.fireColor)
+    p.color = this.fireColor
     this.fires.setBreed(p)
     this.burnedTrees++
   }
@@ -68,7 +69,7 @@ class FireModel extends Model {
       if (ix === this.fireColorMap.length - 1)
         this.patches.setBreed(p) // sorta like die, removes from breed.
       else
-        p.setColor(this.fireColorMap[ix + 1])
+        p.color = this.fireColorMap[ix + 1]
     }
   }
 }

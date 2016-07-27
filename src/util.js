@@ -225,7 +225,6 @@ const util = {
 // ### Arrays, Objects and Iteration
 
   // Repeat function f(i) n times, n in 0, i-1.
-  // repeat (n, f) { for (let i = 0; i < n; i++) f(i) },
   repeat (n, f, o) { for (let i = 0; i < n; i++) f(i, o); return o },
   // Repeat function n/step times, incrementing i by step each step.
   step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },

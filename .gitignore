@@ -12,6 +12,7 @@ Attic/
 lib/
 test/lib/
 docs/
+asx.zip
 
 node_modules/
 npm-debug.log
