@@ -12,81 +12,98 @@ Promise.all([
   util = modules[1].default
   ColorMap = modules[2].default
   Model = modules[3].default
+  console.log('modules', modules)
+  //
+  //
+  //
+  class NavierModel extends Model {
+    setup () {
+      console.log(' main setup called', this)
+      util.error = console.warn
+      this.anim.setRate(24)
+      this.cmap = ColorMap.Jet
+      this.sim = new NavierSim(this.world.numX, this.world.numY)
+    }
+
+    step () {
+      this.sim.step()
+      this.putTypedArrayOnPatches()
+      this.drawStep()
+      this.stepCount ++
+      if (this.stepCount % 30 === 0) {
+        const now = new Date().getTime()
+        const elapsed = (now - this.startTime) / 1000
+        console.log(`model in worker steps/sec: ${this.stepCount / elapsed}, queue length: ${messageQueue.length}`)
+      }
+    }
+
+    // do this is order to draw them.
+    putTypedArrayOnPatches () {
+      for (let p of this.patches) {
+        p.dens = this.sim.dens.data[p.id]
+        if (this.sim.boundaries.data[p.id] > 0.0) {
+          p.dens = 4.0
+        }
+      }
+    }
+
+    drawStep () {
+      for (const p of this.patches) {
+        p.setColor(this.cmap.scaleColor(p.dens || 0, 0, 1))
+      }
+    }
+  }
+  //
+  // worker messaging
+  //
+  var messageQueue = []
+  var queueProcessing = false
+  var MAX_QUEUE_LENGTH = 120
+
+  self.onmessage = function (e) {
+    if (messageQueue.length < MAX_QUEUE_LENGTH) messageQueue.push(e.data)
+    if (!queueProcessing) setTimeout(processQueue, 1)
+  }
+
+  function processQueue () {
+    queueProcessing = true
+    const msg = messageQueue.shift()
+    if (msg && typeof msg === 'object') {
+      if (msg.type && msg.type === 'eval') {
+        const value = Function(msg.value)()
+        self.postMessage({type: 'eval', value: value})
+      } else if (msg.type === 'getImgData') {
+        self.postMessage({type: 'imgData', value: navierInstance.patches.pixels.imageData})
+      } else if (msg.type === 'step') {
+        navierInstance.step()
+        self.postMessage({type: 'step', value: 'done'})
+      } else if (msg.type === 'setup') {
+        navierInstance = new NavierModel(undefined, msg.value)
+      } else {
+        console.warn('dont undrstand message', msg)
+      }
+    }
+    if (messageQueue.length > 0) setTimeout(processQueue, 1)
+    else queueProcessing = false
+  }
+
+  self.onerror = function (message) {
+    console.error('worker error', message)
+  };
+  //
   self.postMessage({type:'ready'})
 })
 
 //
-// worker messaging
-//
-var messageQueue = []
-var queueProcessing = false
-var MAX_QUEUE_LENGTH = 120
-
-self.onmessage = function (e) {
-  if (messageQueue.length < MAX_QUEUE_LENGTH) messageQueue.push(e.data)
-  if (!queueProcessing) setTimeout(processQueue, 1)
-}
-
-function processQueue () {
-  queueProcessing = true
-  const msg = messageQueue.shift()
-  if (msg && typeof msg === 'object') {
-    if (msg.type === 'freeData') { // array buffer
-      // dont know what to do yet
-      //console.warn('dont know what to do with typed array', msg)
-      navierInstance.u.data = msg.u
-      navierInstance.v.data = msg.v
-      navierInstance.dens.data = msg.dens
-      navierInstance.boundaries.data = msg.boundaries
-    } else if (msg.type && msg.type === 'eval') {
-      const value = Function(msg.value)()
-      self.postMessage({type: 'eval', value: value})
-    } else if (msg.type === 'getData') {
-      let vals = {
-        type: 'data',
-        u: navierInstance.u.data,
-        v: navierInstance.v.data,
-        dens: navierInstance.dens.data,
-        boundaries: navierInstance.boundaries.data
-      }
-      // this is for transfer of ownership
-      //  Its faster but way tougher to manage
-      /* var buffs = [
-        navierInstance.u.data.buffer,
-        navierInstance.v.data.buffer,
-        navierInstance.dens.data.buffer,
-        navierInstance.boundaries.data.buffer
-      ] */
-      self.postMessage(vals) // put buffs here to transfer ownsership, which is faster
-    } else if (msg.type === 'step') {
-      navierInstance.step()
-      self.postMessage({type: 'step', value: 'done'})
-    } else if (msg.type === 'setup') {
-      let w = msg.width || 64
-      let h = msg.height || 64
-      navierInstance = new NavierSim(w, h)
-    }
-  }
-  if (messageQueue.length > 0) setTimeout(processQueue, 1)
-  else queueProcessing = false
-}
-
-self.onerror = function (message) {
-  console.error('worker error', message)
-};
-
-
-
-//
 // simulation
 //
-
 class NavierSim {
 
   constructor (width, height) {
     this.width = width
     this.height = height
     this.setup()
+    console.log(width, height)
   }
 
   setup () {
@@ -115,7 +132,7 @@ class NavierSim {
   makeFakeBoundaries () {
     for (var i=0; i < this.width; i++) {
       for (var j=0; j< this.height; j++) {
-        const y = Math.cos(i / 9) * 34 + 21 + Math.sin(i) * 4
+        const y = Math.cos(i / 9) * 34 + 1 + Math.sin(i) * 4
         const diff = j - y
         if (diff > 0 && diff < 20) this.boundaries.setXY(i, this.height - j, 1.0)
         if (i <= 0 || i >= this.width || j <= 0 || j >= this.height) {
@@ -138,13 +155,6 @@ class NavierSim {
     this.addDensity()
     this.velocityStep()
     this.densityStep()
-    this.stepCount ++
-    if (this.stepCount % 30 === 0) {
-      const now = new Date().getTime()
-      const elapsed = (now - this.startTime) / 1000
-      console.log(`model in worker steps/sec: ${this.stepCount / elapsed}, queue length: ${messageQueue.length}`)
-    }
-    // console.log('step')
   }
 
   addDensity () {

@@ -42,13 +42,13 @@ class Model {
     // Store and initialize the model's div and contexts.
     this.div = div
     this.setDiv()
-    if (this.div) { // otherwise 'headless'
+    // if (this.div) { // otherwise 'headless'
       if (!this.contexts) {
         const contexts = Model.defaultContexts()
         Object.assign(contexts, contextOptions)
         this.initContexts(contexts)
       }
-    }
+    // }
     // Initialize the model by calling the methods used to reset the model.
     // Similar to calling NetLogo's `clear` methods.
     this.reset()
@@ -84,7 +84,7 @@ class Model {
   setDiv () {
     let div = this.div
     div = util.isString(div) ? document.getElementById(div) : div
-    if (div) { // can be null for headless
+    if (div && div.style) { // can be null for headless
       // Note: el.setAttribute 'style' erases existing style,
       // el.style.xx does not
       div.style.position = 'relative'
