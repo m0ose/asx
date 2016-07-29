@@ -516,7 +516,7 @@ const util = {
   // As above, but returing the context object.
   // NOTE: ctx.canvas is the canvas for the ctx, and can be use as an image.
   createCtx (width, height, ctxType = '2d') {
-    const can = this.createCanvas(width, height) // this.createCanvas(width, height)
+    const can = this.createCanvas(width, height)
     return can.getContext(ctxType === '2d' ? '2d' : 'webgl')
   },
   // Return the (complete) ImageData object for this context object
