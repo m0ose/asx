@@ -1,13 +1,17 @@
 importScripts('../../etc/system.js')
 
-var DataSet, util, navierInstance
+var DataSet, util, ColorMap, Model, navierInstance
 
 Promise.all([
   System.import('../../lib/DataSet'),
-  System.import('../../lib/util')
+  System.import('../../lib/util'),
+  System.import('../../lib/ColorMap.js'),
+  System.import('../../lib/Model.js')
 ]).then(function (modules) {
   DataSet = modules[0].default
   util = modules[1].default
+  ColorMap = modules[2].default
+  Model = modules[3].default
   self.postMessage({type:'ready'})
 })
 
