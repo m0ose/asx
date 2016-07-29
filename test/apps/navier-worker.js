@@ -1,49 +1,74 @@
 importScripts('../../etc/system.js')
 
-var DataSet, util
-
-System.import(['../../lib/DataSet', '../../lib/util']).then(function(_DataSet, _util){
-  DataSet = _DataSet.default
-  util = _util.default
-  var ds = new DataSet.default(12, 12, new Float32Array(12*12))
-  console.log('success with using systemJS in a webworker', ds)
-})
+var DataSet, util, navierInstance
 
 Promise.all([
   System.import('../../lib/DataSet'),
   System.import('../../lib/util')
 ]).then(function (modules) {
-  console.log('modules', modules)
   DataSet = modules[0].default
   util = modules[1].default
-  console.log(DataSet, util)
-  var ds = new DataSet(12, 12, new Float32Array(12*12))
-  console.log('success with using systemJS in a webworker', ds)
+  self.postMessage({type:'ready'})
 })
 
+//
+// worker messaging
+//
+var messageQueue = []
+var queueProcessing = false
+var MAX_QUEUE_LENGTH = 120
 
-
-
-
-
-console.log('hello')
-if ('undefined' !== typeof WorkerGlobalScope) {
-  console.log('worker')
-    // not in worker
+self.onmessage = function (e) {
+  if (messageQueue.length < MAX_QUEUE_LENGTH) messageQueue.push(e.data)
+  if (!queueProcessing) setTimeout(processQueue, 1)
 }
 
-self.onmessage = function(e) {
-  console.log('woo',e)
-  var data = e.data
-  //var uInt8View = new Uint8Array(e.data);
-  if (data.byteLength) {console.log('its a buffer')}
-  var dataView = new Float32Array(data)
-  for(var i=0; i<dataView.length; i++) dataView[i] = Math.random()
-  self.postMessage(dataView.buffer, [dataView.buffer])
-};
+function processQueue () {
+  queueProcessing = true
+  const msg = messageQueue.shift()
+  if (msg && typeof msg === 'object') {
+    if (msg.type === 'freeData') { // array buffer
+      // dont know what to do yet
+      //console.warn('dont know what to do with typed array', msg)
+      navierInstance.u.data = msg.u
+      navierInstance.v.data = msg.v
+      navierInstance.dens.data = msg.dens
+      navierInstance.boundaries.data = msg.boundaries
+    } else if (msg.type && msg.type === 'eval') {
+      const value = Function(msg.value)()
+      self.postMessage({type: 'eval', value: value})
+    } else if (msg.type === 'getData') {
+      let vals = {
+        type: 'data',
+        u: navierInstance.u.data,
+        v: navierInstance.v.data,
+        dens: navierInstance.dens.data,
+        boundaries: navierInstance.boundaries.data
+      }
+      // this is for transfer of ownership
+      //  Its faster but way tougher to manage
+      /* var buffs = [
+        navierInstance.u.data.buffer,
+        navierInstance.v.data.buffer,
+        navierInstance.dens.data.buffer,
+        navierInstance.boundaries.data.buffer
+      ] */
+      self.postMessage(vals) // put buffs here to transfer ownsership, which is faster
+    } else if (msg.type === 'step') {
+      navierInstance.step()
+      self.postMessage({type: 'step', value: 'done'})
+    } else if (msg.type === 'setup') {
+      let w = msg.width || 64
+      let h = msg.height || 64
+      navierInstance = new NavierSim(w, h)
+    }
+  }
+  if (messageQueue.length > 0) setTimeout(processQueue, 1)
+  else queueProcessing = false
+}
 
-self.onerror = function(message) {
-  log('worker error');
+self.onerror = function (message) {
+  console.error('worker error', message)
 };
 
 
@@ -51,6 +76,7 @@ self.onerror = function(message) {
 //
 // simulation
 //
+
 class NavierSim {
 
   constructor (width, height) {
@@ -66,18 +92,20 @@ class NavierSim {
     this.solverIterations = 12
     this.boundaryElasticity = 1
     this.windHeading = Math.PI / 2
-    this.dens = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
-    this.dens_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
-    this.u = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
-    this.v = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
-    this.u_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
-    this.v_prev = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
-    this.P = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
-    this.DIV = DataSet.emptyDataSet(this.u.width, this.u.height, Float32Array)
-    this.boundaries = DataSet.emptyDataSet(this.world.numX, this.world.numY, Float32Array)
-    //
+    this.dens = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.dens_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.u = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.v = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.u_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.v_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.P = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.DIV = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.boundaries = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     //
     this.makeFakeBoundaries()
+    this.startTime = new Date().getTime()
+    this.stepCount = 0
+    // navier sim created
   }
 
   makeFakeBoundaries () {
@@ -106,7 +134,13 @@ class NavierSim {
     this.addDensity()
     this.velocityStep()
     this.densityStep()
-    setTimeout(this.drawStep.bind(this), 1)
+    this.stepCount ++
+    if (this.stepCount % 30 === 0) {
+      const now = new Date().getTime()
+      const elapsed = (now - this.startTime) / 1000
+      console.log(`model in worker steps/sec: ${this.stepCount / elapsed}, queue length: ${messageQueue.length}`)
+    }
+    // console.log('step')
   }
 
   addDensity () {
@@ -114,8 +148,8 @@ class NavierSim {
   }
 
   addForces () {
-    var w = this.world.maxX - this.world.minX
-    var h = this.world.maxY - this.world.minY
+    var w = this.width
+    var h = this.height
     for (let i = 0; i <= 6; i += 2) {
       for (let j = 0; j <= 6; j += 2) {
         this.dens.setXY(w / 2 + i, h / 2 + j, 1)
