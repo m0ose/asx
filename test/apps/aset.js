@@ -5,7 +5,7 @@ import util from 'lib/util.js'
 
 const modules = { ColorMap, Model, util }
 util.toWindow(modules)
-console.log(Object.keys(modules).join(' '))
+console.log(Object.keys(modules).join(', '))
 
 class BreedTest extends Model {
   setup () {

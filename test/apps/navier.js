@@ -7,7 +7,7 @@ window.pps = util.pps
 
 const modules = { ColorMap, Model, util, pps: util.pps }
 util.toWindow(modules)
-console.log(Object.keys(modules).join(' '))
+console.log(Object.keys(modules).join(', '))
 
 class PatchModel extends Model {
 
