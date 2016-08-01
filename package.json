@@ -1,0 +1,46 @@
+{
+  "name": "asx",
+  "version": "0.1.0",
+  "description": "eXperimental modules for AgentScript, 2nd Edition",
+  "main": "src/app.js",
+  "author": "Owen Densmore",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/backspaces/asx.git"
+  },
+  "scripts": {
+    "all": "npm run build && npm run docs",
+    "clean": "shx rm lib/* test/lib/* docs/*.html",
+
+    "installglobals": "npm install babel-cli babel-plugin-transform-es2015-modules-systemjs -g",
+
+    "build:as": "babel --plugins transform-es2015-modules-systemjs src -d lib",
+    "build:test": "babel --plugins transform-es2015-modules-systemjs test/apps -d test/lib",
+    "build": "npm run build:as && npm run build:test",
+
+    "watch": "npm run build:as -- --watch & npm run build:test -- --watch",
+
+    "docs": "docco -o ./docs/ ./src/*.js",
+
+    "git-diff": "git diff README.md package.json src test/apps",
+    "git-diff-staged": "git diff --staged README.md package.json src test/apps",
+    "git-prep": "npm run all && git add . && git status",
+    "git-commit": "git commit -v && git push origin master"
+  },
+  "globalDependencies": {
+    "README": "Standard global installs: run installglobals",
+    "babel-cli": "^6.6.0",
+    "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0"
+  },
+  "dependencies": {
+    "systemjs": "^0.19.23"
+  },
+  "devDependencies": {
+    "docco": "^0.7.0",
+    "lzma": "^2.3.0",
+    "pako": "^1.0.0",
+    "shx": "^0.1.1",
+    "uglify-js": "^2.6.2"
+  }
+}

@@ -1,0 +1,17 @@
+<html>
+<head>
+  <title>asx</title>
+  <script src="etc/system.js"></script>
+</script>
+</head>
+<body>
+  <script>
+    var app = document.location.search.substring(1) || 'app'
+    app = `test/lib/${app}.js`
+    console.log('running', app)
+    System.import(app)
+  </script>
+  <div id='layers'> </div>
+  <!-- <canvas id="can" width="300" height="200"></canvas> -->
+</body>
+</html>
