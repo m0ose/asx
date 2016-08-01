@@ -98,9 +98,8 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>
-<span class="hljs-keyword">import</span> AgentSet <span class="hljs-keyword">from</span> <span class="hljs-string">'./AgentSet.js'</span>
-<span class="hljs-keyword">import</span> DataSet <span class="hljs-keyword">from</span> <span class="hljs-string">'./DataSet.js'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> AgentSet <span class="hljs-keyword">from</span> <span class="hljs-string">'./AgentSet.js'</span>
+<span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span></pre></div></div>
             
         </li>
         
@@ -196,8 +195,8 @@ from Model’s world values: size, minX, maxX, minY, maxY</p>
             <div class="content"><div class='highlight'><pre>  setImageData () {
     <span class="hljs-keyword">const</span> pixels = <span class="hljs-keyword">this</span>.pixels
     pixels.imageData = util.ctxImageData(pixels.ctx)
-    pixels.data8 = pixels.imageData.data
-    pixels.data = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint32Array</span>(pixels.data8.buffer)
+    pixels.data = pixels.imageData.data
+    pixels.data32 = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint32Array</span>(pixels.data.buffer)
   }</pre></div></div>
             
         </li>
@@ -369,7 +368,7 @@ Specialized to be faster than patchRect below.</p>
     pixels.ctx.putImageData(pixels.imageData, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
     <span class="hljs-keyword">if</span> (pixels.are1x1) <span class="hljs-keyword">return</span>
     util.fillCtxWithImage(ctx, pixels.ctx.canvas)
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> i <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.labels) { <span class="hljs-comment">// `for .. in`: skips sparse array gaps.</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> i <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.labels) {
       <span class="hljs-keyword">const</span> label = <span class="hljs-keyword">this</span>.labels[i]
       <span class="hljs-keyword">const</span> {labelOffset: offset, labelColor: color} = <span class="hljs-keyword">this</span>[i]
       <span class="hljs-keyword">const</span> [x, y] = <span class="hljs-keyword">this</span>.patchXYToPixelXY(...this.patchIndexToXY(i))
@@ -445,32 +444,6 @@ This is an async function, using es6 Promises.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
-              <p>Import/export DataSet to/from patch variable <code>patchVar</code>.
-<code>useNearest</code>: true for fast rounding to nearest; false for bi-linear.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  importDataSet (dataSet, patchVar, useNearest = <span class="hljs-literal">false</span>) {
-    <span class="hljs-keyword">const</span> {numX, numY} = <span class="hljs-keyword">this</span>.world
-    <span class="hljs-keyword">const</span> dataset = dataSet.resample(numX, numY, useNearest)
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> patch <span class="hljs-keyword">of</span> <span class="hljs-keyword">this</span>)
-      patch[patchVar] = dataset.data[patch.id]
-  }
-  exportDataSet (patchVar) {
-    <span class="hljs-keyword">const</span> {numX, numY} = <span class="hljs-keyword">this</span>.world
-    <span class="hljs-keyword">const</span> data = util.aProps(<span class="hljs-keyword">this</span>, patchVar)
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet(numX, numY, data)
-  }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-19">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
-              </div>
               <p>Return true if x,y floats are within patch world.</p>
 
             </div>
@@ -483,11 +456,11 @@ This is an async function, using es6 Promises.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Return patch at x,y float values according to topology.
 Return undefined if off-world</p>
@@ -502,11 +475,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Return the patch id/index given valid integer x,y in patch coords</p>
 
@@ -520,11 +493,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Return the patch x,y patch coords given a valid patches id/index</p>
 
@@ -538,11 +511,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Return the patch at x,y where both are valid integer patch coordinates.</p>
 
@@ -553,11 +526,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Convert to/from pixel coords &amp; patch coords</p>
 
@@ -575,11 +548,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Return a random valid float x,y point in patch space</p>
 
@@ -594,11 +567,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Return a random patch.</p>
 
@@ -609,36 +582,31 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>Get/Set label.
-Set removes label if label is null or undefined.
-Get returns undefined if no label.</p>
+              <p>Set label. Removes label if label <code>falsey</code></p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  setLabel (patch, label) {
-    <span class="hljs-keyword">if</span> (label == <span class="hljs-literal">null</span>) <span class="hljs-comment">// null or undefined</span>
-      <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>.labels[patch.id]
-    <span class="hljs-keyword">else</span>
+    <span class="hljs-keyword">if</span> (label)
       <span class="hljs-keyword">this</span>.labels[patch.id] = label
-  }
-  getLabel (patch) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.labels[patch.id]
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>.labels[patch.id]
   }</pre></div></div>
             
         </li>
         
         
-        <li id="section-28">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Diffuse the value of patch variable <code>p.v</code> by distributing <code>rate</code> percent
 of each patch’s value of <code>v</code> to its neighbors.
@@ -659,11 +627,11 @@ If the patch has less than 4/8 neighbors, return the extra to the patch.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>zero temp variable if not yet set</p>
 
@@ -675,11 +643,11 @@ If the patch has less than 4/8 neighbors, return the extra to the patch.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>pass 1: calculate contribution of all patches to themselves and neighbors</p>
 
@@ -697,11 +665,11 @@ If the patch has less than 4/8 neighbors, return the extra to the patch.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>pass 2: set new value for all patches, zero temp,
 modify color if colorMap given</p>

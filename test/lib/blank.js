@@ -30,12 +30,25 @@ System.register(['lib/util.js', 'lib/AgentSet.js', 'lib/Animator.js', 'lib/Color
 
       const modules = {
         AgentSet, Animator, Color, ColorMap, DataSet,
-        Mouse, Model, OofA, Patch, Patches, util
+        Mouse, Model, OofA, Patch, Patches, util,
+        pps: util.pps
       }; // Import the lib/ mmodules via relative paths
-      // Import the lib/ mmodules via relative paths
 
       util.toWindow(modules);
-      console.log('modules:', Object.keys(modules).join(', '));
+      console.log('modules:', Object.keys(modules).toString());
+
+      // const el = document.getElementById('layers')
+      // util.toWindow({el})
+      // el.style.width = 400
+      // el.style.height = 400
+      // const mouse = new Mouse(el, (evt) => { console.log(mouse) })
+
+      const model = new Model('layers');
+      const mouse = new Mouse(model, true, evt => {
+        console.log(mouse);
+      }).start();
+      // mouse.start()
+      util.toWindow({ model, mouse });
     }
   };
 });

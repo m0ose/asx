@@ -157,7 +157,7 @@ layer in a patch prototype stack.</p>
       agentSet: <span class="hljs-literal">null</span>,     <span class="hljs-comment">// my agentset/breed, set by AgentSet ctor</span>
       patches: <span class="hljs-literal">null</span>,      <span class="hljs-comment">// my patches/baseSet, set by init()</span>
       labelOffset: [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>],  <span class="hljs-comment">// text pixel offset from the patch center</span>
-      labelColor: Color.newTypedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>) <span class="hljs-comment">// the label color</span></pre></div></div>
+      labelColor: Color.typedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>) <span class="hljs-comment">// the label color</span></pre></div></div>
             
         </li>
         
@@ -169,7 +169,7 @@ layer in a patch prototype stack.</p>
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>label: null,        // text for this patch, if any
-color: Color.newTypedColor(0, 0, 0)       // the patch color</p>
+color: Color.typedColor(0, 0, 0)       // the patch color</p>
 
             </div>
             
@@ -207,8 +207,7 @@ color: Color.newTypedColor(0, 0, 0)       // the patch color</p>
               </div>
               <p>Getter for neighbors of this patch.
 Uses lazy evaluation to promote neighbors to instance variables.
-To avoid promotion, use <code>patches.neighbors(this)</code>.
-Promotion makes getters not needed.</p>
+To avoid promotion, use <code>patches.neighbors(this)</code></p>
 
             </div>
             
@@ -232,13 +231,15 @@ Promotion makes getters not needed.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
-              <p>Manage colors by directly setting pixels in Patches pixels object.
-With getter/setters, slight performance hit.</p>
+              <p>Manage colors by directly setting pixels in Patches pixels object</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  setColor (typedColor) {
-    <span class="hljs-keyword">this</span>.patches.pixels.data[<span class="hljs-keyword">this</span>.id] = typedColor.getPixel()
+    <span class="hljs-keyword">this</span>.patches.pixels.data32[<span class="hljs-keyword">this</span>.id] = typedColor.getPixel()
+  },
+  getColor (typedColor) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.patches.pixels.data32[<span class="hljs-keyword">this</span>.id]
   },</pre></div></div>
             
         </li>
@@ -250,18 +251,12 @@ With getter/setters, slight performance hit.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
-              <p>Optimization: If shared color provided, sharedColor is modified and
-returned. Otherwise new color returned.</p>
+              <p>Set label. Erase label via setting to undefined.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  getColor (sharedColor = <span class="hljs-literal">null</span>) {
-    <span class="hljs-keyword">const</span> pixel = <span class="hljs-keyword">this</span>.patches.pixels.data[<span class="hljs-keyword">this</span>.id]
-    <span class="hljs-keyword">if</span> (sharedColor) {
-      sharedColor.pixel = pixel
-      <span class="hljs-keyword">return</span> sharedColor
-    }
-    <span class="hljs-keyword">return</span> Color.toTypedColor(pixel)
+            <div class="content"><div class='highlight'><pre>  setLabel (label) {
+    <span class="hljs-keyword">this</span>.patches.setLabel(<span class="hljs-keyword">this</span>, label)
   },</pre></div></div>
             
         </li>
@@ -273,62 +268,13 @@ returned. Otherwise new color returned.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>getSharedColor (typedColor) {
-  typedColor.setPixel(this.patches.pixels.data[this.id])
-  return typedColor
-},
-getColor () {
-  return Color.toTypedColor(this.patches.pixels.data[this.id])
-},</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  get color () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getColor() },
-  set color (typedColor) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.setColor(typedColor) },</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-11">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
-              </div>
-              <p>Set label. Erase label via setting to undefined.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  setLabel (label) {
-    <span class="hljs-keyword">this</span>.patches.setLabel(<span class="hljs-keyword">this</span>, label)
-  },
-  getLabel () {
-    <span class="hljs-keyword">this</span>.patches.getLabel(<span class="hljs-keyword">this</span>)
-  },
-  get label () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getLabel() },
-  set label (label) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.setColor(label) },</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-12">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
-              </div>
               <p>Return patch dx, dy from my position. Return undefined if off-world.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  patchAt (dx, dy) {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.patches.patch(<span class="hljs-keyword">this</span>.x + dx, <span class="hljs-keyword">this</span>.y + dy)
-  },
-
-  setBreed (breed) { breed.setBreed(<span class="hljs-keyword">this</span>) },
-  getBreed () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet },
-  get breed () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getBreed() },
-  set breed (breed) { <span class="hljs-keyword">this</span>.setBreed(breed) }
+  }
 }
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PatchProto</pre></div></div>
             

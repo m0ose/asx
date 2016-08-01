@@ -53,38 +53,29 @@ System.register(['lib/util.js'], function (_export, _context) {
       // pps(a, 'a')
       // pps(b, 'b')
 
-      // Destructuring test
-      const w = 100,
-            h = 100,
-            d = new Array(w * h),
-            num = 1e5,
-            array = [w, h, d];
-      const ad = {
-        f6(a) {
-          const [width, height, data] = a;
-        },
-        f5(a) {
-          const width = a[0],
-                height = a[1],
-                data = a[2];
+      class DataSet6 {
+        constructor(width, height, data) {
+          if (data.length !== width * height) util.error(`new DataSet length: ${ data.length } !== ${ width } * ${ height }`);else [this.width, this.height, this.data] = [width, height, data];
         }
-      };
-      util.timeit(i => ad.f6(array), num, 'es6 array destructuring');
-      util.timeit(i => ad.f5(array), num, 'es5 array destructuring');
+      }
+      class DataSet5 {
+        constructor(width, height, data) {
+          if (data.length !== width * height) {
+            util.error(`new DataSet length: ${ data.length } !== ${ width } * ${ height }`);
+          } else {
+            this.width = width;
+            this.height = height;
+            this.data = data;
+          }
+        }
+      }
 
-      const obj = { width: w, height: h, data: d };
-      const od = { // object deconstruction
-        f6(obj) {
-          const { width, height, data } = obj;
-        },
-        f5(obj) {
-          const width = obj.width,
-                height = obj.height,
-                data = obj.data;
-        }
-      };
-      util.timeit(i => od.f6(obj), num, 'es6 object destructuring');
-      util.timeit(i => od.f5(obj), num, 'es5 object destructuring');
+      let w = 100,
+          h = 100,
+          d = new Array(w * h),
+          num = 1e5;
+      util.timeit(i => new DataSet6(w, h, d), num);
+      util.timeit(i => new DataSet5(w, h, d), num);
     }
   };
 });
