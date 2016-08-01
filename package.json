@@ -13,8 +13,6 @@
     "all": "npm run build && npm run docs",
     "clean": "shx rm lib/* test/lib/* docs/*.html",
 
-    "installglobals": "npm install babel-cli babel-plugin-transform-es2015-modules-systemjs -g",
-
     "zip": "zip -r asx.zip etc lib test/lib test.html",
 
     "build:as": "babel --plugins transform-es2015-modules-systemjs src -d lib",
@@ -27,11 +25,6 @@
 
     "git-prep": "npm run all && git add . && git status",
     "git-commit": "git commit -v && git push origin master"
-  },
-  "globalDependencies": {
-    "README": "Standard global installs: run installglobals",
-    "babel-cli": "^6.6.0",
-    "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0"
   },
   "dependencies": {
     "systemjs": "^0.19.23"
