@@ -53,7 +53,6 @@ class Model {
     // Initialize the model by calling `startup` and `reset`.
     // If `startup` returns a promise, or generator/iterator, manage it.
     // Arrow functions used to maintain `this`, lexical scope.
-    console.log('ctor startup') //, it)
     this.modelReady = false
     const setupFcn = () => { this.reset(); this.modelReady = true }
     util.runAsyncFcn(() => this.startup(), setupFcn)
