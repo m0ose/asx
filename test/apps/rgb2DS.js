@@ -1,5 +1,5 @@
 import DataSet from 'lib/DataSet.js'
-import RgbImageDataSet from 'lib/RgbImageDataSet.js'
+import RGBDataSet from 'lib/RGBDataSet.js'
 import util from 'lib/util.js'
 import ColorMap from 'lib/ColorMap.js'
 import Model from 'lib/Model.js'
@@ -12,7 +12,7 @@ function testRGB () {
   const imgurl = 'test/data/7.15.35.png'
   util.imagePromise(imgurl).then((img) => {
     console.log(img)
-    var ds = new RgbImageDataSet(img)
+    var ds = new RGBDataSet(img)
     // put colors onto a model
     model.patches.importDataSet(ds, 'elev', true)
     const cmap = ColorMap.Jet

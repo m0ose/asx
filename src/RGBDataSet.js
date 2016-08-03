@@ -1,7 +1,7 @@
 import util from 'lib/util.js'
 import DataSet from 'lib/DataSet.js'
 
-class RgbImageDataSet extends DataSet {
+class RGBDataSet extends DataSet {
 
   constructor (img, options = {}) {
     super(img.width, img.height, new Float32Array(img.width * img.height))
@@ -10,7 +10,7 @@ class RgbImageDataSet extends DataSet {
     util.fillCtxWithImage(ctx, img)
     const imgData = util.ctxImageData(ctx)
     const convertedData = new Float32Array(img.width * img.height)
-    for (var i=0; i < convertedData.length; i++) {
+    for (var i = 0; i < convertedData.length; i++) {
       let r = imgData.data[4 * i], g = imgData.data[4 * i + 1], b = imgData.data[4 * i + 2]
       convertedData[i] = this.rgb2Number(r, g, b)
     }
@@ -33,4 +33,4 @@ class RgbImageDataSet extends DataSet {
   }
 }
 
-export default RgbImageDataSet
+export default RGBDataSet
