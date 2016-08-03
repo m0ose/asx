@@ -25,8 +25,7 @@ class TileDataSet extends DataSet {
     this.callback = function (err, v) {
       if (err) {
         console.error('default Error Callback', err)
-      }
-      else {
+      } else {
         if (this.debug) console.log('default success callback', v)
       }
     }
@@ -86,7 +85,7 @@ class TileDataSet extends DataSet {
     for (let x = ulTile[0]; x <= lrTile[0]; x++) {
       for (let y = ulTile[1]; y <= lrTile[1]; y++) {
         let url = String(this.url)
-        url = url.replace('{x}', x).replace('{y}',y).replace('{z}',zoom)
+        url = url.replace('{x}', x).replace('{y}', y).replace('{z}', zoom)
         const res = { imgX: count[0], imgY: count[1], x: x, y: y, url: url }
         result.tiles.push(res)
         //
@@ -100,7 +99,7 @@ class TileDataSet extends DataSet {
 
   // DOWNLOAD
   //
-  downloadTiles(tileLocs, successCallback) {
+  downloadTiles (tileLocs, successCallback) {
     if (this.debug) console.time('downloadTiles')
     let promises = []
     for (let i of this.tileLocations.tiles) {
@@ -118,7 +117,7 @@ class TileDataSet extends DataSet {
   // if the download fails this makes the data
   //
   makeFailDataSet () {
-    var ds = new DataSet(this.tileWidth, this.tileHeight, new Float32Array(this.tileWidth*this.tileHeight))
+    var ds = new DataSet(this.tileWidth, this.tileHeight, new Float32Array(this.tileWidth * this.tileHeight))
     ds.useNearest = this.useNearest
     return ds
   }
@@ -130,8 +129,7 @@ class TileDataSet extends DataSet {
     // Stitch all tiles into a mosaic
     const wid = this.tileLocations.width * this.tileWidth
     const hei = this.tileLocations.height * this.tileHeight
-    let stitched = new DataSet(wid, hei, new Float32Array(wid*hei))
-    stitched.useNearest = this.useNearest
+    const stitched = new DataSet(wid, hei, new Float32Array(wid * hei))
     for (let im of tiles) {
       const md = this.tileLocations.tiles.find((a) => {
         return im.src === a.url
@@ -143,7 +141,6 @@ class TileDataSet extends DataSet {
       } else {
         ds = new RgbImageDataSet(im)
       }
-      ds.useNearest = this.useNearest
       stitched.paste(ds, md.imgX * this.tileWidth, md.imgY * this.tileHeight)
     }
     if (this.debug) console.timeEnd('stitching')
@@ -174,19 +171,19 @@ class TileDataSet extends DataSet {
   //   http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
   //
   long2tile (lon, zoom) {
-    return (Math.floor((lon+180)/360*Math.pow(2,zoom)));
+    return (Math.floor((lon + 180) / 360 * Math.pow(2, zoom)))
   }
   lat2tile (lat, zoom) {
-    return (Math.floor((1-Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180))/Math.PI)/2 *Math.pow(2,zoom)));
+    return (Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)))
   }
 
   tile2long (x, y, z) {
-    return (x/Math.pow(2,z)*360-180);
+    return (x / Math.pow(2, z) * 360 - 180)
   }
 
   tile2lat (x, y, z) {
-    const n=Math.PI-2*Math.PI*y/Math.pow(2,z);
-    return (180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))));
+    const n = Math.PI - 2 * Math.PI * y / Math.pow(2, z)
+    return (180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))))
   }
 }
 
