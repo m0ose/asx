@@ -16,8 +16,10 @@ function testRGB () {
     // put colors onto a model
     model.patches.importDataSet(ds, 'elev', true)
     const cmap = ColorMap.Jet
+    const [min, max] = [ds.min(), ds.max()]
+    console.log('min:', min, 'max:', max)
     for (const p of model.patches) {
-      p.setColor(cmap.scaleColor(p.elev, 0, 2000))
+      p.setColor(cmap.scaleColor(p.elev, min, max))
     }
     model.once()
     console.log(ds)

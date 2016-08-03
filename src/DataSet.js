@@ -374,6 +374,18 @@ class DataSet {
     return u.ctxToDataUrl(this.toContext(gray, normalize, alpha))
   }
 
+  max () {
+    return this.data.reduce(function (a, b) {
+      return Math.max(a, b)
+    })
+  }
+
+  min () {
+    return this.data.reduce(function (a, b) {
+      return Math.min(a, b)
+    })
+  }
+
   // Import an image as a dataset via it
 
 }
