@@ -1,4 +1,3 @@
-import DataSet from 'lib/DataSet.js'
 import RGBDataSet from 'lib/RGBDataSet.js'
 import util from 'lib/util.js'
 import ColorMap from 'lib/ColorMap.js'
