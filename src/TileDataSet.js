@@ -101,9 +101,9 @@ class TileDataSet extends DataSet {
   //
   downloadTiles (tileLocs, successCallback) {
     if (this.debug) console.time('downloadTiles')
-    let promises = []
-    for (let i of this.tileLocations.tiles) {
-      let pr = util.imagePromise(i.url) // this.LFwrapPromiseFactory(i.url, i)
+    const promises = []
+    for (const i of this.tileLocations.tiles) {
+      const pr = util.imagePromise(i.url) // this.LFwrapPromiseFactory(i.url, i)
       promises.push(pr)
     }
     Promise.all(promises).then((ev) => {
@@ -130,7 +130,7 @@ class TileDataSet extends DataSet {
     const wid = this.tileLocations.width * this.tileWidth
     const hei = this.tileLocations.height * this.tileHeight
     const stitched = new DataSet(wid, hei, new Float32Array(wid * hei))
-    for (let im of tiles) {
+    for (const im of tiles) {
       const md = this.tileLocations.tiles.find((a) => {
         return im.src === a.url
       })
@@ -161,7 +161,7 @@ class TileDataSet extends DataSet {
     let pxLR = [wid * (bndLR[0] / dimT[0]), hei * (bndLR[1] / dimT[1])]
     pxUL = [Math.round(pxUL[0]), Math.round(pxUL[1])]
     pxLR = [Math.round(pxLR[0]), Math.round(pxLR[1])]
-    let extraction = stitched.subset(pxUL[0], pxUL[1], pxLR[0] - pxUL[0], pxLR[1] - pxUL[1])
+    const extraction = stitched.subset(pxUL[0], pxUL[1], pxLR[0] - pxUL[0], pxLR[1] - pxUL[1])
     if (this.debug) console.timeEnd('cropping')
     return extraction
   }
