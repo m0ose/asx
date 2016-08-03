@@ -13,8 +13,6 @@
     "all": "npm run build && npm run docs",
     "clean": "shx rm lib/* test/lib/* docs/*.html",
 
-    "installglobals": "npm install babel-cli babel-plugin-transform-es2015-modules-systemjs -g",
-
     "zip": "zip -r asx.zip etc lib test/lib test.html",
 
     "build:as": "babel --plugins transform-es2015-modules-systemjs src -d lib",
@@ -26,17 +24,17 @@
     "docs": "docco -o ./docs/ ./src/*.js",
 
     "git-prep": "npm run all && git add . && git status",
-    "git-commit": "git commit -v && git push origin master"
-  },
-  "globalDependencies": {
-    "README": "Standard global installs: run installglobals",
-    "babel-cli": "^6.6.0",
-    "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0"
+    "git-commit": "git commit -v && git push origin master",
+
+    "make-pages": "git merge master && git add -f docs lib test/lib && git push origin gh-pages",
+    "gh-pages": "git checkout gh-pages && npm run make-pages && git checkout master"
   },
   "dependencies": {
     "systemjs": "^0.19.23"
   },
   "devDependencies": {
+    "babel-cli": "^6.6.0",
+    "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0",
     "docco": "^0.7.0",
     "lzma": "^2.3.0",
     "pako": "^1.0.0",

@@ -13,6 +13,8 @@ const PatchProto = {
   },
   // Return an object that will initially be the "default" variables
   // layer in a patch prototype stack.
+  // Surprisingly `label` and `color` are not here, they are managed
+  // by the Patches AgentSet.
   baseVariables () { // Core variables for patches. Not 'own' variables.
     return {
       id: null,           // unique id, set by agentset's add() method
@@ -20,8 +22,6 @@ const PatchProto = {
       patches: null,      // my patches/baseSet, set by init()
       labelOffset: [0, 0],  // text pixel offset from the patch center
       labelColor: Color.newTypedColor(0, 0, 0) // the label color
-      // label: null,        // text for this patch, if any
-      // color: Color.newTypedColor(0, 0, 0)       // the patch color
     }
   },
 

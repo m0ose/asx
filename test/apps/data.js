@@ -11,9 +11,9 @@ import pako from 'node_modules/pako/dist/pako.js'
 const modules = { DataSet, util, LZMA, lzma, pako, pps: util.pps }
 util.toWindow(modules)
 // window.pps = util.pps
-console.log(Object.keys(modules).join(' '))
+console.log(Object.keys(modules).join(', '))
 
-const imageUrl = 'test/data/redfish128t.png' // 26k
+const imageUrl = 'test/data/test.png' // 26k
 // function compress (compressor, uint8Array, level = 9) {
 //   const compressedArray = compressor.compress
 //     ? new Uint8Array(compressor.compress(uint8Array, { level }))

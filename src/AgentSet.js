@@ -11,7 +11,6 @@ class AgentSet extends Array {
   // If baseSet is supplied, the new agentset is a subarray of baseSet.
   // This sub-array feature is how breeds are managed, see class `Model`
   constructor (model, agentProto, name, baseSet = null) {
-    // console.log('AgentSet ctor', arguments)
     // Because es6 JavaScript Array itself calls the Array ctor
     // (ex: slice() returning a new array), skip if not AgentSet ctor.
     if (typeof model === 'number') {
@@ -78,7 +77,6 @@ class AgentSet extends Array {
   }
 
   // Move an agent from its AgentSet/breed to be in this AgentSet/breed.
-  // REMIND: match NetLogo sematics in terms of own variables.
   setBreed (a) { // change agent a to be in this breed
     // Return if `a` is already of my breed
     if (a.agentSet === this) return
