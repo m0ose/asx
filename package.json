@@ -24,7 +24,10 @@
     "docs": "docco -o ./docs/ ./src/*.js",
 
     "git-prep": "npm run all && git add . && git status",
-    "git-commit": "git commit -v && git push origin master"
+    "git-commit": "git commit -v && git push origin master",
+
+    "make-pages": "git merge master && git add -f docs lib test/lib && git push origin gh-pages",
+    "gh-pages": "git checkout gh-pages && npm run make-pages && git checkout master"
   },
   "dependencies": {
     "systemjs": "^0.19.23"

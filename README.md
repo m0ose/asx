@@ -2,6 +2,9 @@
 
 This is a repository for the future version of [AgentScript](http://agentscript.org), an es6 module based project.
 
+
+### Developer Information
+
 To clone a fresh repo, for PRs or your own local verson:
 * cd to where you want the asx/ dir to appear.
 * git clone https://github.com/backspaces/asx # create skeleton repo
@@ -13,3 +16,17 @@ To clone a fresh repo, for PRs or your own local verson:
 All workflow is npm run scripts.  See package.json's scripts, or simply run `npm run` for a list.
 
 The repo has no "derived" files, i.e. won't run by just cloning. To complete the repo, use `npm run all` which mainly compiles modules (babel) for use by System.js.
+
+### Github Pages
+
+A gh-pages branch is used for the site. It contains the complete master repo, including the derived files. A new page is made from master by:
+
+    npm run gh-pages
+
+This can be used to run tests:
+
+    http://backspaces.github.io/asx/test.html?navier
+
+and to access modules:
+
+    http://backspaces.github.io/asx/lib/AgentSet.js
