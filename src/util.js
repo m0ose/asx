@@ -34,7 +34,7 @@ const util = {
     const Type0 = array.constructor
     if (Type0 === Type) return array // return array if already same Type
     if (Type !== Array) return new Type(array) // TypedArray: universal ctor
-    // return new Array(...array) // Convert TypedArray to Array
+    // Convert TypedArray to Array
     return Array.prototype.slice.call(array)
   },
 
@@ -605,7 +605,6 @@ const util = {
   // Draw string of the given color at the xy location, in ctx pixel coords.
   // Push/pop identity transform.
   ctxDrawText (ctx, string, x, y, cssColor) {
-    // console.log(string, x, y, cssColor)
     this.setIdentity(ctx)
     ctx.fillStyle = cssColor
     ctx.fillText(string, x, y)
