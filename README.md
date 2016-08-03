@@ -4,7 +4,7 @@ This is a repository for the future version of [AgentScript](http://agentscript.
 
 ### Documentation
 
-Developer Documentation is created by [docco](https://jashkenas.github.io/docco/) and is [available here](./docs) Use **Jump To** menu, top right, to navigate between modules.
+Developer Documentation is created by [docco](https://jashkenas.github.io/docco/) and is [available here](./docs/Model.html) Use **Jump To** menu, top right, to navigate between modules.
 
 ### Developer Information
 
