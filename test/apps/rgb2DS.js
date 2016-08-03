@@ -34,6 +34,6 @@ const model = new Model('layers', {
   maxY: 255
 })
 
-util.toWindow({ model: model, patches: model.patches })
+util.toWindow({ model })
 
 main()
