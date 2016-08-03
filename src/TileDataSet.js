@@ -165,7 +165,7 @@ class TileDataSet extends DataSet {
     let pxLR = [wid * (bndLR[0] / dimT[0]), hei * (bndLR[1] / dimT[1])]
     pxUL = [Math.round(pxUL[0]), Math.round(pxUL[1])]
     pxLR = [Math.round(pxLR[0]), Math.round(pxLR[1])]
-    let extraction = stitched.extract(pxUL[0], pxUL[1], pxLR[0] - pxUL[0], pxLR[1] - pxUL[1])
+    let extraction = stitched.subset(pxUL[0], pxUL[1], pxLR[0] - pxUL[0], pxLR[1] - pxUL[1])
     console.timeEnd('cropping')
     return extraction
   }

@@ -134,11 +134,30 @@ class DataSet {
   subset (x, y, width, height) {
     if ((x + width) > this.width || (y + height) > this.height)
       u.error('DataSet.subSet: params out of range')
-    const ds = this.emptyDataSet(width, height)
+    const ds = this.emptyDataSet(width, height, this.data.Constructor)
     for (let i = 0; i < width; i++)
       for (let j = 0; j < height; j++)
         ds.setXY(i, j, this.getXY(i + x, j + y))
     return ds
+  }
+
+  // paste one dataset into this DataSet. x,y are the upper left coordinates
+  //  maybe there should be a scale too.
+  paste (dataset, x = 0, y = 0) {
+    const lrX = Math.min(x + dataset.width, this.width)
+    const lrY = Math.min(y + dataset.height, this.height)
+    for (let i = y; i < lrY; i++) {
+      const y2 = i - y
+      for (let j = x; j < lrX; j++) {
+        const x2 = j - x
+        const dat = dataset.getXY(x2, y2)
+        this.setXY(j, i, dat)
+      }
+    }
+  }
+
+  clone () {
+    return this.subset(0, 0, this.width, this.height)
   }
 
   // Return maped dataset by applying f to each dataset element

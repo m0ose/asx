@@ -8,20 +8,22 @@ function main () {
 }
 
 function testTileDS () {
-  var ds = new TileDataSet()
-  console.log(ds)
-/*
-  // put colors onto a model
-  model.patches.importDataSet(ds, 'elev', true)
-  const cmap = ColorMap.Jet
-  const [min, max] = [ds.min(), ds.max()]
-  console.log('min:', min, 'max:', max)
-  for (const p of model.patches) {
-    p.setColor(cmap.scaleColor(p.elev, min, max))
-  }
-  model.once()
-  console.log(ds)
-  */
+  var ds = new TileDataSet({ north: 36.097, south: 35.658, west: -106.93, east: -106.055,
+    callback:(err, val) => {
+      console.log(ds, err, val)
+      // put colors onto a model
+      model.patches.importDataSet(ds, 'elev', true)
+      const cmap = ColorMap.Jet
+      const [min, max] = [ds.min(), ds.max()]
+      console.log('min:', min, 'max:', max)
+      for (const p of model.patches) {
+        p.setColor(cmap.scaleColor(p.elev, min, max))
+      }
+      model.once()
+      console.log(ds)
+    }
+  })
+
 }
 
 
