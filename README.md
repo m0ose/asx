@@ -2,6 +2,9 @@
 
 This is a repository for the future version of [AgentScript](http://agentscript.org), an es6 module based project.
 
+### Documentation
+
+Developer Documentation is created by [docco](https://jashkenas.github.io/docco/) and is [available here](./docs) Use **Jump To** menu, top right, to navigate between modules.
 
 ### Developer Information
 
@@ -20,13 +23,8 @@ The repo has no "derived" files, i.e. won't run by just cloning. To complete the
 ### Github Pages
 
 A gh-pages branch is used for the site. It contains the complete master repo, including the derived files. A new page is made from master by:
+* npm run gh-pages
 
-    npm run gh-pages
-
-This can be used to run tests:
-
-    http://backspaces.github.io/asx/test.html?navier
-
-and to access modules:
-
-    http://backspaces.github.io/asx/lib/AgentSet.js
+This can be used to run tests and access modules:
+* http://backspaces.github.io/asx/test.html?navier
+* http://backspaces.github.io/asx/lib/AgentSet.js
