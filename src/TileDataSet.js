@@ -22,13 +22,12 @@ class TileDataSet extends DataSet {
     this.maxZoom = 14
     this.minZoom = 10
     this.useFailImage = true // if this is false then the the error callback is called when a tile is not found
-    this.useNearest = true
     this.callback = function (err, v) {
       if (err) {
         console.error('default Error Callback', err)
       }
       else {
-        console.log('default success callback', v)
+        if (this.debug) console.log('default success callback', v)
       }
     }
     Object.assign(this, options)
@@ -38,9 +37,9 @@ class TileDataSet extends DataSet {
 
   start () {
     const zoom = this.zoom || this.calculateGoodZoom()
-    console.log('zoom for tiles:', zoom)
+    if (this.debug) console.log('zoom for tiles:', zoom)
     this.tileLocations = this.calculateTilesNeeded(zoom)
-    console.log('calculated tiles', this.tileLocations)
+    if (this.debug) console.log('calculated tiles', this.tileLocations)
     // download the tiles
     this.downloadTiles(this.tileLocations, (err, ev) => {
       if (err) {
@@ -48,9 +47,9 @@ class TileDataSet extends DataSet {
         return
       }
       // ... then do the stitching, cropping, and finally resizing.
-      let mosaic = this.stitchTiles(ev)
-      let cropped = this.crop(mosaic)
-      let resized = this.resize(cropped)
+      const mosaic = this.stitchTiles(ev)
+      const cropped = this.crop(mosaic)
+      const resized = cropped.resample(this.width, this.height, true)
       console.assert(resized.width === this.width && resized.height === this.height, 'Dimensions are wrong', resized)
       this.data = resized.data
       this.callback(undefined, this)
@@ -102,14 +101,14 @@ class TileDataSet extends DataSet {
   // DOWNLOAD
   //
   downloadTiles(tileLocs, successCallback) {
-    console.time('downloadTiles')
+    if (this.debug) console.time('downloadTiles')
     let promises = []
     for (let i of this.tileLocations.tiles) {
       let pr = util.imagePromise(i.url) // this.LFwrapPromiseFactory(i.url, i)
       promises.push(pr)
     }
     Promise.all(promises).then((ev) => {
-      console.timeEnd('downloadTiles')
+      if (this.debug) console.timeEnd('downloadTiles')
       successCallback(null, ev)
     }).catch((err) => {
       this.callback(err)
@@ -127,7 +126,7 @@ class TileDataSet extends DataSet {
   // STITCH
   //
   stitchTiles (tiles) {
-    console.time('stitching')
+    if (this.debug) console.time('stitching')
     // Stitch all tiles into a mosaic
     const wid = this.tileLocations.width * this.tileWidth
     const hei = this.tileLocations.height * this.tileHeight
@@ -147,14 +146,14 @@ class TileDataSet extends DataSet {
       ds.useNearest = this.useNearest
       stitched.paste(ds, md.imgX * this.tileWidth, md.imgY * this.tileHeight)
     }
-    console.timeEnd('stitching')
+    if (this.debug) console.timeEnd('stitching')
     return stitched
   }
 
   // Extract area of iterest from stitched image
   //
   crop (stitched) {
-    console.time('cropping')
+    if (this.debug) console.time('cropping')
     const wid = stitched.width
     const hei = stitched.height
     const tl = this.tileLocations
@@ -166,15 +165,8 @@ class TileDataSet extends DataSet {
     pxUL = [Math.round(pxUL[0]), Math.round(pxUL[1])]
     pxLR = [Math.round(pxLR[0]), Math.round(pxLR[1])]
     let extraction = stitched.subset(pxUL[0], pxUL[1], pxLR[0] - pxUL[0], pxLR[1] - pxUL[1])
-    console.timeEnd('cropping')
+    if (this.debug) console.timeEnd('cropping')
     return extraction
-  }
-
-  resize (cropped) {
-    console.time('resize')
-    let res = cropped.resample(this.width, this.height)
-    console.timeEnd('resize')
-    return res
   }
 
   //
