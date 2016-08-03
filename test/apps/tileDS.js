@@ -8,7 +8,11 @@ function main () {
 }
 
 function testTileDS () {
-  var ds = new TileDataSet({ north: 36.097, south: 35.658, west: -106.93, east: -106.055,
+  var ds = new TileDataSet({ north: 36.097,
+    south: 35.658,
+    west: -106.93,
+    east: -106.055,
+    debug: true,
     callback:(err, val) => {
       console.log(ds, err, val)
       // put colors onto a model
