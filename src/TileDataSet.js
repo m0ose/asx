@@ -12,16 +12,16 @@ class TileDataSet extends DataSet {
     super(width, height, new Float32Array(width * height))
     // defaults values
     this.url = 'http://node.redfish.com/elevation/{z}/{x}/{y}.png'
-    this.north = 35
+    this.north = 35 // northern bound for the data
     this.south = 34.5
     this.west = -106
     this.east = -105.5
-    this.debug = false
+    this.debug = false // prints to console if true
     this.tileWidth = 256 // pixels
     this.tileHeight = 256 // pixels
     this.maxZoom = 14
     this.minZoom = 10
-    this.useFailImage = true // if this is false then the the error callback is called when a tile is not found
+    this.useFailImage = true // Fill with something else when image fails to load. if this is false then the the error callback is called when a tile is not found
     this.callback = function (err, v) {
       if (err) {
         console.error('default Error Callback', err)
@@ -62,13 +62,15 @@ class TileDataSet extends DataSet {
     const z1 = Math.log(360 / bW) / Math.log(2)
     // calc how many tile subdivisisions it will take to make the width pixels
     const z2 = Math.log(this.width / this.tileWidth) / Math.log(2)
-    // add them together ad round
+    // add them together and round
     const z3 = Math.round(z1 + z2)
+    console.log(z3)
     // clamp
     const z4 = Math.min(this.maxZoom, Math.max(this.minZoom, z3))
     return z4
   }
 
+  // Which tiles do we need to donwload
   calculateTilesNeeded (zoom) {
     const ulTile = [this.long2tile(this.west, zoom), this.lat2tile(this.north, zoom)]
     const lrTile = [this.long2tile(this.east, zoom), this.lat2tile(this.south, zoom)]
