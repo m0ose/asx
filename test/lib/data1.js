@@ -20,9 +20,9 @@ System.register(['lib/DataSet.js', 'lib/util.js', 'node_modules/lzma/src/lzma.js
 
       const modules = { DataSet, util, LZMA, lzma, pako, pps: util.pps };
       util.toWindow(modules);
-      console.log(Object.keys(modules).join(' '));
+      console.log(Object.keys(modules).join(', '));
 
-      const imageUrl = 'test/data/redfish128t.png'; // 26k
+      const imageUrl = 'test/data/test.png'; // 26k
       // const imageUrl = 'test/data/7.15.35.png' // 112K
       // const imageUrl = 'test/data/10.20.263.png' // 26k
       // const imageUrl = 'test/data/ASTGTM2_N00E035_dem.png' // 4.8MB (16->8 bit gray)
@@ -100,7 +100,7 @@ System.register(['lib/DataSet.js', 'lib/util.js', 'node_modules/lzma/src/lzma.js
         console.log('json vs base64', ...sizes(pixj, pixels));
         console.log('json vs byte string', ...sizes(pixj, pixcs));
       }
-      util.runGenerator(main);
+      console.log('gen', util.runGenerator(main));
       // util.toWindow({main})
 
       // s = String.fromCharCode.apply(null, pixc64c)

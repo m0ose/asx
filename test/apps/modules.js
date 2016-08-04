@@ -7,7 +7,7 @@ import ColorMap from 'lib/ColorMap.js'
 import util from 'lib/util.js'
 
 const modules =
-  { DataSet, util, OofA, AgentSet, Color, ColorMap, pps: util.pps }
+  { DataSet, util, OofA, AgentSet, Color, ColorMap }
 util.toWindow(modules)
 const { DataSet: ds, util: u, OofA: oofa, AgentSet: aset, Color: color, ColorMap: cmap } = modules
 util.toWindow({ ds, u, oofa, aset, color, cmap })

@@ -49,9 +49,13 @@ class Model {
         this.initContexts(contexts)
       }
     }
-    // Initialize the model by calling the methods used to reset the model.
-    // Similar to calling NetLogo's `clear` methods.
-    this.reset()
+
+    // Initialize the model by calling `startup` and `reset`.
+    // If `startup` returns a promise, or generator/iterator, manage it.
+    // Arrow functions used to maintain `this`, lexical scope.
+    this.modelReady = false
+    const setupFcn = () => { this.reset(); this.modelReady = true }
+    util.runAsyncFcn(() => this.startup(), setupFcn)
   }
   // (Re)initialize the model.
   reset (restart = false) {
@@ -139,15 +143,20 @@ class Model {
   // three abstract methods. `super` need not be called.
 
   // Initialize model resources (images, files) here.
-  startup () {} // called by constructor
+  // Return a promise or a generator/iterator or null/undefined.
+  startup () {} // called by constructor.
   // Initialize your model variables and defaults here.
-  setup () {} // called by constructor and reset
+  setup () {} // called by constructor (after startup) or by reset()
   // Update/step your model here
   step () {} // called each step of the animation
 
   // Start/stop the animation. Return model for chaining.
-  start () { this.anim.start(); return this }
-  stop () { this.anim.stop(); return this }
+  // start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
+  start () {
+    util.waitOn(() => this.modelReady, () => this.anim.start())
+    return this
+  }
+  stop () { this.anim.stop() }
   // Animate once by `step(); draw()`.
   once () { this.stop(); this.anim.once() } // stop is no-op if already stopped
 

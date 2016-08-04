@@ -34,7 +34,7 @@ const util = {
     const Type0 = array.constructor
     if (Type0 === Type) return array // return array if already same Type
     if (Type !== Array) return new Type(array) // TypedArray: universal ctor
-    // return new Array(...array) // Convert TypedArray to Array
+    // Convert TypedArray to Array
     return Array.prototype.slice.call(array)
   },
 
@@ -116,10 +116,13 @@ const util = {
   },
 
   // Return a string representation of an array of arrays
-  arraysToString (arrays) {
-    let str = ''
-    this.repeat(arrays.length, (i) => { str += `[${arrays[i]}]` })
-    return str
+  // arraysToString (arrays) { return arrays.map(a => `[${a}]`).join(',') },
+  arraysToString: (arrays) => arrays.map(a => `[${a}]`).join(','),
+
+  // Return array of strings of fixed floats to given precision
+  fixedStrings (array, digits = 4) {
+    array = this.convertArray(array, Array) // Only Array stores strings.
+    return array.map((n) => n.toFixed(digits))
   },
 
   // Merge from's key/val pairs into to the global window namespace
@@ -222,7 +225,6 @@ const util = {
 // ### Arrays, Objects and Iteration
 
   // Repeat function f(i) n times, n in 0, i-1.
-  // repeat (n, f) { for (let i = 0; i < n; i++) f(i) },
   repeat (n, f, o) { for (let i = 0; i < n; i++) f(i, o); return o },
   // Repeat function n/step times, incrementing i by step each step.
   step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },
@@ -267,9 +269,10 @@ const util = {
   // Return array's type (Array or TypedArray variant)
   arrayType (array) { return array.constructor },
 
-  // Return a new JavaScript Array of floats to a given precision.
+  // Return a new JavaScript Array of floats/strings to a given precision.
   // Fails for Float32Array due to float64->32 artifiacts, thus Array conversion
   fixedArray (array, digits = 4) {
+    array = this.convertArray(array, Array) // 64 bit rounding
     return array.map((n) => this.fixed(n, digits))
   },
 
@@ -464,6 +467,26 @@ const util = {
       xhr.send()
     })
   },
+  // Return promise for pause of ms.
+  timeoutPromise (ms) {
+    return new Promise((resolve, reject) => {
+      const id = setTimeout(() => { clearTimeout(id); resolve() }, ms)
+    })
+  },
+  // Wait until done(), then trigger promise.then
+  waitPromise (done, ms) {
+    return new Promise((resolve, reject) => {
+      this.waitOn(done, resolve, ms)
+    })
+  },
+
+  // Wait (setTimeout) until done() true, then call f()
+  waitOn (done, f, ms = 10) {
+    if (done())
+      f()
+    else
+      setTimeout(() => { this.waitOn(done, f, ms) }, ms)
+  },
 
   // An [async/await](https://davidwalsh.name/async-generators)
   // implementation using generators returning promises.
@@ -472,13 +495,26 @@ const util = {
   // returning the promise results when they complete.
   // Amazingly enough, the returned promise result replaces the
   // promise initially yielded by the generator function.
-  runGenerator (g) {
-    const it = g()
+  // The `it` argument can be either a generator function or it's iterator.
+  runGenerator (it, callback = (lastVal) => {}) {
+    it = util.typeOf(it) === 'generator' ? it : it()
     ;(function iterate (val) { // asynchronously iterate over generator
       const ret = it.next(val)
       if (!ret.done) // wait on promise, `then` calls iterate w/ a value
-        ret.value.then(iterate)
+        if (ret.value.then)
+          ret.value.then(iterate) // iterate takes the promise's value
+        else // avoid synchronous recursion
+          setTimeout(() => iterate(ret.value), 0)
+      else
+        callback(ret.value)
     }())
+  },
+  // Promise version of runGenerator.
+  // The `it` argument can be either a generator function or it's iterator.
+  runGeneratorPromise (it) {
+    return new Promise((resolve, reject) => {
+      this.runGenerator(it, resolve)
+    })
   },
   // Used like this, main() is entirely sync:
   // ```
@@ -491,6 +527,19 @@ const util = {
   // }
   // util.runGenerator( main )
   // ```
+
+  // Run a possibly async fcn, calling thenFcn when async fcn is done.
+  // The fcn can return a generator or a promise.
+  // If neither, run fcn & thenFcn synchronously
+  runAsyncFcn (fcn, thenFcn) {
+    const startup = fcn()
+    if (util.typeOf(startup) === 'generator')
+      util.runGenerator(startup, thenFcn)
+    else if (util.typeOf(startup) === 'promise')
+      startup.then(thenFcn)
+    else
+      thenFcn()
+  },
 
 // ### Canvas/Image
 
@@ -556,7 +605,6 @@ const util = {
   // Draw string of the given color at the xy location, in ctx pixel coords.
   // Push/pop identity transform.
   ctxDrawText (ctx, string, x, y, cssColor) {
-    // console.log(string, x, y, cssColor)
     this.setIdentity(ctx)
     ctx.fillStyle = cssColor
     ctx.fillText(string, x, y)

@@ -20,7 +20,7 @@ System.register(['lib/OofA.js', 'lib/DataSet.js', 'lib/AgentSet.js', 'lib/Color.
       // Import the lib/ mmodules via relative paths
 
 
-      const modules = { DataSet, util, OofA, AgentSet, Color, ColorMap, pps: util.pps };
+      const modules = { DataSet, util, OofA, AgentSet, Color, ColorMap };
       util.toWindow(modules);
       const { DataSet: ds, util: u, OofA: oofa, AgentSet: aset, Color: color, ColorMap: cmap } = modules;
       util.toWindow({ ds, u, oofa, aset, color, cmap });
