@@ -26,6 +26,8 @@ export default class NavierSim {
     this.v = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.u_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.v_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.u_static = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.v_static = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.P = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.DIV = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.boundaries = DataSet.emptyDataSet(this.width, this.height, Float32Array)
@@ -55,13 +57,21 @@ export default class NavierSim {
   }
 
   addForces () {
+    for (let i = 0; i < this.u.data.length; i++) {
+      if (this.u_static.data[i] > 0) {
+        this.u.data[i] = this.u_static.data[i]
+      }
+      if (this.v_static.data[i] > 0) {
+        this.v.data[i] = this.v_static.data[i]
+      }
+    }
     var w = this.width
     var h = this.height
     for (let i = 0; i <= 6; i += 2) {
       for (let j = 0; j <= 6; j += 2) {
         this.dens.setXY(w / 2 + i, h / 2 + j, 1)
-        this.u.setXY(w / 2 + i, h / 2 + j, 10 * Math.cos(this.windHeading))
-        this.v.setXY(w / 2 + i, h / 2 + j, 10 * Math.sin(this.windHeading))
+        //this.u.setXY(w / 2 + i, h / 2 + j, 10 * Math.cos(this.windHeading))
+        //this.v.setXY(w / 2 + i, h / 2 + j, 10 * Math.sin(this.windHeading))
       }
     }
   }

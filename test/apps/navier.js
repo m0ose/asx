@@ -4,6 +4,7 @@ import Model from 'lib/Model.js'
 import util from 'lib/util.js'
 import TileDataSet from 'lib/TileDataSet.js'
 import NavierSim from './NavierSim.js'
+import Mouse from 'lib/Mouse.js'
 
 class NavierDisplay extends Model {
   startup () {
@@ -39,6 +40,29 @@ class NavierDisplay extends Model {
     this.sim = new NavierSim(this.world.numX, this.world.numY)
     this.sim.seaLevel = 0
     this.updateBoundaries()
+    //
+    this.firstMousePos
+    this.mouse = new Mouse(this, true, (evt) => {
+      const M = this.mouse
+      console.log(M.down, M.moved)
+      if (M.down) {
+        if (M.moved) {
+          let Mnow = [Math.round(M.x), Math.round(M.y)]
+          let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
+          if (Math.hypot(dM[0], dM[1]) > 3) {
+            let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
+            console.log(M, M.x, M.y)
+            this.sim.u_static.setXY(p.x, p.y, 4 * dM[0])
+            this.sim.v_static.setXY(p.x, p.y, 4 * dM[1])
+          }
+        } else {
+          this.firstMousePos = [Math.round(M.x), Math.round(M.y)]
+        }
+      } else {
+        this.firstMousePos = undefined
+      }
+    })
+    this.mouse.start()
   }
 
   updateBoundaries () {
@@ -79,10 +103,25 @@ class NavierDisplay extends Model {
     const W = this.world
     ctx.clearRect(W.minX, W.minY, W.maxX - W.minX, W.maxY - W.minY)
     ctx.beginPath()
-    for (const p of this.patches) {
+    ctx.strokeStyle="#000000"
+    for (let p of this.patches) {
       if (p.x % 5 === 0 && p.y % 5 === 0) {
-        const u = this.sim.u.data[p.id]
-        const v = this.sim.v.data[p.id]
+        let u = this.sim.u.data[p.id]
+        let v = this.sim.v.data[p.id]
+        ctx.moveTo(p.x, p.y)
+        ctx.lineTo(p.x + u, p.y - v)
+      }
+    }
+    ctx.stroke()
+    ctx.closePath()
+    // static vectors
+    ctx.beginPath()
+    ctx.strokeStyle="#FF0000"
+    for (let p of this.patches) {
+      let u = this.sim.u_static.data[p.id]
+      let v = this.sim.v_static.data[p.id]
+      let mag = Math.hypot(u,v)
+      if (mag > 0) {
         ctx.moveTo(p.x, p.y)
         ctx.lineTo(p.x + u, p.y - v)
       }
@@ -92,7 +131,7 @@ class NavierDisplay extends Model {
   }
 }
 // const [div, size, max, min] = ['layers', 4, 50, -50]
-const opts = {patchSize: 4, minX: -64, maxX: 64, minY: -64, maxY: 64}
+const opts = {patchSize: 4, minX: 0, maxX: 128, minY: 0, maxY: 128}
 const model = new NavierDisplay('layers', opts)
 model.start()
 
