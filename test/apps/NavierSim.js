@@ -30,23 +30,9 @@ export default class NavierSim {
     this.DIV = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.boundaries = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     //
-    this.makeFakeBoundaries()
     this.startTime = new Date().getTime()
     this.stepCount = 0
     // navier sim created
-  }
-
-  makeFakeBoundaries () {
-    for (var i=0; i < this.width; i++) {
-      for (var j=0; j< this.height; j++) {
-        const y = Math.cos(i / 9) * 34 + 1 + Math.sin(i) * 4
-        const diff = j - y
-        if (diff > 0 && diff < 20) this.boundaries.setXY(i, this.height - j, 1.0)
-        if (i <= 0 || i >= this.width || j <= 0 || j >= this.height) {
-          this.boundaries.setXY(i, this.height - j, 1.0)
-        }
-      }
-    }
   }
 
   indx (x, y) {

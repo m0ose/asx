@@ -37,8 +37,11 @@ class NavierDisplay extends Model {
     this.anim.setRate(24)
     this.cmap = ColorMap.Jet
     this.sim = new NavierSim(this.world.numX, this.world.numY)
-    // boundaries
     this.sim.seaLevel = 0
+    this.updateBoundaries()
+  }
+
+  updateBoundaries () {
     model.patches.importDataSet(this.elevation, 'elev', true)
     for (let p of this.patches) {
       this.sim.boundaries.data[p.id] = 1 * (p.elev > this.sim.seaLevel)
@@ -71,6 +74,21 @@ class NavierDisplay extends Model {
     for (const p of this.patches) {
       p.setColor(this.cmap.scaleColor(p.dens || 0, 0, 1))
     }
+    // vector
+    const ctx = this.contexts.drawing
+    const W = this.world
+    ctx.clearRect(W.minX, W.minY, W.maxX - W.minX, W.maxY - W.minY)
+    ctx.beginPath()
+    for (const p of this.patches) {
+      if (p.x % 5 === 0 && p.y % 5 === 0) {
+        const u = this.sim.u.data[p.id]
+        const v = this.sim.v.data[p.id]
+        ctx.moveTo(p.x, p.y)
+        ctx.lineTo(p.x + u, p.y - v)
+      }
+    }
+    ctx.stroke()
+    ctx.closePath()
   }
 }
 // const [div, size, max, min] = ['layers', 4, 50, -50]
