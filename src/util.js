@@ -196,6 +196,29 @@ const util = {
   // distanceSq: (x, y, x0 = 0, y0 = 0) => (x - x0) ** 2 + (x - x0) ** 2,
   distance: (x, y, x0 = 0, y0 = 0) => Math.sqrt(util.distanceSq(x, y, x0, y0)),
 
+  // Return angle in [-pi,pi] radians from x1,y1 to x2,y2
+  // [See: Math.atan2](http://goo.gl/JS8DF)
+  radiansToward: (x1, y1, x2, y2) => Math.atan2(y2 - y1, x2 - x1),
+
+  // Return angle in (-pi,pi] that added to rad2 = rad1
+  // See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
+  subtractRadians (rad1, rad2) {
+    const PI = Math.PI
+    let dr = rad1 - rad2
+    if (dr <= -PI) dr += 2 * PI
+    if (dr > PI) dr -= 2 * PI
+    return dr
+  },
+
+  // Is p2 withn a cone from p1 in direction angle and width wide,
+  // and within radius distance
+  inCone (radius, width, angle, x1, y1, x2, y2) {
+    if (radius * radius < this.distanceSq(x1, y1, x2, y2))
+      return false
+    const angle12 = this.radiansToward(x1, y1, x2, y2) // angle from 1 to 2
+    return (width / 2) >= Math.abs(this.subtractRadians(angle, angle12))
+  },
+
   // Trims decimal digits of float to reduce size.
   fixed (n, digits = 4) {
     const p = Math.pow(10, digits)

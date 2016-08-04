@@ -97,6 +97,21 @@ class Patches extends AgentSet {
     const distSq = (p1) => util.distanceSq(p1.x, p1.y, p.x, p.y)
     return rect.filter(p1 => distSq(p1) <= rSq) // REMIND: perf vs forEach?
   }
+  // Patches in cone from p in direction `angle`, with `width` and `radius`
+  patchesInCone (p, radius, width, angle, meToo = true) {
+    const rect = this.patchesInRect(p, radius, radius, meToo)
+    return rect.filter(
+      p1 => util.inCone(radius, width, angle, p.x, p.y, p1.x, p1.y) ||
+            (meToo && p === p1)
+    )
+  }
+  // Return patch at radius and angle from x, y (floats).
+  // If off world, return undefined.
+  patchAtRadiusAndAngle (x, y, r, theta) {
+    x = Math.round(x + r * Math.cos(theta))
+    y = Math.round(y + r * Math.sin(theta))
+    return this.isOnWorld(x, y) ? this.patchXY(x, y) : undefined
+  }
 
   // Draw the patches onto the ctx using the pixel image data colors.
   draw (ctx = this.model.contexts.patches) {

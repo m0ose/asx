@@ -63,13 +63,6 @@ const PatchProto = {
     }
     return Color.toTypedColor(pixel)
   },
-  // getSharedColor (typedColor) {
-  //   typedColor.setPixel(this.patches.pixels.data[this.id])
-  //   return typedColor
-  // },
-  // getColor () {
-  //   return Color.toTypedColor(this.patches.pixels.data[this.id])
-  // },
   get color () { return this.getColor() },
   set color (typedColor) { return this.setColor(typedColor) },
 
