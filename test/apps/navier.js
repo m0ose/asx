@@ -23,8 +23,7 @@ class NavierDisplay extends Model {
           if (!err) {
             this.elevation = val
             resolve(val)
-          }
-          else {
+          } else {
             reject(err)
           }
         }
