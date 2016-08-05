@@ -65,15 +65,6 @@ export default class NavierSim {
         this.v.data[i] = this.v_static.data[i]
       }
     }
-    var w = this.width
-    var h = this.height
-    for (let i = 0; i <= 6; i += 2) {
-      for (let j = 0; j <= 6; j += 2) {
-        this.dens.setXY(w / 2 + i, h / 2 + j, 1)
-        //this.u.setXY(w / 2 + i, h / 2 + j, 10 * Math.cos(this.windHeading))
-        //this.v.setXY(w / 2 + i, h / 2 + j, 10 * Math.sin(this.windHeading))
-      }
-    }
   }
 
   densityStep () {
