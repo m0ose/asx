@@ -13,19 +13,15 @@ class MouseTest extends Model {
     for (const p of this.patches) {
       p.mycolor = 0
     }
+    this.cmap = ColorMap.Jet
+    // initialize the mouse
     this.mouse = new Mouse(this, true, (evt) => {
-      // console.log(evt.x, evt.y)
       let [x,y] = [Math.round(evt.x), Math.round(evt.y)]
       let p = model.patches.patchXY(x, y)
-      try {
-        p.mycolor = Math.random()
-      } catch (err) {
-        console.warn('patch not defined', x, y)
-      }
-      this.once()
+      p.mycolor = Math.random()
+      this.once() // draw patches
     })
     this.mouse.start()
-    this.cmap = ColorMap.Jet
   }
 
   step () {
@@ -36,10 +32,10 @@ class MouseTest extends Model {
 }
 const model = new MouseTest('layers', {
   patchSize: 2,
-  minX: -125,
-  maxX: 125,
-  minY: -125,
-  maxY: 125
+  minX: -100,
+  maxX: 114,
+  minY: -117,
+  maxY: 127
 }) // don't start, mouse driven instead
 model.once()
 util.toWindow({model, mouse: model.mouse})
