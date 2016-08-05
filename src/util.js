@@ -183,17 +183,17 @@ const util = {
     return norm * sigma + mean
   },
 
+  // A [modulus](http://mathjs.org/docs/reference/functions/mod.html)
+  // function rather than %, the remainder function.
+  // [`((v % n) + n) % n`](http://goo.gl/spr24) also works.
+  mod: (v, n) => v - n * Math.floor(v / n),
+
   // Return whether num is [Power of Two](http://goo.gl/tCfg5). Very clever!
   isPowerOf2: (num) => (num & (num - 1)) === 0, // twgl library
-
-  // Degrees & Radians
-  radians: (degrees) => degrees * Math.PI / 180,
-  degrees: (radians) => radians * 180 / Math.PI,
 
   // Hypotenuse/distance from origin of point x,y
   distanceSq: (x, y, x0 = 0, y0 = 0) =>
     (x - x0) * (x - x0) + (y - y0) * (y - y0),
-  // distanceSq: (x, y, x0 = 0, y0 = 0) => (x - x0) ** 2 + (x - x0) ** 2,
   distance: (x, y, x0 = 0, y0 = 0) => Math.sqrt(util.distanceSq(x, y, x0, y0)),
 
   // Return angle in [-pi,pi] radians from x1,y1 to x2,y2
@@ -217,6 +217,22 @@ const util = {
       return false
     const angle12 = this.radiansToward(x1, y1, x2, y2) // angle from 1 to 2
     return (width / 2) >= Math.abs(this.subtractRadians(angle, angle12))
+  },
+
+  // Degrees & Radians
+  radians: (degrees) => degrees * Math.PI / 180,
+  degrees: (radians) => radians * 180 / Math.PI,
+
+  // Heading & Angles:
+  // * Heading is 0-up (y-axis), clockwise angle measured in degrees.
+  // * Angle is math: 0-right (x-axis), counterclockwise in radians
+  angleToHeading (angle) {
+    const degrees = this.degrees(angle)
+    return this.mod((90 - degrees), 360)
+  },
+  headingToAngle (heading) {
+    const degrees = this.mod(90 - heading, 360)
+    return this.radians(degrees)
   },
 
   // Trims decimal digits of float to reduce size.
