@@ -51,12 +51,13 @@ class NavierDisplay extends Model {
           let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
           let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
           // console.log(M, M.x, M.y)
+          let [pX2, pY2] = [Math.round(p.x/5)*5, Math.round(p.y/5)*5]
           if (Math.hypot(dM[0], dM[1]) > 3) {
-            this.sim.u_static.setXY(p.x, p.y, dM[0])
-            this.sim.v_static.setXY(p.x, p.y, dM[1])
+            this.sim.u_static.setXY(pX2, pY2, dM[0])
+            this.sim.v_static.setXY(pX2, pY2, dM[1])
           } else {
-            this.sim.u_static.setXY(p.x, p.y, 0)
-            this.sim.v_static.setXY(p.x, p.y, 0)
+            this.sim.u_static.setXY(pX2, pY2, 0)
+            this.sim.v_static.setXY(pX2, pY2, 0)
           }
         } else {
           this.firstMousePos = [Math.round(M.x), this.world.maxY - Math.round(M.y)]
