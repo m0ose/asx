@@ -60,16 +60,19 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
             console.log(M.down, M.moved);
             if (M.down) {
               if (M.moved) {
-                let Mnow = [Math.round(M.x), Math.round(M.y)];
+                let Mnow = [Math.round(M.x), this.world.maxY - Math.round(M.y)];
                 let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]];
+                let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1]);
+                // console.log(M, M.x, M.y)
                 if (Math.hypot(dM[0], dM[1]) > 3) {
-                  let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1]);
-                  console.log(M, M.x, M.y);
-                  this.sim.u_static.setXY(p.x, p.y, 4 * dM[0]);
-                  this.sim.v_static.setXY(p.x, p.y, 4 * dM[1]);
+                  this.sim.u_static.setXY(p.x, p.y, dM[0]);
+                  this.sim.v_static.setXY(p.x, p.y, dM[1]);
+                } else {
+                  this.sim.u_static.setXY(p.x, p.y, 0);
+                  this.sim.v_static.setXY(p.x, p.y, 0);
                 }
               } else {
-                this.firstMousePos = [Math.round(M.x), Math.round(M.y)];
+                this.firstMousePos = [Math.round(M.x), this.world.maxY - Math.round(M.y)];
               }
             } else {
               this.firstMousePos = undefined;

@@ -65,10 +65,10 @@ System.register(['lib/util.js', 'lib/DataSet.js'], function (_export, _context) 
 
         addForces() {
           for (let i = 0; i < this.u.data.length; i++) {
-            if (this.u_static.data[i] > 0) {
+            if (this.u_static.data[i] !== 0) {
               this.u.data[i] = this.u_static.data[i];
             }
-            if (this.v_static.data[i] > 0) {
+            if (this.v_static.data[i] !== 0) {
               this.v.data[i] = this.v_static.data[i];
             }
           }
