@@ -70,6 +70,16 @@
                 </a>
               
                 
+                <a class="source" href="RGBDataSet.html">
+                  RGBDataSet.js
+                </a>
+              
+                
+                <a class="source" href="TileDataSet.html">
+                  TileDataSet.js
+                </a>
+              
+                
                 <a class="source" href="util.html">
                   util.js
                 </a>
@@ -268,7 +278,7 @@ it’s buffer is for entire array, not just subarray.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      (i) =&gt; array.push(Color.typedColor(...typedArray.subarray(i, i + <span class="hljs-number">4</span>))))
+            <div class="content"><div class='highlight'><pre>      (i) =&gt; array.push(Color.newTypedColor(...typedArray.subarray(i, i + <span class="hljs-number">4</span>))))
     array.typedArray = typedArray
     <span class="hljs-keyword">return</span> array
   },</pre></div></div>
@@ -396,7 +406,7 @@ MatLab-like color-as-data.</p>
                 <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Create a <a href="https://goo.gl/lQlq5k">sparse array</a> of index[pixel] = pixel.
-Used by lookup below for exact match of a color within the colormap.</p>
+Used by indexOf below for exact match of a color within the colormap.</p>
 
             </div>
             
@@ -454,7 +464,7 @@ Use the <code>closest</code> methods below for nearest, not exact, match.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    lookup (color) {
+            <div class="content"><div class='highlight'><pre>    indexOf (color) {
       <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.index) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.index[color.getPixel()]
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-keyword">this</span>.length; i++)
         <span class="hljs-keyword">if</span> (color.equals(<span class="hljs-keyword">this</span>[i])) <span class="hljs-keyword">return</span> i
@@ -867,16 +877,16 @@ See <a href="https://goo.gl/tolSnS">Mozilla Color Docs</a> for <em>lots</em> mor
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  LZMap (name, map) {
+            <div class="content"><div class='highlight'><pre>  LazyMap (name, map) {
     <span class="hljs-built_in">Object</span>.defineProperty(<span class="hljs-keyword">this</span>, name, {value: map, enumerable: <span class="hljs-literal">true</span>})
     <span class="hljs-keyword">return</span> map
   },
-  get Gray () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Gray'</span>, <span class="hljs-keyword">this</span>.grayColorMap()) },
+  get Gray () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'Gray'</span>, <span class="hljs-keyword">this</span>.grayColorMap()) },
   get Jet () {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Jet'</span>, <span class="hljs-keyword">this</span>.gradientColorMap(<span class="hljs-number">256</span>, <span class="hljs-keyword">this</span>.jetColors))
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'Jet'</span>, <span class="hljs-keyword">this</span>.gradientColorMap(<span class="hljs-number">256</span>, <span class="hljs-keyword">this</span>.jetColors))
   },
-  get Rgb256 () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Rgb256'</span>, <span class="hljs-keyword">this</span>.rgbColorCube(<span class="hljs-number">8</span>, <span class="hljs-number">8</span>, <span class="hljs-number">4</span>)) },
-  get Rgb () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LZMap(<span class="hljs-string">'Rgb'</span>, <span class="hljs-keyword">this</span>.rgbColorCube(<span class="hljs-number">16</span>)) }
+  get Rgb256 () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'Rgb256'</span>, <span class="hljs-keyword">this</span>.rgbColorCube(<span class="hljs-number">8</span>, <span class="hljs-number">8</span>, <span class="hljs-number">4</span>)) },
+  get Rgb () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'Rgb'</span>, <span class="hljs-keyword">this</span>.rgbColorCube(<span class="hljs-number">16</span>)) }
 
 }
 

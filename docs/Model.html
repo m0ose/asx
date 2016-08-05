@@ -70,6 +70,16 @@
                 </a>
               
                 
+                <a class="source" href="RGBDataSet.html">
+                  RGBDataSet.js
+                </a>
+              
+                
+                <a class="source" href="TileDataSet.html">
+                  TileDataSet.js
+                </a>
+              
+                
                 <a class="source" href="util.html">
                   util.js
                 </a>
@@ -221,12 +231,15 @@ all the parts of a model. It also contains NetLogo’s <code>observer</code> met
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Initialize the model by calling the methods used to reset the model.
-Similar to calling NetLogo’s <code>clear</code> methods.</p>
+              <p>Initialize the model by calling <code>startup</code> and <code>reset</code>.
+If <code>startup</code> returns a promise, or generator/iterator, manage it.
+Arrow functions used to maintain <code>this</code>, lexical scope.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.reset()
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.modelReady = <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">const</span> setupFcn = () =&gt; { <span class="hljs-keyword">this</span>.reset(); <span class="hljs-keyword">this</span>.modelReady = <span class="hljs-literal">true</span> }
+    util.runAsyncFcn(() =&gt; <span class="hljs-keyword">this</span>.startup(), setupFcn)
   }</pre></div></div>
             
         </li>
@@ -435,11 +448,12 @@ three abstract methods. <code>super</code> need not be called.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>Initialize model resources (images, files) here.</p>
+              <p>Initialize model resources (images, files) here.
+Return a promise or a generator/iterator or null/undefined.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  startup () {} <span class="hljs-comment">// called by constructor</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  startup () {} <span class="hljs-comment">// called by constructor.</span></pre></div></div>
             
         </li>
         
@@ -454,7 +468,7 @@ three abstract methods. <code>super</code> need not be called.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setup () {} <span class="hljs-comment">// called by constructor and reset</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  setup () {} <span class="hljs-comment">// called by constructor (after startup) or by reset()</span></pre></div></div>
             
         </li>
         
@@ -480,12 +494,16 @@ three abstract methods. <code>super</code> need not be called.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
-              <p>Start/stop the animation. Return model for chaining.</p>
+              <p>Start/stop the animation. Return model for chaining.
+start: -&gt; u.waitOn (=&gt; @modelReady), (=&gt; @anim.start()); @</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  start () { <span class="hljs-keyword">this</span>.anim.start(); <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> }
-  stop () { <span class="hljs-keyword">this</span>.anim.stop(); <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  start () {
+    util.waitOn(() =&gt; <span class="hljs-keyword">this</span>.modelReady, () =&gt; <span class="hljs-keyword">this</span>.anim.start())
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+  }
+  stop () { <span class="hljs-keyword">this</span>.anim.stop() }</pre></div></div>
             
         </li>
         
