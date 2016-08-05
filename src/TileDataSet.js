@@ -1,6 +1,6 @@
 import util from 'lib/util.js'
 import DataSet from 'lib/DataSet.js'
-import RgbImageDataSet from 'lib/RgbImageDataSet.js'
+import RGBDataSet from 'lib/RGBDataSet.js'
 //
 // Load tiled data into a dataset
 //
@@ -141,7 +141,7 @@ class TileDataSet extends DataSet {
       if (!im.naturalWidth) { // happens when image fails to load
         ds = this.makeFailDataSet()
       } else {
-        ds = new RgbImageDataSet(im)
+        ds = new RGBDataSet(im)
       }
       stitched.paste(ds, md.imgX * this.tileWidth, md.imgY * this.tileHeight)
     }
