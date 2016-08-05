@@ -16,7 +16,7 @@ class MouseTest extends Model {
     this.cmap = ColorMap.Jet
     // initialize the mouse
     this.mouse = new Mouse(this, true, (evt) => {
-      let [x,y] = [Math.round(evt.x), Math.round(evt.y)]
+      let [x,y] = [Math.round(evt.x), Math.round(evt.y)] // this causes problems if it is a float.
       let p = model.patches.patchXY(x, y)
       p.mycolor = Math.random()
       this.once() // draw patches
