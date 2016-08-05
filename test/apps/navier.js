@@ -77,6 +77,7 @@ class NavierDisplay extends Model {
   }
 
   step () {
+    this.addDensity()
     this.sim.step()
     this.putTypedArrayOnPatches()
     this.drawStep()
@@ -85,6 +86,19 @@ class NavierDisplay extends Model {
       const now = new Date().getTime()
       const elapsed = (now - this.startTime) / 1000
       console.log(`model in worker steps/sec: ${this.stepCount / elapsed}, queue length: ${messageQueue.length}`)
+    }
+  }
+
+  addDensity () {
+    var w = this.sim.width
+    var h = this.sim.height
+  /*  for (var i = 0; i < 1; i++) {
+      this.sim.dens.setXY(Math.floor(Math.random()*w), Math.floor(Math.random()*h), 1)
+    }*/
+    for (let i = 0; i <= 6; i += 2) {
+      for (let j = 0; j <= 6; j += 2) {
+        this.sim.dens.setXY(w / 2 + i, h / 2 + j, 0.4)
+      }
     }
   }
 
@@ -104,6 +118,7 @@ class NavierDisplay extends Model {
     }
     // vector
     const ctx = this.contexts.drawing
+    ctx.lineWidth = 0.5
     const W = this.world
     ctx.clearRect(W.minX, W.minY, W.maxX - W.minX, W.maxY - W.minY)
     ctx.beginPath()
@@ -112,6 +127,7 @@ class NavierDisplay extends Model {
       if (p.x % 5 === 0 && p.y % 5 === 0) {
         let u = this.sim.u.data[p.id]
         let v = this.sim.v.data[p.id]
+        // this.canvas_arrow(ctx, p.x, p.y, p.x + u, p.y - v)
         ctx.moveTo(p.x, p.y)
         ctx.lineTo(p.x + u, p.y - v)
       }
@@ -126,12 +142,23 @@ class NavierDisplay extends Model {
       let v = this.sim.v_static.data[p.id]
       let mag = Math.hypot(u,v)
       if (mag > 0) {
-        ctx.moveTo(p.x, p.y)
-        ctx.lineTo(p.x + u, p.y - v)
+        this.canvas_arrow(ctx, p.x, p.y, p.x + u, p.y - v)
+        //ctx.moveTo(p.x, p.y)
+        //ctx.lineTo(p.x + u, p.y - v)
       }
     }
     ctx.stroke()
     ctx.closePath()
+  }
+
+  canvas_arrow(ctx, fromx, fromy, tox, toy){
+    const headlen = 2;   // length of head in pixels
+    const angle = Math.atan2(toy-fromy,tox-fromx);
+    ctx.moveTo(fromx, fromy);
+    ctx.lineTo(tox, toy);
+    ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+    ctx.moveTo(tox, toy);
+    ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
   }
 }
 // const [div, size, max, min] = ['layers', 4, 50, -50]
