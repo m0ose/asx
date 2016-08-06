@@ -58,7 +58,7 @@ class Patches extends AgentSet {
   nighbors4Offsets (x, y) {
     const numX = this.world.numX
     return this.neighborsOffsets(x, y)
-      .filter(n => [1, -1, numX, -numX].indexOf(n) >= 0)
+      .filter((n) => [1, -1, numX, -numX].indexOf(n) >= 0)
   }
   // Return my 8 patch neighbors
   neighbors (patch) {
@@ -76,7 +76,7 @@ class Patches extends AgentSet {
   }
 
   // Patches in rectangle dx, dy from p, dx, dy integers.
-  patchesInRect (p, dx, dy = dx, meToo = true) {
+  patchRect (p, dx, dy = dx, meToo = true) {
     // Return cached rect if one exists.
     if (p.pRect && p.pRect.length === dx * dy) return p.pRect
     const rect = []
@@ -90,27 +90,39 @@ class Patches extends AgentSet {
       }
     return this.asAgentSet(rect)
   }
+  // Return patches within the patch rect, default is square & meToo
+  inRect (p, dx, dy = dx, meToo = true) {
+    return this.patchRect(p, dx, dy, meToo)
+  }
+  // Patches in square around p with radius from p to edges.
+  inSquare (p, radius, meToo = true) {
+    return this.patchRect(p, radius, radius, meToo)
+  }
   // Patches in circle r from p, r integer.
-  patchesInRadius (p, radius, meToo = true) {
-    const rect = this.patchesInRect(p, radius, radius, meToo)
+  inRadius (p, radius, meToo = true) {
+    const pset = this.inSquare(p, radius, meToo)
     const rSq = radius * radius
     const distSq = (p1) => util.distanceSq(p1.x, p1.y, p.x, p.y)
-    return rect.filter(p1 => distSq(p1) <= rSq) // REMIND: perf vs forEach?
+    return pset.filter((p1) => distSq(p1) <= rSq) // REMIND: perf vs forEach?
   }
   // Patches in cone from p in direction `angle`, with `width` and `radius`
-  patchesInCone (p, radius, width, angle, meToo = true) {
-    const rect = this.patchesInRect(p, radius, radius, meToo)
-    return rect.filter(
-      p1 => util.inCone(radius, width, angle, p.x, p.y, p1.x, p1.y) ||
+  inCone (p, radius, width, angle, meToo = true) {
+    const pset = this.inSquare(p, radius, meToo)
+    return pset.filter(
+      (p1) => util.inCone(radius, width, angle, p.x, p.y, p1.x, p1.y) ||
             (meToo && p === p1)
     )
   }
-  // Return patch at radius and angle from x, y (floats).
-  // If off world, return undefined.
-  patchAtRadiusAndAngle (x, y, r, theta) {
-    x = Math.round(x + r * Math.cos(theta))
-    y = Math.round(y + r * Math.sin(theta))
+  // Return patch at distance and heading/angle from obj's (patch or turtle)
+  // x, y (floats). If off world, return undefined.
+  patchAtAngleAndDistance (obj, angle, distance) {
+    let {x, y} = obj
+    x = Math.round(x + distance * Math.cos(angle))
+    y = Math.round(y + distance * Math.sin(angle))
     return this.isOnWorld(x, y) ? this.patchXY(x, y) : undefined
+  }
+  patchAtHeadingAndDistance (obj, heading, distance) {
+    return this.patchAtAngleAndDistance(obj, util.angle(heading), distance)
   }
 
   // Draw the patches onto the ctx using the pixel image data colors.
@@ -131,7 +143,7 @@ class Patches extends AgentSet {
   // This is an async function, using es6 Promises.
   importDrawing (imageSrc) {
     util.imagePromise(imageSrc)
-    .then(img => this.installDrawing(img))
+    .then((img) => this.installDrawing(img))
   }
   // Direct install image into the given context, not async.
   installDrawing (img, ctx = this.model.contexts.drawing) {
@@ -139,7 +151,7 @@ class Patches extends AgentSet {
   }
   importColors (imageSrc) {
     util.imagePromise(imageSrc)
-    .then(img => this.installColors(img))
+    .then((img) => this.installColors(img))
   }
   // Direct install image into the patch colors, not async.
   installColors (img) {
