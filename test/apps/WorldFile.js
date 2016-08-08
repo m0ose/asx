@@ -71,6 +71,7 @@ L.WorldFile = L.ElementOverlay.extend({
     parseParams:function(params){
         params = params || this.params
         if( this._image && params){
+            this.params = params
             this._reset()
         }
     },
