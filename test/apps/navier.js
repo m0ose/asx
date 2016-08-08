@@ -127,8 +127,8 @@ class NavierDisplay extends Model {
     ctx.strokeStyle="#909900"
     for (let p of this.patches) {
       if (p.x % 5 === 0 && p.y % 5 === 0) {
-        let u = this.sim.u.data[p.id]
-        let v = this.sim.v.data[p.id]
+        let u = 2 * this.sim.u.data[p.id] //scale by 2
+        let v = 2 * this.sim.v.data[p.id]
         ctx.moveTo(p.x, p.y)
         ctx.lineTo(p.x + u, p.y - v)
       }
@@ -143,27 +143,28 @@ class NavierDisplay extends Model {
       let v = this.sim.v_static.data[p.id]
       let mag = Math.hypot(u,v)
       if (mag > 0) {
-        this.canvas_arrow(ctx, p.x, p.y, p.x + u, p.y - v)
+        this.canvasArrow(ctx, p.x, p.y, p.x + u, p.y - v)
       }
     }
     ctx.stroke()
     ctx.closePath()
   }
 
-  canvas_arrow(ctx, fromx, fromy, tox, toy){
-    const headlen = 2;   // length of head in pixels
-    const angle = Math.atan2(toy-fromy,tox-fromx);
-    ctx.moveTo(fromx, fromy);
-    ctx.lineTo(tox, toy);
-    ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-    ctx.moveTo(tox, toy);
-    ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+  canvasArrow (ctx, fromx, fromy, tox, toy) {
+    const headlen = 2   // length of head in pixels
+    const angle = Math.atan2(toy - fromy, tox - fromx)
+    ctx.moveTo(fromx, fromy)
+    ctx.lineTo(tox, toy)
+    ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6))
+    ctx.moveTo(tox, toy)
+    ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6))
   }
 }
-// const [div, size, max, min] = ['layers', 4, 50, -50]
+// const [div, size, max, min] = ['layers', 4, 50,  - 50]
 const opts = {patchSize: 4, minX: 0, maxX: 128, minY: 0, maxY: 128}
 const model = new NavierDisplay('layers', opts)
 model.start()
 
+export default model
 // debugging
 util.toWindow({ model })
