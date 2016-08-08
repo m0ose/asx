@@ -1,10 +1,12 @@
 'use strict';
 
-System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileDataSet.js', './NavierSim.js', 'lib/Mouse.js'], function (_export, _context) {
-  var ColorMap, Model, util, TileDataSet, NavierSim, Mouse;
+System.register(['lib/ColorMap.js', 'lib/Color.js', 'lib/Model.js', 'lib/util.js', 'lib/TileDataSet.js', './NavierSim.js', 'lib/Mouse.js'], function (_export, _context) {
+  var ColorMap, Color, Model, util, TileDataSet, NavierSim, Mouse;
   return {
     setters: [function (_libColorMapJs) {
       ColorMap = _libColorMapJs.default;
+    }, function (_libColorJs) {
+      Color = _libColorJs.default;
     }, function (_libModelJs) {
       Model = _libModelJs.default;
     }, function (_libUtilJs) {
@@ -17,8 +19,6 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
       Mouse = _libMouseJs.default;
     }],
     execute: function () {
-      // Import the lib/ mmodules via relative paths
-
 
       class NavierDisplay extends Model {
         startup() {
@@ -61,12 +61,17 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
           this.firstMousePos;
           this.mouse = new Mouse(this, true, evt => {
             const M = this.mouse;
-            console.log(M.down, M.moved);
+            const brect = this.contexts.patches.canvas.getBoundingClientRect();
+            const [x, y] = [evt.event.clientX - brect.left, evt.event.clientY - brect.top];
+            let [px3, py3] = [x * this.world.numX / brect.width, y * this.world.numY / brect.height];
+            px3 = Math.round(px3);
+            py3 = Math.round(py3);
             if (M.down) {
               if (M.moved) {
-                let Mnow = [Math.round(M.x), this.world.maxY - Math.round(M.y)];
+                let Mnow = [px3, py3];
                 let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]];
                 let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1]);
+                // round patches to nearest 5
                 let [pX2, pY2] = [Math.round(p.x / 5) * 5, Math.round(p.y / 5) * 5];
                 // if there is less then the threshold set to 0
                 if (Math.hypot(dM[0], dM[1]) > this.mouseThreshold) {
@@ -77,7 +82,7 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
                   this.sim.v_static.setXY(pX2, pY2, 0);
                 }
               } else {
-                this.firstMousePos = [Math.round(M.x), this.world.maxY - Math.round(M.y)];
+                this.firstMousePos = [px3, py3];
               }
             } else {
               this.firstMousePos = undefined;
@@ -108,7 +113,7 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
 
         addDensity() {
           for (let p of this.patches) {
-            if (this.sim.u_static.data[p.id] > 0 || this.sim.v_static.data[p.id] > 0) {
+            if (this.sim.u_static.data[p.id] !== 0 || this.sim.v_static.data[p.id] !== 0) {
               let nei = this.patches.inRect(p, 2, 2);
               for (let n of nei) {
                 this.sim.dens.data[n.id] = 0.3;
@@ -121,8 +126,9 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
         putTypedArrayOnPatches() {
           for (let p of this.patches) {
             p.dens = this.sim.dens.data[p.id];
+            p.isBoundary = false;
             if (this.sim.boundaries.data[p.id] > 0.0) {
-              p.dens = 4.0;
+              p.isBoundary = true;
             }
           }
         }
@@ -130,6 +136,9 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
         drawStep() {
           for (const p of this.patches) {
             p.setColor(this.cmap.scaleColor(p.dens || 0, 0, 1));
+            if (p.isBoundary) {
+              p.setColor(this.cmap.scaleColor(1, 0, 1));
+            }
           }
           // vector
           const ctx = this.contexts.drawing;
@@ -174,6 +183,7 @@ System.register(['lib/ColorMap.js', 'lib/Model.js', 'lib/util.js', 'lib/TileData
         }
       }
       // const [div, size, max, min] = ['layers', 4, 50,  - 50]
+      // Import the lib/ mmodules via relative paths
       const opts = { patchSize: 4, minX: 0, maxX: 128, minY: 0, maxY: 128 };
       const model = new NavierDisplay('layers', opts);
       model.start();
