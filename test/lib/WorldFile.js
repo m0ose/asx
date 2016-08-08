@@ -1,8 +1,8 @@
 'use strict';
 
-System.register(['./ElementOverlay'], function (_export, _context) {
+System.register(['./ElementOverlay.js'], function (_export, _context) {
     return {
-        setters: [function (_ElementOverlay) {}],
+        setters: [function (_ElementOverlayJs) {}],
         execute: function () {
 
             L.WorldFile = L.ElementOverlay.extend({
