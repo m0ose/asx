@@ -1,5 +1,6 @@
 // Import the lib/ mmodules via relative paths
 import ColorMap from 'lib/ColorMap.js'
+import Color from 'lib/Color.js'
 import Model from 'lib/Model.js'
 import util from 'lib/util.js'
 import TileDataSet from 'lib/TileDataSet.js'
@@ -48,10 +49,14 @@ class NavierDisplay extends Model {
     this.firstMousePos
     this.mouse = new Mouse(this, true, (evt) => {
       const M = this.mouse
-      console.log(M.down, M.moved)
+      const brect = this.contexts.patches.canvas.getBoundingClientRect()
+      const [x,y] = [evt.event.clientX - brect.left, evt.event.clientY - brect.top]
+      let [px3, py3] = [x * this.world.numX / brect.width, y * this.world.numY / brect.height]
+      px3 = Math.round(px3)
+      py3 = Math.round(py3)
       if (M.down) {
         if (M.moved) {
-          let Mnow = [Math.round(M.x), this.world.maxY - Math.round(M.y)]
+          let Mnow = [px3, py3]
           let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
           let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
           let [pX2, pY2] = [Math.round(p.x/5)*5, Math.round(p.y/5)*5]
@@ -64,11 +69,12 @@ class NavierDisplay extends Model {
             this.sim.v_static.setXY(pX2, pY2, 0)
           }
         } else {
-          this.firstMousePos = [Math.round(M.x), this.world.maxY - Math.round(M.y)]
+          this.firstMousePos = [px3, py3]
         }
       } else {
         this.firstMousePos = undefined
       }
+
     })
     this.mouse.start()
   }
@@ -95,7 +101,7 @@ class NavierDisplay extends Model {
 
   addDensity () {
     for (let p of this.patches) {
-      if (this.sim.u_static.data[p.id] > 0 || this.sim.v_static.data[p.id] > 0) {
+      if (this.sim.u_static.data[p.id] !== 0 || this.sim.v_static.data[p.id] !== 0) {
         let nei = this.patches.inRect(p, 2, 2)
         for (let n of nei) {
           this.sim.dens.data[n.id] = 0.3
@@ -108,8 +114,9 @@ class NavierDisplay extends Model {
   putTypedArrayOnPatches () {
     for (let p of this.patches) {
       p.dens = this.sim.dens.data[p.id]
+      p.isBoundary = false
       if (this.sim.boundaries.data[p.id] > 0.0) {
-        p.dens = 4.0
+        p.isBoundary = true
       }
     }
   }
@@ -117,6 +124,9 @@ class NavierDisplay extends Model {
   drawStep () {
     for (const p of this.patches) {
       p.setColor(this.cmap.scaleColor(p.dens || 0, 0, 1))
+      if (p.isBoundary) {
+        p.setColor(this.cmap.scaleColor(1, 0, 1))
+      }
     }
     // vector
     const ctx = this.contexts.drawing
