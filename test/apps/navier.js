@@ -124,12 +124,11 @@ class NavierDisplay extends Model {
     const W = this.world
     ctx.clearRect(W.minX, W.minY, W.maxX - W.minX, W.maxY - W.minY)
     ctx.beginPath()
-    ctx.strokeStyle="#000000"
+    ctx.strokeStyle="#909900"
     for (let p of this.patches) {
       if (p.x % 5 === 0 && p.y % 5 === 0) {
         let u = this.sim.u.data[p.id]
         let v = this.sim.v.data[p.id]
-        // this.canvas_arrow(ctx, p.x, p.y, p.x + u, p.y - v)
         ctx.moveTo(p.x, p.y)
         ctx.lineTo(p.x + u, p.y - v)
       }
@@ -145,8 +144,6 @@ class NavierDisplay extends Model {
       let mag = Math.hypot(u,v)
       if (mag > 0) {
         this.canvas_arrow(ctx, p.x, p.y, p.x + u, p.y - v)
-        //ctx.moveTo(p.x, p.y)
-        //ctx.lineTo(p.x + u, p.y - v)
       }
     }
     ctx.stroke()
