@@ -11,13 +11,16 @@ class NavierDisplay extends Model {
     return this.loadElevations()
   }
 
-  loadElevations (north = 60.0, south = 59.29, east = -151.37, west = -152.58) {
+  // ak coast north = 60.0, south = 59.29, east = -151.37, west = -152.58
+  loadElevations (north = 40.5, south = 40.1, east = -124.2, west = -124.5) {
     return new Promise((resolve, reject) => {
       const ds = new TileDataSet({
+        url: 'https://s3-us-west-2.amazonaws.com/simtable-elevation-tiles/{z}/{x}/{y}.png',
         north: north,
         south: south,
         west: west,
         east: east,
+        maxZoom: 11,
         debug: true,
         callback: (err, val) => {
           if (!err) {
@@ -39,6 +42,7 @@ class NavierDisplay extends Model {
     this.cmap = ColorMap.Jet
     this.sim = new NavierSim(this.world.numX, this.world.numY)
     this.sim.seaLevel = 0
+    this.mouseThreshold = 5
     this.updateBoundaries()
     //
     this.firstMousePos
@@ -50,9 +54,9 @@ class NavierDisplay extends Model {
           let Mnow = [Math.round(M.x), this.world.maxY - Math.round(M.y)]
           let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
           let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
-          // console.log(M, M.x, M.y)
           let [pX2, pY2] = [Math.round(p.x/5)*5, Math.round(p.y/5)*5]
-          if (Math.hypot(dM[0], dM[1]) > 3) {
+          // if there is less then the threshold set to 0
+          if (Math.hypot(dM[0], dM[1]) > this.mouseThreshold) {
             this.sim.u_static.setXY(pX2, pY2, dM[0])
             this.sim.v_static.setXY(pX2, pY2, dM[1])
           } else {
@@ -90,14 +94,12 @@ class NavierDisplay extends Model {
   }
 
   addDensity () {
-    var w = this.sim.width
-    var h = this.sim.height
-  /*  for (var i = 0; i < 1; i++) {
-      this.sim.dens.setXY(Math.floor(Math.random()*w), Math.floor(Math.random()*h), 1)
-    }*/
-    for (let i = 0; i <= 6; i += 2) {
-      for (let j = 0; j <= 6; j += 2) {
-        this.sim.dens.setXY(w / 2 + i, h / 2 + j, 0.4)
+    for (let p of this.patches) {
+      if (this.sim.u_static.data[p.id] > 0 || this.sim.v_static.data[p.id] > 0) {
+        let nei = this.patches.inRect(p, 2, 2)
+        for (let n of nei) {
+          this.sim.dens.data[n.id] = 0.3
+        }
       }
     }
   }
