@@ -1,7 +1,7 @@
 //
 // World file overlay
 //
-import './ElementOverlay'
+import './ElementOverlay.js'
 
 L.WorldFile = L.ElementOverlay.extend({
 
