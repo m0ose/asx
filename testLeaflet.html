@@ -6,6 +6,16 @@
   <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
 </script>
 </head>
+<style>
+body {
+    padding: 0;
+    margin: 0;
+  }
+  html, body, #mapDiv {
+    height: 100%;
+    width: 100%;
+  }
+</style>
 <body>
   <script>
     var app = document.location.search.substring(1) || 'app'
@@ -19,6 +29,6 @@
     System.import(loc)
   </script>
   <div id='layers'> </div>
-  <div id='mapDiv' style='width:640px; height:640px'></div>
+  <div id='mapDiv'></div>
 </body>
 </html>

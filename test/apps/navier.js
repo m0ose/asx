@@ -59,6 +59,7 @@ class NavierDisplay extends Model {
           let Mnow = [px3, py3]
           let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
           let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
+          // round patches to nearest 5
           let [pX2, pY2] = [Math.round(p.x/5)*5, Math.round(p.y/5)*5]
           // if there is less then the threshold set to 0
           if (Math.hypot(dM[0], dM[1]) > this.mouseThreshold) {
@@ -74,7 +75,6 @@ class NavierDisplay extends Model {
       } else {
         this.firstMousePos = undefined
       }
-
     })
     this.mouse.start()
   }
