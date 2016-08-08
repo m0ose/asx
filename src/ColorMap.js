@@ -170,7 +170,7 @@ const ColorMap = {
         this.cubeClosestIndex(r, g, b) : this.rgbClosestIndex(r, g, b)
     },
     // Choose the appropriate method for finding closest color
-    closestColor (r, g, b) { return this.closestIndex(r, g, b) }
+    closestColor (r, g, b) { return this[this.closestIndex(r, g, b)] }
   },
 
 // ### Utilities for constructing ColorMaps

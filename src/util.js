@@ -116,8 +116,7 @@ const util = {
   },
 
   // Return a string representation of an array of arrays
-  // arraysToString (arrays) { return arrays.map(a => `[${a}]`).join(',') },
-  arraysToString: (arrays) => arrays.map(a => `[${a}]`).join(','),
+  arraysToString: (arrays) => arrays.map((a) => `[${a}]`).join(','),
 
   // Return array of strings of fixed floats to given precision
   fixedStrings (array, digits = 4) {
@@ -183,18 +182,13 @@ const util = {
     return norm * sigma + mean
   },
 
+  // A [modulus](http://mathjs.org/docs/reference/functions/mod.html)
+  // function rather than %, the remainder function.
+  // [`((v % n) + n) % n`](http://goo.gl/spr24) also works.
+  mod: (v, n) => v - n * Math.floor(v / n),
+
   // Return whether num is [Power of Two](http://goo.gl/tCfg5). Very clever!
   isPowerOf2: (num) => (num & (num - 1)) === 0, // twgl library
-
-  // Degrees & Radians
-  radians: (degrees) => degrees * Math.PI / 180,
-  degrees: (radians) => radians * 180 / Math.PI,
-
-  // Hypotenuse/distance from origin of point x,y
-  distanceSq: (x, y, x0 = 0, y0 = 0) =>
-    (x - x0) * (x - x0) + (y - y0) * (y - y0),
-  // distanceSq: (x, y, x0 = 0, y0 = 0) => (x - x0) ** 2 + (x - x0) ** 2,
-  distance: (x, y, x0 = 0, y0 = 0) => Math.sqrt(util.distanceSq(x, y, x0, y0)),
 
   // Trims decimal digits of float to reduce size.
   fixed (n, digits = 4) {
@@ -222,6 +216,58 @@ const util = {
   // Calculate the lerp scale given lo/hi pair and a number between them.
   lerpScale: (number, lo, hi) => (number - lo) / (hi - lo),
 
+// ### Geometry
+
+  // Hypotenuse/distance from origin of point x,y
+  distanceSq: (x, y, x0 = 0, y0 = 0) =>
+    (x - x0) * (x - x0) + (y - y0) * (y - y0),
+  distance: (x, y, x0 = 0, y0 = 0) =>
+    Math.sqrt(util.distanceSq(x, y, x0, y0)),
+
+  // Return angle in [-pi,pi] radians from x1,y1 to x2,y2
+  // [See: Math.atan2](http://goo.gl/JS8DF)
+  radiansToward: (x1, y1, x2, y2) => Math.atan2(y2 - y1, x2 - x1),
+
+  // Return angle in [-pi,pi] that added to rad2 = rad1
+  // See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
+  subtractAngles (rad1, rad2) {
+    const PI = Math.PI
+    let dr = rad1 - rad2
+    if (dr <= -PI) dr += 2 * PI
+    if (dr > PI) dr -= 2 * PI
+    return dr
+  },
+  // Above using headings (degrees) returning degrees in [-90, 90]
+  subtractHeadings (deg1, deg2) {
+    const dAngle = this.subtractAngles(this.angle(deg1), this.angle(deg2))
+    return this.degrees(dAngle)
+  },
+
+  // Is p2 withn a cone from p1 in direction angle and width wide,
+  // and within radius distance
+  inCone (radius, width, angle, x1, y1, x2, y2) {
+    if (radius * radius < this.distanceSq(x1, y1, x2, y2))
+      return false
+    const angle12 = this.radiansToward(x1, y1, x2, y2) // angle from 1 to 2
+    return (width / 2) >= Math.abs(this.subtractAngles(angle, angle12))
+  },
+
+  // Degrees & Radians
+  radians: (degrees) => degrees * Math.PI / 180,
+  degrees: (radians) => radians * 180 / Math.PI,
+
+  // Heading & Angles:
+  // * Heading is 0-up (y-axis), clockwise angle measured in degrees.
+  // * Angle is math: 0-right (x-axis), counterclockwise in radians
+  heading (angle) { // angleToHeading?
+    const degrees = this.degrees(angle)
+    return this.mod((90 - degrees), 360)
+  },
+  angle (heading) { // headingToAngle?
+    const degrees = this.mod(90 - heading, 360)
+    return this.radians(degrees)
+  },
+
 // ### Arrays, Objects and Iteration
 
   // Repeat function f(i) n times, n in 0, i-1.
@@ -229,30 +275,24 @@ const util = {
   // Repeat function n/step times, incrementing i by step each step.
   step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },
   // Return range [0, length-1]. Note: 6x faster than Array.from!
-  // * range: (length) => Array.from({ length: length }, (x, i) => i),
-  range (length) {
-    return this.repeat(length, (i, a) => { a[i] = i }, [])
-  },
+  range (length) { return this.repeat(length, (i, a) => { a[i] = i }, []) },
 
-  // Return a new copy of array, with correct type.
   // Execute fcn for all own member of an obj or array (typed OK).
+  // Return input arrayOrObj, transformed by fcn.
   // - Unlike forEach, does not skip undefines.
   // - Like map, forEach, etc, fcn = fcn(item, key/index, obj).
-  // - Prefer `for..of`, array map, reduce, filter etc
+  // - Alternatives are: `for..of`, array map, reduce, filter etc
   forAll (arrayOrObj, fcn) {
     if (arrayOrObj.slice) // typed & std arrays
       for (let i = 0, len = arrayOrObj.length; i < len; i++)
         fcn(arrayOrObj[i], i, arrayOrObj)
-    else
+    else // obj
       Object.keys(arrayOrObj).forEach((k) => fcn(arrayOrObj[k], k, arrayOrObj))
     return arrayOrObj
   },
 
   // Return a new shallow of array, either Array or TypedArray
-  copyArray (array) {
-    if (array.constructor === Array) return array.slice(0)
-    return new array.constructor(array)
-  },
+  copyArray (array) { return array.slice(0) },
 
   // Return a new array that is the concatination two arrays.
   // The resulting Type is that of the first array.
@@ -633,14 +673,14 @@ const util = {
   // NOTE: this will distort the origional image, due to browser assumptions.
   // Use imageToPixels for undistorted image content.
   //
-  // Not used yet.
-  // imageToCtx (img, x = 0, y = 0, width = img.width, height = img.height) {
-  //   if ((x + width > img.width) || (y + height > img.height))
-  //     this.error('imageToCtx: parameters outside of image')
-  //   const ctx = this.createCtx(width, height)
-  //   ctx.drawImage(img, x, y, width, height, 0, 0, width, height)
-  //   return ctx
-  // },
+  // REMIND: Remove?
+  imageToCtx (img, x = 0, y = 0, width = img.width, height = img.height) {
+    if ((x + width > img.width) || (y + height > img.height))
+      this.error('imageToCtx: parameters outside of image')
+    const ctx = this.createCtx(width, height)
+    ctx.drawImage(img, x, y, width, height, 0, 0, width, height)
+    return ctx
+  },
 
 // ### WebGL
 
@@ -650,7 +690,7 @@ const util = {
   // For images, attribute `premultipliedAlpha: false` useful.
   createGLContext (canvas, attributes = {}) {
     const gl = canvas.getContext('webgl', attributes)
-    if (!gl) util.error('webgl getContext error')
+    if (!gl) this.error('webgl getContext error')
     return gl
   },
 

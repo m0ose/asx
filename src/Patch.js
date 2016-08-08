@@ -14,7 +14,7 @@ const PatchProto = {
   // Return an object that will initially be the "default" variables
   // layer in a patch prototype stack.
   // Surprisingly `label` and `color` are not here, they are managed
-  // by the Patches AgentSet.
+  // optimally by the Patches AgentSet.
   baseVariables () { // Core variables for patches. Not 'own' variables.
     return {
       id: null,           // unique id, set by agentset's add() method
@@ -63,13 +63,6 @@ const PatchProto = {
     }
     return Color.toTypedColor(pixel)
   },
-  // getSharedColor (typedColor) {
-  //   typedColor.setPixel(this.patches.pixels.data[this.id])
-  //   return typedColor
-  // },
-  // getColor () {
-  //   return Color.toTypedColor(this.patches.pixels.data[this.id])
-  // },
   get color () { return this.getColor() },
   set color (typedColor) { return this.setColor(typedColor) },
 
@@ -88,6 +81,7 @@ const PatchProto = {
     return this.patches.patch(this.x + dx, this.y + dy)
   },
 
+  // Breed get/set mathods and getter/setter versions.
   setBreed (breed) { breed.setBreed(this) },
   getBreed () { return this.agentSet },
   get breed () { return this.getBreed() },
