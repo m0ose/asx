@@ -20,17 +20,7 @@ export default class NavierSim {
     this.solverIterations = 12
     this.boundaryElasticity = 1
     this.windHeading = Math.PI / 2
-    this.dens = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.dens_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.u = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.v = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.u_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.v_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.u_static = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.v_static = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.P = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.DIV = DataSet.emptyDataSet(this.width, this.height, Float32Array)
-    this.boundaries = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.resetFields()
     //
     this.startTime = new Date().getTime()
     this.stepCount = 0
@@ -54,6 +44,20 @@ export default class NavierSim {
 
   addDensity () {
 
+  }
+
+  resetFields () {
+    this.dens = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.dens_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.u = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.v = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.u_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.v_prev = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.u_static = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.v_static = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.P = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.DIV = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.boundaries = DataSet.emptyDataSet(this.width, this.height, Float32Array)
   }
 
   addForces () {

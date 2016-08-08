@@ -11,7 +11,7 @@ body {
     padding: 0;
     margin: 0;
   }
-  html, body, #mapDiv {
+  html, body {
     height: 100%;
     width: 100%;
   }
@@ -28,7 +28,9 @@ body {
     console.log('running', loc)
     System.import(loc)
   </script>
-  <div id='layers'> </div>
-  <div id='mapDiv'></div>
+  <themap></themap>
+  <script type="riot/tag" src="test/apps/themap.tag"></script>
+  <script src="https://cdn.jsdelivr.net/riot/2.5/riot+compiler.min.js"></script>
+  <script>riot.mount('themap')</script>
 </body>
 </html>
