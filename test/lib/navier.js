@@ -93,6 +93,7 @@ System.register(['lib/ColorMap.js', 'lib/Color.js', 'lib/Model.js', 'lib/util.js
 
         updateBoundaries() {
           model.patches.importDataSet(this.elevation, 'elev', true);
+          this.sim.resetFields();
           for (let p of this.patches) {
             this.sim.boundaries.data[p.id] = 1 * (p.elev > this.sim.seaLevel);
           }

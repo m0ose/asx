@@ -74,6 +74,7 @@ System.register(['./ElementOverlay.js'], function (_export, _context) {
                 parseParams: function (params) {
                     params = params || this.params;
                     if (this._image && params) {
+                        this.params = params;
                         this._reset();
                     }
                 },
