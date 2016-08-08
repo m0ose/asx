@@ -14,8 +14,11 @@ function initMap () {
   const bounds = new L.LatLngBounds([b.south, b.west], [b.north, b.east])
   console.log(bounds)
   myMap.fitBounds(bounds)
-  //myMap.dragging.disable()
   const div = document.getElementById('layers')
+  // get the mouse right
+  myMap.dragging.disable()
+  div.style['pointer-events'] = 'all'
+  // position
   const w = bounds.getEast() - bounds.getWest()
   const h = bounds.getNorth() - bounds.getSouth()
   window.overlay = new L.WorldFile({
