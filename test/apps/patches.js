@@ -46,7 +46,7 @@ const model = new PatchModel(div, opts).start()
 const world = model.world
 const patches = model.patches
 util.toWindow({ model, world, patches, p: patches.oneOf() })
-if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)
+// if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)
 
 // DataSets
 const dsetEx = patches.exportDataSet('id')

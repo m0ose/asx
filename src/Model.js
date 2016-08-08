@@ -151,7 +151,6 @@ class Model {
   step () {} // called each step of the animation
 
   // Start/stop the animation. Return model for chaining.
-  // start: -> u.waitOn (=> @modelReady), (=> @anim.start()); @
   start () {
     util.waitOn(() => this.modelReady, () => this.anim.start())
     return this

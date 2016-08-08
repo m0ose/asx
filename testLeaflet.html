@@ -1,0 +1,24 @@
+<html>
+<head>
+  <title>asx</title>
+  <script src="etc/system.js"></script>
+  <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+</script>
+</head>
+<body>
+  <script>
+    var app = document.location.search.substring(1) || 'app'
+    var loc
+    if (app.search('http:') >= 0 || app.search('https:') >= 0) {
+      loc = app
+    } else {
+      loc = `test/lib/${app}.js`
+    }
+    console.log('running', loc)
+    System.import(loc)
+  </script>
+  <div id='layers'> </div>
+  <div id='mapDiv' style='width:640px; height:640px'></div>
+</body>
+</html>

@@ -11,13 +11,16 @@ class NavierDisplay extends Model {
     return this.loadElevations()
   }
 
-  loadElevations (north = 60.0, south = 59.29, east = -151.37, west = -152.58) {
+  // ak coast north = 60.0, south = 59.29, east = -151.37, west = -152.58
+  loadElevations (north = 40.5, south = 40.1, east = -124.2, west = -124.5) {
     return new Promise((resolve, reject) => {
       const ds = new TileDataSet({
+        url: 'https://s3-us-west-2.amazonaws.com/simtable-elevation-tiles/{z}/{x}/{y}.png',
         north: north,
         south: south,
         west: west,
         east: east,
+        maxZoom: 11,
         debug: true,
         callback: (err, val) => {
           if (!err) {
@@ -38,6 +41,7 @@ class NavierDisplay extends Model {
     this.cmap = ColorMap.Jet
     this.sim = new NavierSim(this.world.numX, this.world.numY)
     this.sim.seaLevel = 0
+    this.mouseThreshold = 5
     this.updateBoundaries()
     //
     this.firstMousePos
@@ -49,9 +53,9 @@ class NavierDisplay extends Model {
           let Mnow = [Math.round(M.x), this.world.maxY - Math.round(M.y)]
           let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
           let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
-          // console.log(M, M.x, M.y)
           let [pX2, pY2] = [Math.round(p.x/5)*5, Math.round(p.y/5)*5]
-          if (Math.hypot(dM[0], dM[1]) > 3) {
+          // if there is less then the threshold set to 0
+          if (Math.hypot(dM[0], dM[1]) > this.mouseThreshold) {
             this.sim.u_static.setXY(pX2, pY2, dM[0])
             this.sim.v_static.setXY(pX2, pY2, dM[1])
           } else {
@@ -89,14 +93,12 @@ class NavierDisplay extends Model {
   }
 
   addDensity () {
-    var w = this.sim.width
-    var h = this.sim.height
-  /*  for (var i = 0; i < 1; i++) {
-      this.sim.dens.setXY(Math.floor(Math.random()*w), Math.floor(Math.random()*h), 1)
-    }*/
-    for (let i = 0; i <= 6; i += 2) {
-      for (let j = 0; j <= 6; j += 2) {
-        this.sim.dens.setXY(w / 2 + i, h / 2 + j, 0.4)
+    for (let p of this.patches) {
+      if (this.sim.u_static.data[p.id] > 0 || this.sim.v_static.data[p.id] > 0) {
+        let nei = this.patches.inRect(p, 2, 2)
+        for (let n of nei) {
+          this.sim.dens.data[n.id] = 0.3
+        }
       }
     }
   }
@@ -121,12 +123,11 @@ class NavierDisplay extends Model {
     const W = this.world
     ctx.clearRect(W.minX, W.minY, W.maxX - W.minX, W.maxY - W.minY)
     ctx.beginPath()
-    ctx.strokeStyle="#000000"
+    ctx.strokeStyle="#909900"
     for (let p of this.patches) {
       if (p.x % 5 === 0 && p.y % 5 === 0) {
-        let u = this.sim.u.data[p.id]
-        let v = this.sim.v.data[p.id]
-        // this.canvas_arrow(ctx, p.x, p.y, p.x + u, p.y - v)
+        let u = 2 * this.sim.u.data[p.id] //scale by 2
+        let v = 2 * this.sim.v.data[p.id]
         ctx.moveTo(p.x, p.y)
         ctx.lineTo(p.x + u, p.y - v)
       }
@@ -141,29 +142,28 @@ class NavierDisplay extends Model {
       let v = this.sim.v_static.data[p.id]
       let mag = Math.hypot(u,v)
       if (mag > 0) {
-        this.canvas_arrow(ctx, p.x, p.y, p.x + u, p.y - v)
-        //ctx.moveTo(p.x, p.y)
-        //ctx.lineTo(p.x + u, p.y - v)
+        this.canvasArrow(ctx, p.x, p.y, p.x + u, p.y - v)
       }
     }
     ctx.stroke()
     ctx.closePath()
   }
 
-  canvas_arrow(ctx, fromx, fromy, tox, toy){
-    const headlen = 2;   // length of head in pixels
-    const angle = Math.atan2(toy-fromy,tox-fromx);
-    ctx.moveTo(fromx, fromy);
-    ctx.lineTo(tox, toy);
-    ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-    ctx.moveTo(tox, toy);
-    ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+  canvasArrow (ctx, fromx, fromy, tox, toy) {
+    const headlen = 2   // length of head in pixels
+    const angle = Math.atan2(toy - fromy, tox - fromx)
+    ctx.moveTo(fromx, fromy)
+    ctx.lineTo(tox, toy)
+    ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6))
+    ctx.moveTo(tox, toy)
+    ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6))
   }
 }
-// const [div, size, max, min] = ['layers', 4, 50, -50]
+// const [div, size, max, min] = ['layers', 4, 50,  - 50]
 const opts = {patchSize: 4, minX: 0, maxX: 128, minY: 0, maxY: 128}
 const model = new NavierDisplay('layers', opts)
 model.start()
 
+export default model
 // debugging
 util.toWindow({ model })
