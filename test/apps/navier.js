@@ -13,10 +13,10 @@ class NavierDisplay extends Model {
   }
 
   // ak coast north = 60.0, south = 59.29, east = -151.37, west = -152.58
-  loadElevations (north = 40.5, south = 40.1, east = -124.2, west = -124.5) {
+  loadElevations (north = 60.0, south = 59.29, east = -151.37, west = -152.58) {
     return new Promise((resolve, reject) => {
       const ds = new TileDataSet({
-        url: 'https://s3-us-west-2.amazonaws.com/simtable-elevation-tiles/{z}/{x}/{y}.png',
+        // url: 'https://s3-us-west-2.amazonaws.com/simtable-elevation-tiles/{z}/{x}/{y}.png',
         north: north,
         south: south,
         west: west,
