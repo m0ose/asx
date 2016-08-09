@@ -62,7 +62,7 @@ export default class NavierSim {
   }
 
   moveParticles () {
-    const K = 0.99
+    const K = 1.2
     const dt = 1
     let remaining = []
     for (let i = 0; i < this.particles.length; i++) {
@@ -83,7 +83,7 @@ export default class NavierSim {
         const x3 = x + dxdt * dt
         const y3 = y + dydt * dt
         if (this.boundaries.getXY(Math.round(x), Math.round(y)) != 0) {
-          dxdt = dydt = 0
+          //dxdt = dydt = 0
         }
         remaining.push([x3, y3, dxdt, dydt])
       }

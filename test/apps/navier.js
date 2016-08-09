@@ -56,13 +56,6 @@ class NavierDisplay extends Model {
       this.onMouse(evt, px3, py3)
     })
     this.mouse.start()
-    //
-    // test particles
-    //
-    console.log('adding particles')
-    for (var j=0; j<200; j++) {
-      this.sim.addParticle(Math.random()*100, Math.random()*100, 0.1, 0.1)
-    }
   }
 
   onMouse (evt, x, y) {
@@ -98,8 +91,8 @@ class NavierDisplay extends Model {
       let p = this.patches.patchXY(x, y)
       let nei = this.patches.patchRect(p, 6, 6)
       for (let p2 of nei) {
-        if (Math.random() > 0.2) {
-          console.log('add particle', p2.x, p2.y)
+        if (Math.random() > 0.9) {
+          this.sim.addParticle(p2.x, p2.y)
         }
       }
     }
@@ -193,7 +186,6 @@ class NavierDisplay extends Model {
       let pa = this.sim.particles[j]
       const [x4, y4] = [pa[0], this.world.maxY - pa[1]]
       ctx.fillRect(x4, y4, 1, 1)
-      this.canvasArrow(ctx, x4, y4, x4 + pa[2]*1000, y4 - pa[3]*1000)
     }
   }
 
