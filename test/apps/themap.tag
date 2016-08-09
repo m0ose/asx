@@ -4,10 +4,10 @@
   <div id='mybuttons'>
     <span if={ mode != 'DOWNLOADING' }>
       <button class={ hotButton : (mode == 'MOVE') } onclick={ modeChange.bind( this, 'MOVE') } >Move</button>
+      <button disabled={ mode != 'MOVE' } onclick={ modeChange.bind( this, 'DOWNLOADING') } >Make this AOI</button>
       <button class={ hotButton : (mode == 'DRAW_VECTOR') } onclick={ modeChange.bind( this, 'DRAW_VECTOR') } >Draw Vector</button>
       <button class={ hotButton : (mode == 'DRAW_PARTICLES') } onclick={ modeChange.bind( this, 'DRAW_PARTICLES') } >Draw Particles</button>
-      <button if={ mode == 'DRAW_VECTOR' } onclick={ resetVectors } >Reset</button>
-      <button if ={ mode == 'MOVE' } onclick={ modeChange.bind( this, 'DOWNLOADING') } >Make this AOI</button>
+      <button onclick={ resetVectors } >Reset</button>
     </span>
     <h5 if={ mode == 'DOWNLOADING' }> Downloading Data </h5>
   </div>
@@ -31,6 +31,7 @@
       myMap.zoomControl.enable()
       model.stop()
       this.mode = this.modes.MOVE
+      model.onMouse = () => {}
     } else if (type == this.modes.DRAW_VECTOR) {
       model.start()
       myMap.dragging.disable()
