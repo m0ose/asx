@@ -37,13 +37,9 @@ export default class NavierSim {
 
   step () {
     this.addForces()
-    this.addDensity()
     this.velocityStep()
     this.densityStep()
-  }
-
-  addDensity () {
-
+    this.moveParticles()
   }
 
   resetFields () {
@@ -58,6 +54,41 @@ export default class NavierSim {
     this.P = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.DIV = DataSet.emptyDataSet(this.width, this.height, Float32Array)
     this.boundaries = DataSet.emptyDataSet(this.width, this.height, Float32Array)
+    this.particles = []
+  }
+
+  addParticle (x, y, u = 0, v = 0) {
+    this.particles.push([x, y, u, v])
+  }
+
+  moveParticles () {
+    const K = 0.99
+    const dt = 1
+    let remaining = []
+    for (let i = 0; i < this.particles.length; i++) {
+      const p = this.particles[i]
+      const x = p[0]
+      const y = p[1]
+      if (x > 1 && y > 1 && x < this.width - 1 && y < this.height - 1) {
+        const uWater = this.u.sample(x, y, false)
+        const vWater = this.v.sample(x, y, false)
+        const uP = p[2]
+        const vP = p[3]
+        const uW = uWater - uP
+        const vW = vWater - vP
+        const dragU = Math.sign(uW) * K * Math.pow(uW, 2) / 2
+        const dragV = Math.sign(vW) * K * Math.pow(vW, 2) / 2
+        let dxdt = uP + dragU * dt
+        let dydt = vP + dragV * dt
+        const x3 = x + dxdt * dt
+        const y3 = y + dydt * dt
+        if (this.boundaries.getXY(Math.round(x), Math.round(y)) != 0) {
+          dxdt = dydt = 0
+        }
+        remaining.push([x3, y3, dxdt, dydt])
+      }
+    }
+    this.particles = remaining
   }
 
   addForces () {
