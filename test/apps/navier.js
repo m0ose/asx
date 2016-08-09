@@ -44,45 +44,42 @@ class NavierDisplay extends Model {
     this.sim = new NavierSim(this.world.numX, this.world.numY)
     this.sim.seaLevel = 0
     this.mouseThreshold = 5
-    this.MOUSE_MODES = { PARTICLES:'PARTICLES', VECTORS:'VECTORS' }
-    this.mouseMode = 'VECTORS'
     this.updateBoundaries()
     //
     this.firstMousePos
     this.mouse = new Mouse(this, true, (evt) => {
-      const M = this.mouse
-      const brect = this.contexts.patches.canvas.getBoundingClientRect()
+      const brect = evt.div.getBoundingClientRect()
       const [x,y] = [evt.event.clientX - brect.left, evt.event.clientY - brect.top]
       let [px3, py3] = [x * this.world.numX / brect.width, y * this.world.numY / brect.height]
       px3 = Math.round(px3)
       py3 = Math.round(py3)
-      if (this.mouseMode === this.MOUSE_MODES.VECTORS) {
-        if (M.down) {
-          if (M.moved) {
-            let Mnow = [px3, py3]
-            let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
-            let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
-            // round patches to nearest 5
-            let [pX2, pY2] = [Math.round(p.x/5)*5, Math.round(p.y/5)*5]
-            // if there is less then the threshold set to 0
-            if (Math.hypot(dM[0], dM[1]) > this.mouseThreshold) {
-              this.sim.u_static.setXY(pX2, pY2, dM[0])
-              this.sim.v_static.setXY(pX2, pY2, dM[1])
-            } else {
-              this.sim.u_static.setXY(pX2, pY2, 0)
-              this.sim.v_static.setXY(pX2, pY2, 0)
-            }
-          } else {
-            this.firstMousePos = [px3, py3]
-          }
-        } else {
-          this.firstMousePos = undefined
-        }
-      } else if (this.mouseMode == this.MOUSE_MODES.PARTICLES) {
-
-      }
+      this.onMouse(evt, px3, py3)
     })
     this.mouse.start()
+  }
+
+  onMouse (evt, x, y) {
+    if (evt.down) {
+      if (evt.moved) {
+        let Mnow = [x, y]
+        let dM = [Mnow[0] - this.firstMousePos[0], Mnow[1] - this.firstMousePos[1]]
+        let p = model.patches.patchXY(this.firstMousePos[0], this.firstMousePos[1])
+        // round patches to nearest 5
+        let [pX2, pY2] = [Math.round(p.x/5)*5, Math.round(p.y/5)*5]
+        // if there is less then the threshold set to 0
+        if (Math.hypot(dM[0], dM[1]) > this.mouseThreshold) {
+          this.sim.u_static.setXY(pX2, pY2, dM[0])
+          this.sim.v_static.setXY(pX2, pY2, dM[1])
+        } else {
+          this.sim.u_static.setXY(pX2, pY2, 0)
+          this.sim.v_static.setXY(pX2, pY2, 0)
+        }
+      } else {
+        this.firstMousePos = [x, y]
+      }
+    } else {
+      this.firstMousePos = undefined
+    }
   }
 
   updateBoundaries () {
