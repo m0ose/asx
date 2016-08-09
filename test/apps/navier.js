@@ -21,7 +21,7 @@ class NavierDisplay extends Model {
         south: south,
         west: west,
         east: east,
-        maxZoom: 11,
+        maxZoom: 13,
         debug: true,
         callback: (err, val) => {
           if (!err) {
