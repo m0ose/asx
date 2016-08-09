@@ -34,7 +34,7 @@ System.register(['lib/ColorMap.js', 'lib/Color.js', 'lib/Model.js', 'lib/util.js
               south: south,
               west: west,
               east: east,
-              maxZoom: 11,
+              maxZoom: 13,
               debug: true,
               callback: (err, val) => {
                 if (!err) {
