@@ -71,18 +71,34 @@ System.register(['lib/util.js', 'lib/DataSet.js'], function (_export, _context) 
         }
 
         moveParticles() {
-          const K = 1.2;
           const dt = 1;
           let remaining = [];
           for (let i = 0; i < this.particles.length; i++) {
             const p = this.particles[i];
             const x = p[0];
             const y = p[1];
+            const u = p[2];
+            const v = p[3];
             if (x > 1 && y > 1 && x < this.width - 1 && y < this.height - 1) {
+              // runge kutta step. This should be more accurate
+              const k1 = this.stepParticle(x, y, u, v, 1 / 6);
+              const k2 = this.stepParticle(k1[0], k1[1], k1[2], k1[3], 1 / 3);
+              const k3 = this.stepParticle(k2[0], k2[1], k2[2], k2[3], 1 / 3);
+              const k4 = this.stepParticle(k3[0], k3[1], k3[2], k3[3], 1 / 6);
+              remaining.push(k4);
+            }
+          }
+          this.particles = remaining;
+        }
+
+        stepParticle(x, y, u, v, dt) {
+          const K = 1.2;
+          if (x > 1 && y > 1 && x < this.width - 1 && y < this.height - 1) {
+            if (this.boundaries.getXY(Math.round(x), Math.round(y)) === 0) {
               const uWater = this.u.sample(x, y, false);
               const vWater = this.v.sample(x, y, false);
-              const uP = p[2];
-              const vP = p[3];
+              const uP = u;
+              const vP = v;
               const uW = uWater - uP;
               const vW = vWater - vP;
               const dragU = Math.sign(uW) * K * Math.pow(uW, 2) / 2;
@@ -91,13 +107,10 @@ System.register(['lib/util.js', 'lib/DataSet.js'], function (_export, _context) 
               let dydt = vP + dragV * dt;
               const x3 = x + dxdt * dt;
               const y3 = y + dydt * dt;
-              if (this.boundaries.getXY(Math.round(x), Math.round(y)) != 0) {
-                //dxdt = dydt = 0
-              }
-              remaining.push([x3, y3, dxdt, dydt]);
+              return [x3, y3, dxdt, dydt];
             }
           }
-          this.particles = remaining;
+          return [x, y, 0, 0];
         }
 
         addForces() {
