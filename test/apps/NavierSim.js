@@ -75,10 +75,10 @@ export default class NavierSim {
         const k1 = this.stepParticle(x, y, u, v, 1 / 3)
         const k2 = this.stepParticle(k1[0], k1[1], k1[2], k1[3], 1 / 3)
         const k3 = this.stepParticle(k2[0], k2[1], k2[2], k2[3], 1 / 6)
-        const u2 = dt * (u / 6 + k1[2] / 3 + k2[2] / 3 + k3[2] / 6)
-        const v2 = dt * (v / 6 + k1[3] / 3 + k2[3] / 3 + k3[3] / 6)
-        const x2 = x + u2
-        const y2 = y + v2
+        const u2 = u / 6 + k1[2] / 3 + k2[2] / 3 + k3[2] / 6
+        const v2 = v / 6 + k1[3] / 3 + k2[3] / 3 + k3[3] / 6
+        const x2 = x + dt * u2
+        const y2 = y + dt * v2
         remaining.push([x2, y2, u2, v2])
       }
     }
