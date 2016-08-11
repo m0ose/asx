@@ -27,4 +27,4 @@ A gh-pages branch is used for the site. It contains the complete master repo, in
 
 This can be used to run tests and access modules:
 * http://backspaces.github.io/asx/test.html?navier
-* http://backspaces.github.io/asx/lib/AgentSet.js
+* http://backspaces.github.io/asx/docs/Model.html
