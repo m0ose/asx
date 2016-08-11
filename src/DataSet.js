@@ -31,11 +31,9 @@ class DataSet {
     if (!this.inBounds(x, y))
       u.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
   }
-
+  // true if x,y in dataset bounds
   inBounds (x, y) {
-    if (!(u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1)))
-      return false
-    return true
+    return (u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1))
   }
 
   type () { return this.data.constructor }
@@ -46,31 +44,37 @@ class DataSet {
   // Given index into data, return dataset [x, y] position
   toXY (i) { return [i % this.width, Math.floor(i / this.width)] }
 
-  // Get dataset value at x,y, checking that x,y valid
-  getXY (x, y) { return this.data[this.toIndex(Math.floor(x), Math.floor(y))] }
+  // Get dataset value at x,y, assuming that x,y valididated previously
+  // getXY (x, y) { return this.data[this.toIndex(Math.floor(x), Math.floor(y))] }
+  getXY (x, y) { return this.data[this.toIndex(x, y)] }
 
-  // Set the data value at x,y to num
-  setXY (x, y, num) { this.data[this.toIndex(Math.floor(x), Math.floor(y))] = num }
+  // Set the data value at x,y to num. assume x,y valid
+  // setXY (x, y, num) { this.data[this.toIndex(Math.floor(x), Math.floor(y))] = num }
+  setXY (x, y, num) { this.data[this.toIndex(x, y)] = num }
 
-  // Wrapper for sampling, defaults to "nearest"
+  // Wrapper for sampling, defaults to "nearest". Checks x,y valid as well.
+  // Use this for individual sampling.
   sample (x, y, useNearest = true) {
+    this.checkXY(x, y)
     return useNearest ? this.nearest(x, y) : this.bilinear(x, y)
   }
 
-  // Nearest neighbor sampling
+  // Nearest neighbor sampling, w/o x,y validity check, i.e. our inner loops
   nearest (x, y) {
-    this.checkXY(Math.round(x), Math.round(y))
+    // this.checkXY(x, y)
     return this.getXY(Math.round(x), Math.round(y))
   }
 
-  // Billinear sampling
+  // Billinear sampling w/o x,y validity check, i.e. our inner loops
   bilinear (x, y) {
     // Billinear sampling works by making two linear interpolations (lerps)
     // in the x direction, and a third in the y direction, between the
     // two x results. See wikipedia:
     // [bilinear sampling](http://en.wikipedia.org/wiki/Bilinear_interpolation)
     // The diagram shows the three lerps
-    this.checkXY(x, y)
+
+    // this.checkXY(x, y)
+
     // const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next line for speed
     const x0 = Math.floor(x), y0 = Math.floor(y)
     const i = this.toIndex(x0, y0)
@@ -104,9 +108,9 @@ class DataSet {
     return new DataSet(this.width, this.height, u.copyArray(this.data))
   }
 
-  // Return new (empty) dataset of this type
-  emptyDataSet (width, height) {
-    return DataSet.emptyDataSet(width, height, this.type()) // see statics above
+  // Return new (empty) dataset, defaulting to this type
+  emptyDataSet (width, height, type = this.type()) {
+    return DataSet.emptyDataSet(width, height, this.type()) // see static above
   }
 
   // Return new (empty) array of this type
@@ -229,11 +233,17 @@ class DataSet {
   // Return Array 3x3 neighbor values of the given x,y of the dataset.
   // Off-edge neighbors revert to nearest edge value.
   neighborhood (x, y, array = []) {
-    array.length = 0  // in case user supplied an array
+    array.length = 0  // in case user supplied an array to reduce GC
+    const clampNeeded = (x === 0) || (x === this.width - 1) ||
+                        (y === 0) || (y === this.height - 1)
     for (let dy = -1; dy <= +1; dy++) {
       for (let dx = -1; dx <= +1; dx++) {
-        const x0 = u.clamp(x + dx, 0, this.width - 1)
-        const y0 = u.clamp(y + dy, 0, this.height - 1)
+        let x0 = x + dx
+        let y0 = y + dy
+        if (clampNeeded) {
+          x0 = u.clamp(x0, 0, this.width - 1)
+          y0 = u.clamp(y0, 0, this.height - 1)
+        }
         array.push(this.data[this.toIndex(x0, y0)])
       }
     }
@@ -247,24 +257,21 @@ class DataSet {
   // If not, convolve the edges by extending edge values, returning
   // dataset of same size.
   convolve (kernel, factor = 1, crop = false) {
-    // const [x0, y0, h, w] = crop
-    //  ? [1, 1, this.height - 1, this.width - 1]
-    //  : [0, 0, this.height, this.width]
-    // The above code was replaced by the below code for speed.
-    let x0 = 0, y0 = 0, h = this.height, w = this.width
-    if (crop) {
-      x0 = 1; y0 = 1; h = this.height -1; w = this.width - 1
-    }
-    const Constructor = this.data.constructor
-    const newDS = new DataSet(w, h, new Constructor(w * h))
+    const [x0, y0, h, w] = crop // optimization not needed, only called once
+     ? [1, 1, this.height - 1, this.width - 1]
+     : [0, 0, this.height, this.width]
+    const newDS = this.emptyDataSet(w, h)
+    const newData = newDS.data
+    let i = 0
     for (let y = y0; y < h; y++) {
       for (let x = x0; x < w; x++) {
         const nei = this.neighborhood(x, y)
         let sum2 = 0
         for (let i2 = 0; i2 < kernel.length; i2++) {
-          sum2 += kernel[i2] * nei[i2]
+          // sum2 += kernel[i2] * nei[i2] // Chrome can't optimize compound let
+          sum2 = sum2 + kernel[i2] * nei[i2]
         }
-        newDS.data[newDS.toIndex(x, y)] = sum2 * factor
+        newData[i++] = sum2 * factor // newDS.data[newDS.toIndex(x, y)] = sum2 * factor
       }
     }
     return newDS
@@ -385,9 +392,6 @@ class DataSet {
       return Math.min(a, b)
     })
   }
-
-  // Import an image as a dataset via it
-
 }
 
 export default DataSet

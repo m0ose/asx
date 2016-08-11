@@ -1,12 +1,24 @@
 // Import the lib/ mmodules via relative paths
 import DataSet from 'lib/DataSet.js'
+import RGBDataSet from 'lib/RGBDataSet.js'
 import util from 'lib/util.js'
-// import lzma from 'node_modules/lzma/src/lzma_worker.js'
-import LZMA from 'node_modules/lzma/src/lzma.js'
-import pako from 'node_modules/pako/dist/pako.js'
-const lzma = new LZMA('node_modules/lzma/src/lzma_worker.js')
+// import LZMA from 'etc/lzma-min.js'
+// import pako from 'etc/pako.min.js'
+// const lzma = new LZMA('etc/lzma_worker-min.js')
+import LZMA from 'etc/lzma.js'
+import lzma from 'etc/lzma_worker.js'
+// import pako from 'etc/pako.js'
 
-const modules = { DataSet, util, LZMA, lzma, pako, pps: util.pps }
+// const lzma = new LZMA('etc/lzma_worker.js')
+
+// import LZMA from 'node_modules/lzma/src/lzma.js'
+// import pako from 'node_modules/pako/dist/pako.js'
+// const lzma = new LZMA('node_modules/lzma/src/lzma_worker.js')
+// import LZMA from 'node_modules/lzma/src/lzma-min.js'
+import pako from 'node_modules/pako/dist/pako.min.js'
+// const lzma = new LZMA('node_modules/lzma/src/lzma_worker-min.js')
+
+const modules = { DataSet, RGBDataSet, util, LZMA, lzma, pako }
 util.toWindow(modules)
 console.log(Object.keys(modules).join(', '))
 
@@ -14,7 +26,10 @@ const imageUrl = 'test/data/test.png' // 26k
 // const imageUrl = 'test/data/7.15.35.png' // 112K
 // const imageUrl = 'test/data/10.20.263.png' // 26k
 // const imageUrl = 'test/data/ASTGTM2_N00E035_dem.png' // 4.8MB (16->8 bit gray)
-const useImg = true
+const useImg = false
+const async = false
+if (async) lzma = new LZMA('etc/lzma_worker.js')
+const png24 = imageUrl.match(/.*\/[0-9]/) != null
 const [compress, level] = [lzma, 9] // pako or lzma
 
 function compressPromise (compressor, uint8Array, level = 9) {
@@ -35,8 +50,9 @@ function decompressPromise (compressor, uint8Array) {
       resolve(pako.inflate(uint8Array))
   })
 }
-const typedArray = util.randomArray(1e6, 0, 256, Uint8Array)
-util.toWindow({compressPromise, imageUrl, typedArray})
+// const typedArray = util.randomArray(1e6, 0, 256, Uint8Array)
+const typedArray = util.repeat(1e6, (i, a) => { a[i] = i }, new Uint8Array(1e6))
+util.toWindow({useImg, png24, compressPromise, imageUrl, typedArray})
 
 // const array8toUint8 = (array) => new Uint8Array(new Int8Array(array).buffer)
 // const uint8toArray8 = (uint8s) =>
@@ -62,8 +78,17 @@ function sizes (orig, compressed) {
 }
 function * main () {
   const img = yield util.imagePromise(imageUrl)
-  console.log(useImg ? imageUrl : 'random ' + typedArray.length)
-  const pixels = useImg ? util.imageToPixels(img, true) : typedArray
+  console.log(useImg ? imageUrl : 'typedarray ' + typedArray.length)
+  let pixels = !useImg ? typedArray
+    : png24 ? new RGBDataSet(img).data
+    : util.imageToPixels(img, true)
+  console.log('pixels', pixels)
+  if (util.typeOf(pixels) !== 'uint8array') {
+    pixels = new Uint8Array(pixels.buffer)
+    console.log('uint8array', pixels)
+  }
+  util.toWindow({img, pixels})
+
   // const pixjson =
   // const pixels = typedArray
   // console.log('img', img, 'pixels', pixels)
@@ -73,7 +98,7 @@ function * main () {
   const pixc = yield compressPromise(compress, pixels, level)
   console.timeEnd('compress')
   console.log('compression', ...sizes(pixels, pixc))
-  util.toWindow({main, img, pixels, pixc})
+  util.toWindow({main, pixels, pixc})
 
   console.time('decompress')
   const pixd = yield decompressPromise(compress, pixc)
@@ -93,10 +118,10 @@ function * main () {
 
   const pixj = JSON.stringify(util.convertArray(pixels, Array))
   util.toWindow({pixd, pixcs, pixcsc, pixcb, pixcbc, pixj})
-  console.log('json vs base64', ...sizes(pixj, pixels))
+  console.log('json vs base64', ...sizes(pixj, pixcb))
   console.log('json vs byte string', ...sizes(pixj, pixcs))
 }
-console.log('gen', util.runGenerator(main))
+util.runGenerator(main)
 // util.toWindow({main})
 
 // s = String.fromCharCode.apply(null, pixc64c)

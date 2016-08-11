@@ -104,13 +104,15 @@ class AgentSet extends Array {
   asAgentSet (array) {
     return Object.setPrototypeOf(array, Object.getPrototypeOf(this))
   }
+  // Convert agentset to plain JS Array
   asArray (agentSet = this) {
     return Object.setPrototypeOf(agentSet, Array.prototype)
   }
+  // Experimental: call a filter on this agentset as a JS Array.
+  // Avoids agentset & subclass constructors
   afilter (callback) {
-    // const array = this.asArray()
     return this.asArray().filter(callback)
-  } // avoid AgentSet & subclass ctors
+  }
 
 // ### General Array of Objects methods
 
@@ -125,9 +127,11 @@ class AgentSet extends Array {
   // Return property values for key from this array's objects
   props (key) { return this.map((a) => a[key]) }
   // Return agents with reporter(agent) true
-  with (reporter) { this.filter(reporter) }
+  with (reporter) { return this.filter(reporter) }
   // Return count of agents with reporter(agent) true
-  count (reporter) { this.reduce((prev, p) => prev + reporter(p) ? 1 : 0, 0) }
+  count (reporter) {
+    return this.reduce((prev, p) => prev + reporter(p) ? 1 : 0, 0)
+  }
 
   // Replacements for array methods to avoid calling AgentSet ctor
 

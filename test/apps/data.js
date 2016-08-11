@@ -1,9 +1,9 @@
 // Import the lib/ mmodules via relative paths
 import DataSet from 'lib/DataSet.js'
 import util from 'lib/util.js'
-import lzma from 'node_modules/lzma/src/lzma_worker.js'
-import LZMA from 'node_modules/lzma/src/lzma.js'
-import pako from 'node_modules/pako/dist/pako.js'
+import lzma from 'etc/lzma_worker.js'
+import LZMA from 'etc/lzma.js'
+import pako from 'etc/pako.js'
 
 // const lzma = new LZMA('node_modules/lzma/src/lzma_worker.js')
 // const lzma = new LZMA()

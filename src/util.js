@@ -33,16 +33,19 @@ const util = {
   convertArray (array, Type) {
     const Type0 = array.constructor
     if (Type0 === Type) return array // return array if already same Type
-    if (Type !== Array) return new Type(array) // TypedArray: universal ctor
-    // Convert TypedArray to Array
-    return Array.prototype.slice.call(array)
+    if (Type !== Array) // Converting to typed array
+      if (Type0 !== Array)
+        return new Type(array.buffer) // Return new view onto same array buffer
+      else
+        return new Type(array) // Convert Array to TypedArray via ctor
+    return Array.prototype.slice.call(array) // Convert TypedArray to Array
   },
 
   // Convert between Uint8Array "buffer" and base64 string.
   // https://coolaj86.com/articles/typedarray-buffer-to-base64-in-javascript/
   bufferToBase64 (uint8Array) {
     const binstr = Array.prototype.map.call(uint8Array, (ch) =>
-      String.fromCharCode(ch) // note uint8Array.map fails due to char data
+      String.fromCharCode(ch)
     ).join('')
     return btoa(binstr)
   },

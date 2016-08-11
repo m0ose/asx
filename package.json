@@ -30,14 +30,14 @@
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages && git checkout master"
   },
   "dependencies": {
+    "pako": "^1.0.0",
+    "lzma": "^2.3.0",
     "systemjs": "^0.19.23"
   },
   "devDependencies": {
     "babel-cli": "^6.6.0",
     "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0",
     "docco": "^0.7.0",
-    "lzma": "^2.3.0",
-    "pako": "^1.0.0",
     "shx": "^0.1.1",
     "uglify-js": "^2.6.2"
   }
