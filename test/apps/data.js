@@ -13,7 +13,7 @@ util.toWindow(modules)
 // window.pps = util.pps
 console.log(Object.keys(modules).join(', '))
 
-const imageUrl = 'test/data/test.png' // 26k
+const imageUrl = 'test/data/redfish.png' // 26k
 // function compress (compressor, uint8Array, level = 9) {
 //   const compressedArray = compressor.compress
 //     ? new Uint8Array(compressor.compress(uint8Array, { level }))
@@ -29,7 +29,7 @@ const imageUrl = 'test/data/test.png' // 26k
 util.imagePromise(imageUrl)
 .then((img) => {
   // debugger
-  const pixels = util.imageToPixels(img, true)
+  const pixels = util.imageToBytes(img, true)
   const pixc = lzma.compress(pixels, 9) // sync, returns Array
   util.toWindow({ img, pixels, pixc })
   console.log('lzma: compression pixels/pixc', pixels.length, pixc.length)
@@ -64,7 +64,7 @@ util.imagePromise(imageUrl)
 
 // const id = new ImageData(10, 5)
 // util.repeat(id.data.length, (i) => { id.data[i] = i })
-// const idpx = util.imageToPixels(id)
+// const idpx = util.imageToBytes(id)
 // const idbase64 = util.bufferToBase64(idpx)
 // util.toWindow({ id, idpx, idbase64 })
 //

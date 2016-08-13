@@ -22,7 +22,7 @@ const modules = { DataSet, RGBDataSet, util, LZMA, lzma, pako }
 util.toWindow(modules)
 console.log(Object.keys(modules).join(', '))
 
-const imageUrl = 'test/data/test.png' // 26k
+const imageUrl = 'test/data/redfish.png' // 26k
 // const imageUrl = 'test/data/7.15.35.png' // 112K
 // const imageUrl = 'test/data/10.20.263.png' // 26k
 // const imageUrl = 'test/data/ASTGTM2_N00E035_dem.png' // 4.8MB (16->8 bit gray)
@@ -61,7 +61,7 @@ util.toWindow({useImg, png24, compressPromise, imageUrl, typedArray})
 // var pixels
 // util.imagePromise(imageUrl)
 // .then((img) => {
-//   pixels = util.imageToPixels(img, true)
+//   pixels = util.imageToBytes(img, true)
 //   return compress(pako, pixels, 9)
 // })
 // .then((pixc) => {
@@ -81,7 +81,7 @@ function * main () {
   console.log(useImg ? imageUrl : 'typedarray ' + typedArray.length)
   let pixels = !useImg ? typedArray
     : png24 ? new RGBDataSet(img).data
-    : util.imageToPixels(img, true)
+    : util.imageToBytes(img, true)
   console.log('pixels', pixels)
   if (util.typeOf(pixels) !== 'uint8array') {
     pixels = new Uint8Array(pixels.buffer)
@@ -133,7 +133,7 @@ util.runGenerator(main)
 // al = a.map(c=>c.length)
 // util.aSum(al) // same lengths
 
-  // const pixels = util.imageToPixels(img, true)
+  // const pixels = util.imageToBytes(img, true)
   // // const pixc = lzma.compress(pixels, 9) // sync, returns Array
   // const pixc = compress(lzma, pixels, 9) // sync, returns Array
   // util.toWindow({ img, pixels, pixc })
@@ -162,7 +162,7 @@ util.runGenerator(main)
 
 // const id = new ImageData(10, 5)
 // util.repeat(id.data.length, (i) => { id.data[i] = i })
-// const idpx = util.imageToPixels(id)
+// const idpx = util.imageToBytes(id)
 // const idbase64 = util.bufferToBase64(idpx)
 // util.toWindow({ id, idpx, idbase64 })
 //

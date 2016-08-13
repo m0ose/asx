@@ -3,6 +3,7 @@ import util from 'lib/util.js'
 import DataSet from 'lib/DataSet.js'
 import DataSetIO from 'lib/DataSetIO.js'
 import RGBDataSet from 'lib/RGBDataSet.js'
+import RGBADataSet from 'lib/RGBADataSet.js'
 
 // const modules = {
 //   AgentSet, Animator, Color, ColorMap, DataSet, DataSetIO,
@@ -13,17 +14,17 @@ import RGBDataSet from 'lib/RGBDataSet.js'
 
 const typedArray = util.repeat(1e4, (i, a) => { a[i] = i }, new Uint8Array(1e4))
 const useImg = true
-
-// const imageUrl = 'test/data/test.png' // 26k
-const imageUrl = 'test/data/7.15.35.png' // 112K
+// const imageUrl = 'test/data/redfish.png' // 26k
+const imageUrl = 'test/data/float32.png' // 160K: rgba version of 7.15.35.png
+// const imageUrl = 'test/data/7.15.35.png' // 112K
 // const imageUrl = 'test/data/10.20.263.png' // 26k
-const png24 = imageUrl.match(/.*\/[0-9]/) != null
+const png24 = imageUrl.match(/\/\d/) != null
 
 function * main () {
   const img = yield util.imagePromise(imageUrl)
   const ds = !useImg ? new DataSet(100, 100, typedArray)
     : png24 ? new RGBDataSet(img)
-    : new DataSet(4 * img.width, img.height, util.imageToPixels(img, true))
+    : new RGBADataSet(img, Float32Array)
 
   // const ds = new DataSet(100, 100, typedArray)
   util.toWindow({typedArray, ds})

@@ -8,7 +8,7 @@ console.log('modules:', Object.keys(modules).join(', '))
 
 // Switch between startup as generator or startup as promise.
 const startupWithPromise = false
-const imageUrl = 'test/data/test.png'
+const imageUrl = 'test/data/redfish.png'
 const dataUrl = 'test/data/test.txt'
 
 class AsyncTest extends Model {

@@ -674,7 +674,7 @@ const util = {
   // NOTE: to convert a ctx to an "image" (drawImage) use ctx.canvas.
   // [See MDN drawImage, third form](https://goo.gl/a5b87N)
   // NOTE: this will distort the origional image, due to browser assumptions.
-  // Use imageToPixels for undistorted image content.
+  // Use imageToBytes for undistorted image content.
   //
   // REMIND: Remove?
   imageToCtx (img, x = 0, y = 0, width = img.width, height = img.height) {
@@ -701,7 +701,7 @@ const util = {
   // or color profile modification.
   // Img can be Image, ImageData, Canvas: [See MDN](https://goo.gl/a3oyRA).
   // `flipY` is used to invert image to "upright".
-  imageToPixels (img, flipY = false) {
+  imageToBytes (img, flipY = false) {
     // Create the gl context using the image width and height
     const {width, height} = img
     const gl = this.createGLContext(this.createCanvas(width, height), {
@@ -732,7 +732,7 @@ const util = {
     // See if it all worked. Apparently not async.
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
     if (status !== gl.FRAMEBUFFER_COMPLETE)
-      this.error(`imageToPixels: status not FRAMEBUFFER_COMPLETE: ${status}`)
+      this.error(`imageToBytes: status not FRAMEBUFFER_COMPLETE: ${status}`)
 
     // If all OK, create the pixels buffer and read data.
     const pixels = new Uint8Array(4 * width * height)

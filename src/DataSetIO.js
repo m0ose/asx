@@ -41,7 +41,8 @@ const DataSetIO = {
     return new Promise((resolve, reject) => {
       lzma.decompress(uint8array, (result, error) => {
         if (error) reject(error)
-        const data = util.convertArray(result, window[type])
+        const uint8array = new Uint8Array(result)
+        const data = util.convertArray(uint8array, window[type])
         resolve(new DataSet(width, height, data))
       })
     })
