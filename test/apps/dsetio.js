@@ -4,30 +4,37 @@ import DataSet from 'lib/DataSet.js'
 import DataSetIO from 'lib/DataSetIO.js'
 import RGBDataSet from 'lib/RGBDataSet.js'
 import RGBADataSet from 'lib/RGBADataSet.js'
+import AscDataSet from 'lib/AscDataSet.js'
 
-// const modules = {
-//   AgentSet, Animator, Color, ColorMap, DataSet, DataSetIO,
-//   Mouse, Model, OofA, Patch, Patches, RGBDataSet, util
-// }
-// util.toWindow(modules)
-// console.log('modules:', Object.keys(modules).join(', '))
+const modules = {
+  DataSet, DataSetIO, AscDataSet, RGBDataSet, RGBADataSet, util
+}
+util.toWindow(modules)
+console.log('modules:', Object.keys(modules).join(', '))
 
-const typedArray = util.repeat(1e4, (i, a) => { a[i] = i }, new Uint8Array(1e4))
-const useImg = true
-// const imageUrl = 'test/data/redfish.png' // 26k
-const imageUrl = 'test/data/float32.png' // 160K: rgba version of 7.15.35.png
-// const imageUrl = 'test/data/7.15.35.png' // 112K
-// const imageUrl = 'test/data/10.20.263.png' // 26k
-const png24 = imageUrl.match(/\/\d/) != null
+const typedArray =
+  util.repeat(1e4, (i, a) => { a[i] = i }, new Float32Array(1e4))
+
+const rgbUrl = 'test/data/7.15.35.png' // 112K
+// const rgbUrl = 'test/data/10.20.263.png' // 26k
+
+// const rgbaUrl = 'test/data/redfish.png' // 26k
+const rgbaUrl = 'test/data/float32.png' // 160K: rgba version of 7.15.35.png
+
+const ascUrl = 'test/data/nldroplets.asc' // 223K
+util.toWindow({rgbUrl, rgbaUrl, ascUrl, typedArray})
 
 function * main () {
-  const img = yield util.imagePromise(imageUrl)
-  const ds = !useImg ? new DataSet(100, 100, typedArray)
-    : png24 ? new RGBDataSet(img)
-    : new RGBADataSet(img, Float32Array)
+  const rgbImg = yield util.imagePromise(rgbUrl)
+  const rgbDs = new RGBDataSet(rgbImg)
+  const rgbaImg = yield util.imagePromise(rgbaUrl)
+  const rgbaDs = new RGBDataSet(rgbaImg)
+  const ascString = yield util.xhrPromise(ascUrl)
+  const ascDs = new AscDataSet(ascString, Float32Array)
+  const taDs = new DataSet(100, 100, typedArray)
 
-  // const ds = new DataSet(100, 100, typedArray)
-  util.toWindow({typedArray, ds})
+  const ds = ascDs // rgbDs, rgbaDs, ascDs, taDs
+  util.toWindow({rgbImg, rgbDs, rgbaImg, rgbaDs, ascString, ascDs, taDs, ds})
 
   const json0 = DataSetIO.toJson(ds)
   const json1 = DataSetIO.toJson(ds, 'zip')
@@ -41,7 +48,7 @@ function * main () {
   const ds2 = yield DataSetIO.toDataSet(json2)
 
   util.toWindow({ds0, ds1, ds2})
-  console.log('ds0, ds1, ds2', ds0, ds1, ds2)
+  console.log('ds, ds0, ds1, ds2', ds, ds0, ds1, ds2)
   console.log('ds.data === ds0.data', util.arraysEqual(ds.data, ds0.data))
   console.log('ds0.data === ds1.data', util.arraysEqual(ds0.data, ds1.data))
   console.log('ds1.data === ds2.data', util.arraysEqual(ds1.data, ds2.data))

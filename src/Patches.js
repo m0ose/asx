@@ -167,9 +167,10 @@ class Patches extends AgentSet {
     for (const patch of this)
       patch[patchVar] = dataset.data[patch.id]
   }
-  exportDataSet (patchVar) {
+  exportDataSet (patchVar, Type = Array) {
     const {numX, numY} = this.world
-    const data = util.aProps(this, patchVar)
+    let data = util.aProps(this, patchVar)
+    data = util.convertArray(data, Type)
     return new DataSet(numX, numY, data)
   }
 

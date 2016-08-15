@@ -29,16 +29,31 @@ const util = {
   propFcn: (prop) => (o) => o[prop],
 
   // Convert Array or TypedArray to given Type (Array or TypedArray).
-  // If array is already of correct type, return it unmodified
+  // Result same length as array, precision may be lost.
+  // * If array already of correct type, return it unmodified.
+  // * If Type is Array, call typedArrayToArray(array) below.
+  // * Otherwise return `new Type(array)`
   convertArray (array, Type) {
     const Type0 = array.constructor
-    if (Type0 === Type) return array // return array if already same Type
-    if (Type !== Array) // Converting to typed array
-      if (Type0 !== Array)
-        return new Type(array.buffer) // Return new view onto same array buffer
-      else
-        return new Type(array) // Convert Array to TypedArray via ctor
-    return Array.prototype.slice.call(array) // Convert TypedArray to Array
+    // return array if already same Type
+    if (Type0 === Type) return array
+    // If Type is Array, convert via typedArrayToArray
+    if (Type === Array) return this.typedArrayToArray(array)
+    return new Type(array) // Use standard TypedArray constructor
+  },
+  // Convert a TypedArray (or Array) to an Array with the same length.
+  // To convert an Array to a TypedArray use new TypedArray(array)
+  typedArrayToArray: (typedArray) => Array.prototype.slice.call(typedArray),
+  // Convert to/from new Uint8Array view onto an Array or TypedArray.
+  // Arrays converted to ArrayType, default Float64Array.
+  // Return will in general be a different length than array
+  arrayToBuffer (array, ArrayType = Float64Array) {
+    if (array.constructor === Array) array = new ArrayType(array)
+    return new Uint8Array(array.buffer)
+  },
+  bufferToArray (uint8array, Type, ArrayType = Float64Array) {
+    if (Type === Array) Type = ArrayType
+    return new Type(uint8array.buffer)
   },
 
   // Convert between Uint8Array "buffer" and base64 string.

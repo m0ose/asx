@@ -25,9 +25,9 @@ const DataSetIO = {
 
   // The lzma compressor uses a webworker, therefore async
   lzmaCompressPromise (dataset, level = 9) {
-    const uint8array = util.convertArray(dataset.data, Uint8Array)
+    const dataUint8 = util.arrayToBuffer(dataset.data)
     return new Promise((resolve, reject) => {
-      lzma.compress(uint8array, level, (result, error) => {
+      lzma.compress(dataUint8, level, (result, error) => {
         if (error) reject(error)
         const uint8array = result.buffer ? result : new Uint8Array(result)
         const json = this.buildJson(dataset, uint8array, 'lzma', level)
@@ -37,12 +37,12 @@ const DataSetIO = {
   },
   lzmaDecompressPromise (jsonObj) {
     const {width, height, data64, type} = jsonObj
-    const uint8array = util.base64ToBuffer(data64)
+    const dataUint8 = util.base64ToBuffer(data64)
     return new Promise((resolve, reject) => {
-      lzma.decompress(uint8array, (result, error) => {
+      lzma.decompress(dataUint8, (result, error) => {
         if (error) reject(error)
         const uint8array = new Uint8Array(result)
-        const data = util.convertArray(uint8array, window[type])
+        const data = util.bufferToArray(uint8array, window[type])
         resolve(new DataSet(width, height, data))
       })
     })
@@ -53,7 +53,7 @@ const DataSetIO = {
     if (compression === 'lzma')
       return this.lzmaCompressPromise(dataset, level)
 
-    let uint8array = util.convertArray(dataset.data, Uint8Array)
+    let uint8array = util.arrayToBuffer(dataset.data)
     if (compression === 'zip')
       uint8array = pako.deflate(uint8array, {level})
 
@@ -84,7 +84,7 @@ const DataSetIO = {
     let uint8array = util.base64ToBuffer(data64)
     if (compression === 'zip')
       uint8array = pako.inflate(uint8array)
-    const data = util.convertArray(uint8array, window[type])
+    const data = util.bufferToArray(uint8array, window[type])
 
     return new DataSet(width, height, data)
   }

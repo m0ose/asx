@@ -61,7 +61,6 @@ class DataSet {
 
   // Nearest neighbor sampling, w/o x,y validity check, i.e. our inner loops
   nearest (x, y) {
-    // this.checkXY(x, y)
     return this.getXY(Math.round(x), Math.round(y))
   }
 
@@ -72,8 +71,6 @@ class DataSet {
     // two x results. See wikipedia:
     // [bilinear sampling](http://en.wikipedia.org/wiki/Bilinear_interpolation)
     // The diagram shows the three lerps
-
-    // this.checkXY(x, y)
 
     // const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next line for speed
     const x0 = Math.floor(x), y0 = Math.floor(y)
@@ -169,18 +166,9 @@ class DataSet {
     return this.data.slice(y * w, (y + 1) * w)
   }
 
-  // Return array converted to my data's Type.
-  // If array is my Type, return w/o conversion
-  toThisType (array) {
-    const type = this.type()
-    if (array.constructor === type) return array
-    return u.convertArray(array, type)
-  }
-
   // Convert this dataset's data to new type. Precision may be lost.
   // Does nothing if current data is already of this Type.
   convertType (type) {
-    if (this.type() === type) return
     this.data = u.convertArray(this.data, type)
   }
 

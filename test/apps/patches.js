@@ -49,7 +49,7 @@ util.toWindow({ model, world, patches, p: patches.oneOf() })
 // if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)
 
 // DataSets
-const dsetEx = patches.exportDataSet('id')
+const dsetEx = patches.exportDataSet('id', Uint16Array)
 console.log('dsetEx 0-99', dsetEx.data.slice(0, 100).toString())
 const floatDs = DataSet.emptyDataSet(1000, 2000, Float32Array)
 util.repeat(floatDs.data.length, (i, a) => { a[i] = i / 100 }, floatDs.data)
