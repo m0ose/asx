@@ -22,9 +22,16 @@ The repo has no "derived" files, i.e. won't run by just cloning. To complete the
 
 ### Github Pages
 
-A gh-pages branch is used for the site. It contains the complete master repo, including the derived files. A new page is made from master by:
+A [gh-pages branch](http://backspaces.github.io/asx/) is used for the site. It contains the complete master repo, including the derived files. A new page is made from master by:
 * npm run gh-pages
 
 This can be used to run tests and access modules:
-* http://backspaces.github.io/asx/test.html?navier
-* http://backspaces.github.io/asx/docs/Model.html
+* [http://backspaces.github.io/asx/test.html?navier](
+http://backspaces.github.io/asx/test.html?navier)
+* [http://backspaces.github.io/asx/docs/Model.html](
+http://backspaces.github.io/asx/docs/Model.html)
+
+It can also be used as a CDN for all the modules:
+* import Model from
+['http://backspaces.github.io/asx/lib/Model.js'](
+http://backspaces.github.io/asx/lib/Model.js)
