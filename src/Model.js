@@ -100,7 +100,7 @@ class Model {
 
   // Initialize layers of canvas contexts within `div`.
   initContexts (contexts) {
-    util.forAll(contexts, (val, key) => {
+    util.forEach(contexts, (val, key) => {
       if (val === null) return
       const ctx = util.createCtx(1, 1, val.ctx)
       Object.assign(ctx.canvas.style, {
@@ -115,7 +115,7 @@ class Model {
   // Set patches anti-aliasing off so as to have "crisp" pixels.
   setContexts () {
     const { pxWidth: width, pxHeight: height } = this.world
-    util.forAll(this.contexts, (ctx, key) => {
+    util.forEach(this.contexts, (ctx, key) => {
       if (ctx === null) return
       Object.assign(ctx.canvas, { width, height })
       Object.assign(ctx.canvas.style, { width, height })

@@ -1,4 +1,4 @@
-import u from './util.js'
+import util from './util.js'
 
 // A **DataSet** is an object with width/height and an array
 // whose length = width * height
@@ -21,22 +21,32 @@ class DataSet {
   // Checks data is right size, throws an error if not.
   constructor (width, height, data) {
     if (data.length !== width * height)
-      u.error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
+      util.error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
     else
       [this.width, this.height, this.data] = [width, height, data]
+  }
+
+  // Get/Set name, useful for storage key.
+  setName (string) { this.name = string; return this }
+  getName () { return this.name ? this.name : this.makeName() }
+  makeName () {
+    const {width, height} = this
+    const sum = util.arraySum(this.data).toFixed(2)
+    return `${this.type().name}-${width}-${height}-${sum}`
   }
 
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
     if (!this.inBounds(x, y))
-      u.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
+      util.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
   }
   // true if x,y in dataset bounds
   inBounds (x, y) {
-    return (u.between(x, 0, this.width - 1) && u.between(y, 0, this.height - 1))
+    return (util.between(x, 0, this.width - 1) && util.between(y, 0, this.height - 1))
   }
 
-  type () { return this.data.constructor }
+  datatype () { return this.data.constructor }
+  type () { return this.constructor }
 
   // Given x,y in data space, return index into data
   toIndex (x, y) { return x + (y * this.width) }
@@ -102,12 +112,12 @@ class DataSet {
 
   // Return a copy of this, with new data array
   copy () {
-    return new DataSet(this.width, this.height, u.copyArray(this.data))
+    return new DataSet(this.width, this.height, util.copyArray(this.data))
   }
 
   // Return new (empty) dataset, defaulting to this type
-  emptyDataSet (width, height, type = this.type()) {
-    return DataSet.emptyDataSet(width, height, this.type()) // see static above
+  emptyDataSet (width, height, type = this.datatype()) {
+    return DataSet.emptyDataSet(width, height, type) // see static above
   }
 
   // Return new (empty) array of this type
@@ -134,7 +144,7 @@ class DataSet {
   // Returned dataset is of same array type as this.
   subset (x, y, width, height) {
     if ((x + width) > this.width || (y + height) > this.height)
-      u.error('DataSet.subSet: params out of range')
+      util.error('DataSet.subSet: params out of range')
     const ds = this.emptyDataSet(width, height)
     for (let i = 0; i < width; i++)
       for (let j = 0; j < height; j++)
@@ -151,7 +161,7 @@ class DataSet {
   col (x) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (x >= w)
-      u.error(`col: x out of range width: ${w} x: ${x}`)
+      util.error(`col: x out of range width: ${w} x: ${x}`)
     const colData = this.emptyArray(h)
     for (let i = 0; i < h; i++)
       colData[i] = data[x + i * w]
@@ -162,14 +172,14 @@ class DataSet {
   row (y) {
     const [w, h] = [this.width, this.height]
     if (y >= h)
-      u.error(`row: y out of range height: ${h} x: ${y}`)
+      util.error(`row: y out of range height: ${h} x: ${y}`)
     return this.data.slice(y * w, (y + 1) * w)
   }
 
   // Convert this dataset's data to new type. Precision may be lost.
   // Does nothing if current data is already of this Type.
   convertType (type) {
-    this.data = u.convertArray(this.data, type)
+    this.data = util.convertArray(this.data, type)
   }
 
   // Concatinate a dataset of equal height to my right to my east.
@@ -180,7 +190,7 @@ class DataSet {
     const [w, h] = [this.width, this.height]
     const [w1, h1] = [ds.width, ds.height]
     if (h !== h1)
-      u.error(`concatEast: heights not equal ${h}, ${h1}`)
+      util.error(`concatEast: heights not equal ${h}, ${h1}`)
     const ds1 = this.emptyDataSet((w + w1), h)
     for (let x = 0; x < h; x++) // copy this into new dataset
       for (let y = 0; y < w; y++)
@@ -198,13 +208,13 @@ class DataSet {
   concatSouth (dataset) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (w !== dataset.width)
-      u.error(`concatSouth: widths not equal ${w}, ${dataset.width}`)
-    const data1 = u.concatArrays(data, dataset.data)
+      util.error(`concatSouth: widths not equal ${w}, ${dataset.width}`)
+    const data1 = util.concatArrays(data, dataset.data)
     return new DataSet(w, h + dataset.height, data1)
   }
 
   // return dataset x,y given x,y in a euclidean space defined by tlx, tly, w, h
-  // x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h], y positive up
+  // x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h], y positive util.
   // Ex: NetLogo's coords: x, y, minXcor, maxYcor, numX, numY
   transformCoords (x, y, tlx, tly, w, h) {
     const xs = (x - tlx) * (this.width - 1) / w
@@ -229,8 +239,8 @@ class DataSet {
         let x0 = x + dx
         let y0 = y + dy
         if (clampNeeded) {
-          x0 = u.clamp(x0, 0, this.width - 1)
-          y0 = u.clamp(y0, 0, this.height - 1)
+          x0 = util.clamp(x0, 0, this.width - 1)
+          y0 = util.clamp(y0, 0, this.height - 1)
         }
         array.push(this.data[this.toIndex(x0, y0)])
       }
@@ -301,10 +311,11 @@ class DataSet {
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         let [gx, gy] = [dzdx.getXY(x, y), dzdy.getXY(x, y)]
-        slope.push(Math.atan(u.distance(gx, gy)) / cellSize) // radians
+        slope.push(Math.atan(util.distance(gx, gy)) / cellSize) // radians
         if (noNaNs)
           while (gx === gy) {
-            gx += u.randomNormal(0, 0.0001); gy += u.randomNormal(0, 0.0001)
+            gx += util.randomNormal(0, 0.0001)
+            gy += util.randomNormal(0, 0.0001)
           }
         // radians in [-PI,PI], downhill
         let rad = (gx === gy && gy === 0) ? NaN : Math.atan2(-gy, -gx)
@@ -338,11 +349,11 @@ class DataSet {
     let idata
     if (normalize) {
       idata = gray
-        ? u.normalize8(data) : u.normalizeInt(data, 0, Math.pow(2, 24) - 1)
+        ? util.normalize8(data) : util.normalizeInt(data, 0, Math.pow(2, 24) - 1)
     } else {
       idata = data.map((a) => Math.round(a))
     }
-    const ctx = u.createCtx(w, h)
+    const ctx = util.createCtx(w, h)
     const id = ctx.getImageData(0, 0, w, h)
     const ta = id.data // ta short for typed array
     for (let i = 0; i < idata.length; i++) {
@@ -366,15 +377,15 @@ class DataSet {
   }
   // Convert dataset to a base64 string
   toDataUrl (normalize = false, gray = false, alpha = 255) {
-    return u.ctxToDataUrl(this.toContext(gray, normalize, alpha))
+    return util.ctxToDataUrl(this.toContext(gray, normalize, alpha))
   }
 
+  // Return max/min of data
   max () {
     return this.data.reduce(function (a, b) {
       return Math.max(a, b)
     })
   }
-
   min () {
     return this.data.reduce(function (a, b) {
       return Math.min(a, b)

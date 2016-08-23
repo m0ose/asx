@@ -131,7 +131,7 @@ util.runGenerator(main)
 // aa = a.map(s=> s.codePointAt(0))
 // util.arraysEqual(aa, pixc64c) // true
 // al = a.map(c=>c.length)
-// util.aSum(al) // same lengths
+// util.arraySum(al) // same lengths
 
   // const pixels = util.imageToBytes(img, true)
   // // const pixc = lzma.compress(pixels, 9) // sync, returns Array

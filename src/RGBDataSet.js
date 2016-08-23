@@ -9,13 +9,14 @@ class RGBDataSet extends DataSet {
     const ctx = util.createCtx(img.width, img.height)
     util.fillCtxWithImage(ctx, img)
     const imgData = util.ctxImageData(ctx)
-    const convertedData = new Float32Array(img.width * img.height)
+    const convertedData = this.data // new Float32Array(img.width * img.height)
     for (var i = 0; i < convertedData.length; i++) {
       let r = imgData.data[4 * i], g = imgData.data[4 * i + 1], b = imgData.data[4 * i + 2]
       convertedData[i] = this.rgb2Number(r, g, b)
     }
-    var mydata = new DataSet(img.width, img.height, convertedData)
-    return mydata
+    this.src = img.src
+    // var mydata = new DataSet(img.width, img.height, convertedData)
+    // return mydata
   }
 
   // Convert RGB to a number.

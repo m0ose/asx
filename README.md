@@ -30,6 +30,4 @@ This can be used to run tests and access modules:
 * [http://backspaces.github.io/asx/docs/Model.html](http://backspaces.github.io/asx/docs/Model.html)
 
 It can also be used as a CDN for all the modules:
-* import Model from
-['http://backspaces.github.io/asx/lib/Model.js'](
-http://backspaces.github.io/asx/lib/Model.js)
+* import Model from '[http://backspaces.github.io/asx/lib/Model.js](http://backspaces.github.io/asx/lib/Model.js)'

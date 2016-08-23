@@ -3,7 +3,7 @@ import DataSet from 'lib/DataSet.js'
 import util from 'lib/util.js'
 import lzma from 'etc/lzma_worker.js'
 import LZMA from 'etc/lzma.js'
-import pako from 'etc/pako.js'
+import pako from 'etc/pako.min.js'
 
 // const lzma = new LZMA('node_modules/lzma/src/lzma_worker.js')
 // const lzma = new LZMA()

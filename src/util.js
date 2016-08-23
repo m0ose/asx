@@ -300,7 +300,7 @@ const util = {
   // - Unlike forEach, does not skip undefines.
   // - Like map, forEach, etc, fcn = fcn(item, key/index, obj).
   // - Alternatives are: `for..of`, array map, reduce, filter etc
-  forAll (arrayOrObj, fcn) {
+  forEach (arrayOrObj, fcn) {
     if (arrayOrObj.slice) // typed & std arrays
       for (let i = 0, len = arrayOrObj.length; i < len; i++)
         fcn(arrayOrObj[i], i, arrayOrObj)
@@ -364,7 +364,7 @@ const util = {
   // - min/maxVal: the min/max values in the array
   // - bins: the number of bins
   // - hist: the array of bins
-  histogram (array, bin = 1, min = Math.floor(this.aMin(array))) {
+  histogram (array, bin = 1, min = Math.floor(this.arrayMin(array))) {
     const hist = []
     let [minBin, maxBin] = [Number.MAX_VALUE, Number.MIN_VALUE]
     let [minVal, maxVal] = [Number.MAX_VALUE, Number.MIN_VALUE]
@@ -382,15 +382,15 @@ const util = {
     return { bins, minBin, maxBin, minVal, maxVal, hist }
   },
 
-  // Return scalar max/min/sum/avg of numeric array.
-  // Works with TypedArrays
-  aMax: (array) => array.reduce((a, b) => Math.max(a, b)),
-  aMin: (array) => array.reduce((a, b) => Math.min(a, b)),
-  aSum: (array) => array.reduce((a, b) => a + b),
-  aAvg: (array) => util.aSum(array) / array.length,
+  // Return scalar max/min/sum/avg of numeric Array or TypedArray.
+  arrayMax: (array) => array.reduce((a, b) => Math.max(a, b)),
+  arrayMin: (array) => array.reduce((a, b) => Math.min(a, b)),
+  arraySum: (array) => array.reduce((a, b) => a + b),
+  arrayAvg: (array) => util.arraySum(array) / array.length,
+  // Return random one of array items
   oneOf: (array) => array[util.randomInt(array.length)],
   // Create an array of properties from an array of objects
-  aProps: (array, propName) => array.map((a) => a[propName]),
+  arrayProps: (array, propName) => array.map((a) => a[propName]),
 
   // You'd think this wasn't necessary, but I always forget. Damn.
   // NOTE: this, like sort, sorts in place. Clone array if needed.
@@ -484,7 +484,7 @@ const util = {
 
   // Return an array normalized (lerp) between lo/hi values
   normalize (array, lo = 0, hi = 1) {
-    const [min, max] = [this.aMin(array), this.aMax(array)]
+    const [min, max] = [this.arrayMin(array), this.arrayMax(array)]
     const scale = 1 / (max - min)
     return array.map((n) => this.lerp(lo, hi, scale * ((n) - min)))
   },
@@ -519,7 +519,6 @@ const util = {
       const xhr = new XMLHttpRequest()
       xhr.open(method, url) // POST mainly for security and large files
       xhr.responseType = type
-      window.xhr = xhr
       xhr.onload = () => resolve(xhr.response)
       xhr.onerror = () => reject(this.error(xhr.responseText))
       xhr.send()

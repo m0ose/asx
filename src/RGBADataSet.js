@@ -5,7 +5,7 @@ import DataSet from 'lib/DataSet.js'
 // We use all 4 bytes of the pixels, thus map exactly onto
 // multiples all [TypedArray](https://goo.gl/3OOQzy) sizes.
 class RGBADataSet extends DataSet {
-  constructor (img, Type, options = {}) {
+  constructor (img, Type = Float32Array, options = {}) {
     const bytes = util.imageToBytes(img)
     const data = new Type(bytes.buffer) // Parse via a Type view on the buffer
     const dataPerPixel = 4 * data.length / bytes.length
@@ -13,6 +13,7 @@ class RGBADataSet extends DataSet {
     const height = img.height
     super(width, height, data)
     Object.assign(this, options)
+    this.src = img.src
   }
 }
 

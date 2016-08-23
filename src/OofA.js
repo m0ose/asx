@@ -198,7 +198,7 @@ class OofA {
   // Fcn args:
   // * The getterSetter with its index set to [0, length)
   // * The current index
-  forAll (fcn, getterSetter = this.sharedGetterSetter) {
+  forEach (fcn, getterSetter = this.sharedGetterSetter) {
     for (var i = 0, len = this.length; i < len; i++) {
       getterSetter.ix = i
       fcn(getterSetter, i)
