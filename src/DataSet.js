@@ -32,7 +32,7 @@ class DataSet {
   makeName () {
     const {width, height} = this
     const sum = util.arraySum(this.data).toFixed(2)
-    return `${this.type().name}-${width}-${height}-${sum}`
+    return `${this.datatype().name}-${width}-${height}-${sum}`
   }
 
   // Checks x,y are within DataSet. Throw error if not.
@@ -390,6 +390,11 @@ class DataSet {
     return this.data.reduce(function (a, b) {
       return Math.min(a, b)
     })
+  }
+  equals (dataset) {
+    return this.width === dataset.width &&
+      this.height === dataset.height &&
+      util.arraysEqual(this.data, dataset.data)
   }
 }
 

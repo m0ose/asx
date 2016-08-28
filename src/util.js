@@ -506,7 +506,7 @@ const util = {
       const img = new Image()
       img.crossOrigin = 'Anonymous'
       img.onload = () => resolve(img)
-      img.onerror = () => reject(this.error(`Could not load image ${url}`))
+      img.onerror = () => reject(`Could not load image ${url}`)
       img.src = url
     })
   },
@@ -520,7 +520,7 @@ const util = {
       xhr.open(method, url) // POST mainly for security and large files
       xhr.responseType = type
       xhr.onload = () => resolve(xhr.response)
-      xhr.onerror = () => reject(this.error(xhr.responseText))
+      xhr.onerror = () => reject(`Could not load ${url}: ${xhr.status}`)
       xhr.send()
     })
   },
@@ -715,12 +715,13 @@ const util = {
   // or color profile modification.
   // Img can be Image, ImageData, Canvas: [See MDN](https://goo.gl/a3oyRA).
   // `flipY` is used to invert image to "upright".
-  imageToBytes (img, flipY = false) {
+  imageToBytes (img, imgFormat = 'RGBA', flipY = false) {
     // Create the gl context using the image width and height
     const {width, height} = img
     const gl = this.createGLContext(this.createCanvas(width, height), {
       premultipliedAlpha: false
     })
+    const fmt = gl[imgFormat]
 
     // Create and initialize the texture.
     const texture = gl.createTexture()
@@ -733,7 +734,8 @@ const util = {
     // False is the default, but lets make sure!
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
 
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+    // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+    gl.texImage2D(gl.TEXTURE_2D, 0, fmt, fmt, gl.UNSIGNED_BYTE, img)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 
@@ -749,8 +751,10 @@ const util = {
       this.error(`imageToBytes: status not FRAMEBUFFER_COMPLETE: ${status}`)
 
     // If all OK, create the pixels buffer and read data.
-    const pixels = new Uint8Array(4 * width * height)
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+    const pixSize = imgFormat === 'RGB' ? 3 : 4
+    const pixels = new Uint8Array(pixSize * width * height)
+    // gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels)
+    gl.readPixels(0, 0, width, height, fmt, gl.UNSIGNED_BYTE, pixels)
 
     // Unbind the framebuffer and return pixels
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)

@@ -99,7 +99,7 @@ const DataSetIO = {
       height: dataset.height,
       datatype: dataset.datatype().name,
       type: dataset.type().name,
-      name: dataset.name,
+      name: dataset.getName(),
       compression: compression,
       level: level,
       data: data
@@ -107,10 +107,11 @@ const DataSetIO = {
     return jsonObj
   },
   isLZMA (json) { return json.search(/compression":"lzma/) },
-  // IndexedDB
+  // IndexedDB uses the [Structured Clone Algorithm](https://goo.gl/x8H9HK).
+  // DataSets can be directly stored and retrieved, they satisfy
+  // the SCA requirements.
   toIndexedDB (dataset) {
-    return {
-    }
+    return dataset // place holder for IDB sugar if needed
   }
 }
 

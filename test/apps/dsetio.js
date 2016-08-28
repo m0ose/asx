@@ -38,10 +38,10 @@ function * main () {
   const int8sDS = new DataSet(100, 100, int8s).setName('int8s')
   const int16sDS = new DataSet(100, 100, int16s).setName('int16s')
 
-  const ds = int16sDS // rgbDs, rgbaDs, ascDs, int8sDS, int16sDS
+  const ds = rgbDs // rgbDs, rgbaDs, ascDs, int8sDS, int16sDS
   const datasets = {rgbDs, rgbaDs, ascDs, int8sDS, int16sDS}
   util.toWindow({rgbImg, rgbaImg, ascString, datasets, ds})
-  util.toWindow({datasets})
+  util.toWindow(datasets)
   console.log('ds type =', ds.type().name, 'name =', ds.name)
 
   const json0 = DataSetIO.toJson(ds, 'none')
@@ -70,11 +70,6 @@ function * main () {
 util.runGenerator(main)
 
 function testIDB (datasets) {
-  const jsonObjs = {}
-  util.forEach(datasets, (ds, key) => {
-    jsonObjs[key] = DataSetIO.toJsonObject(ds)
-  })
-  util.toWindow({jsonObjs})
   var indexedDB = window.indexedDB
   // Open (or create) the database
   var open = indexedDB.open('DataSets', 1)
@@ -89,21 +84,17 @@ function testIDB (datasets) {
     var db = open.result
     var tx = db.transaction('DataSetsStore', 'readwrite')
     var store = tx.objectStore('DataSetsStore')
-    // Add some data
-    util.forEach(jsonObjs, (jsonObj) => {
-      store.put(jsonObj)
+    util.forEach(datasets, (ds) => {
+      store.put(ds) // Store the dataset
+      var get = store.get(ds.name) // Fetch the dataset by its name
+      get.onsuccess = () => { // Test it is OK
+        const ds1 = get.result
+        console.log(ds1)
+        console.log('original dataset === stored result:', ds.equals(ds1))
+      }
     })
-    // // Query the data
-    // var queries = {}
-    // util.forEach(jsonObjs, (jsonObj, key) => {
-    //   var get = store.get(jsonObj.name)
-    //   queries[key] = get
-    //   get.onsuccess = () => {
-    //     queries[jsonObj.name] = ds; console.log(ds.name)
-    //   }
-    // })
-    // Close the db when the transaction is done
     tx.oncomplete = function () {
+      console.log('complete', tx, db)
       db.close()
     }
   }
