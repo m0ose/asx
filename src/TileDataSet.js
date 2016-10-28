@@ -30,6 +30,17 @@ class TileDataSet extends DataSet {
       }
     }
     Object.assign(this, options)
+    // make sure north is really north. I like the way leaflet handles this with the bbox class. 
+    if (this.west > this.east) {
+      const oldWest = this.west
+      this.west = this.east
+      this.east = oldWest
+    }
+    if (this.north < this.south) {
+      const oldSouth = this.south
+      this.south = this.north
+      this.north = oldSouth
+    }
     this.tileLocations = undefined
     this.start()
   }
