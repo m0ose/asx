@@ -334,10 +334,7 @@ class FireModel extends Model {
   }
 
   tests () {
-    console.assert(
-      JSON.stringify(model.spreadRateLeaflet80(15)) == `{"rosHeadFlatGround":85.18459328442042,"rosHeadSlopeAdjusted":239.80367973407172,"flameHeightHead":1.9849533488994593,"scorchHeightHead":20.28589650989661,"intensityHead":1783.4425355552346,"rosFlankFlatGround":37.139778332945866,"rosFlankSlopeAdjusted":104.55242157477143,"flameHeightFlank":0.903945012491282,"scorchHeightFlank":13.294158338735665,"intensityFlank":777.5661993115662,"rosBackingFlatGround":25.04706650773869,"rosBackingSlopeAdjusted":70.51015311002584,"flameHeightBacking":0.6318589964241206,"scorchHeightBacking":8.970490895849238,"intensityBacking":524.3906448157202}`
-    , 'spread rate leaflet80')
-    this.computeDerivedConstants()
+    // this is for 45 degrees
     console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -1)) === this.FLANKS.head, 'head flank')
     console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(1, 1)) === this.FLANKS.back, 'back flank')
     console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, 1)) === this.FLANKS.flank, 'right flank')
@@ -360,4 +357,5 @@ const model = new FireModel('layers', {
 const world = model.world
 const patches = model.patches
 util.toWindow({ model, world, patches })
+
 // if (world.patchSize !== 1) util.addToDom(patches.pixels.ctx.canvas)
