@@ -21,20 +21,19 @@ class FireModel extends Model {
     this.patchBreeds('fires embers')
     this.anim.setRate(60)
     this.elevColorMap = ColorMap.gradientColorMap(1000, ColorMap.jetColors)
-    this.modelTime = 0
-    this.modelTimeStep = 10000
+    this.modelTime = 0 // seconds
+    this.modelTimeStep = 60
     this.embers = []
     this.patches.importDataSet(this.elevation, 'elev', true)
     for (const p of this.patches) {
-      if (p.x > -10 && p.x < 10 && p.y > -10 && p.y < 10) {
-        this.ignite(p)
-      }
-      p.isTree = true
+      p.fuelExausted = false
       p.ignitionTime = 0
     }
     for (const p of this.patches) {
-      const color = this.elevColorMap.scaleColor(p.elev, this.elevationMin, this.elevationMax)
-      if (color) p.color = color
+      if ((p.x == 0 && p.y == 0) || (p.x == 40 && p.y == 40)) {
+        this.ignite(p)
+        console.log('ignite')
+      }
     }
     //
     // F I R E   M O D E L   C O N S T A I N T S
@@ -47,13 +46,14 @@ class FireModel extends Model {
     this.DATE = new Date('January 30 2015 15:00')
     this.AIR_TEMP_c = 22 // celsius
     this.RELATIVE_HUMIDITY = 35 // %
-    this.WIND_SPEED_10M = 20 // km/hour
-    this.WIND_DIRECTION_DEG = 350 // degrees
+    this.WIND_SPEED_10M = 60 // km/hour
+    this.WIND_DIRECTION_DEG = 145 // degrees
     // Forest Fire Danger Index FFDI
     this.FINEFUEL_CURRENT_PCT = 6.7 // % . the spreadsheet has values for am pm and more.
-    this.FLANKS = {left: 'left', head: 'head', right: 'right', back: 'back'}
+    this.FLANKS = {flank: 'flank', head: 'head', back: 'back'}
     //
     this.computeDerivedConstants()
+    this.tests()
   }
 
   computeDerivedConstants () {
@@ -86,8 +86,6 @@ class FireModel extends Model {
               this.elevationMin = Math.min(this.elevationMin, val)
               this.elevationMax = Math.max(this.elevationMax, val)
             }
-            this.dhdx = this.elevation.dzdx()
-            this.dhdy = this.elevation.dzdy()
             this.north = ds.north
             this.south = ds.south
             this.east = ds.east
@@ -104,89 +102,155 @@ class FireModel extends Model {
 
   step () {
     this.computeDerivedConstants()
-
+    let burnedCount = 0
+    for (var p of this.patches) {
+      if (!p.fuelExausted && p.ignitionTime < this.modelTime && p.ignitionTime > 0) {
+        if (p.x !== 100 && p.y !== -100) {
+          this.patchStepLeaflet80(p)
+        } else {
+          this.patchStepLeaflet80(p)
+        }
+      }
+      if (p.fuelExausted) burnedCount ++
+      if (p.ignitionTime > 0) {
+        p.color = this.elevColorMap.scaleColor(0.8, 0, 1)
+      } else {
+        const color = this.elevColorMap.scaleColor(p.elev, this.elevationMin, this.elevationMax)
+        if (color) p.color = color
+      }
+    }
+    if (burnedCount >= this.world.numX * this.world.numY - 100) {
+      model.stop()
+    }
     this.modelTime += this.modelTimeStep
+    // console.log('step', burnedCount)
   }
 
-  ignite (p) {
-    p.ignitionTime = this.modelTime || 1 // just if modelTime is zero step forward 1 millisecond.
-    this.embers.push(p)
+  ignite (p, ignitionTime = 1) {
+    if (ignitionTime < p.ignitionTime || p.ignitionTime <= 0) {
+      p.ignitionTime = ignitionTime
+    }
+  }
+
+  ignitionTimeFromROS (p1, p2, ros) {
+    const diff = this.getPatchDistanceInMeters(p1, p2)
+    const distance = Math.hypot(diff[0], diff[1])
+    const rosSeconds = Math.abs(ros) / 3600
+    const time = Math.abs(distance / rosSeconds)
+    return time
+  }
+
+  patchStepLeaflet80 (patch) {
+    const neighbors = patch.neighbors
+    for (const n of neighbors) {
+      // const flank = this.whatFlank(p, n)
+      const slopeAngle = this.getSlopeAngleBetween(patch, n)
+      const spread80 = this.spreadRateLeaflet80(slopeAngle)
+      const flank = this.whatFlank(patch, n)
+      let ignitionTime = this.modelTime
+      if (flank === this.FLANKS.head) {
+        ignitionTime += this.ignitionTimeFromROS(patch, n, spread80.rosHeadSlopeAdjusted)
+      } else if (flank === this.FLANKS.flank) {
+        ignitionTime += this.ignitionTimeFromROS(patch, n, spread80.rosFlankSlopeAdjusted)
+      } else if (flank === this.FLANKS.back) {
+        ignitionTime += this.ignitionTimeFromROS(patch, n, spread80.rosBackingSlopeAdjusted)
+      } else {
+        console.warn('im so confused about this flank: ', flank)
+      }
+      if (ignitionTime > this.modelTime) this.ignite(n, ignitionTime)
+    }
+    patch.fuelExausted = true
   }
 
   getSlopeAngleBetween (fromP, toP) {
-    const lat = this.getLatitudeOfPatch(fromP)
-    const dims = this.patchDimInMeters(lat)
-    const diff = [(toP.x - fromP.x) * dims[0], (toP.y - fromP.y) * dims[1]]
+    const diff = this.getPatchDistanceInMeters(fromP, toP)
     const diffMag = Math.hypot(diff[0], diff[1])
     const dh = toP.elev - fromP.elev
-    const angle = Math.atan2(dh, diffMag)
+    const angle = Math.atan2(dh, diffMag) * 180 / Math.PI
     return angle
   }
 
+  getPatchDistanceInMeters (fromP, toP) {
+    const lat = this.getLatitudeOfPatch(fromP)
+    const dims = this.patchDimInMeters(lat)
+    return [(toP.x - fromP.x) * dims[0], (toP.y - fromP.y) * dims[1]]
+  }
+
+  // what flank is patch in
+  //   calculate angle between wind and patch
   whatFlank (fromP, toP) {
-    // what flank is patch in
-    //   calculate angle between wind and patch
-    const headFlankVec = [Math.cos(this.WIND_HEAD_DIR), Math.sin(this.WIND_HEAD_DIR)]
+    const deg2rad = Math.PI / 180
+    const rad2deg = 180 / Math.PI
+    const headFlankVec = [Math.cos(deg2rad * this.WIND_HEAD_DIR), Math.sin(deg2rad * this.WIND_HEAD_DIR)]
     const dxdyVec = [toP.x - fromP.x, toP.y - fromP.y]
-    const cosTheta = this.dot(headFlankVec, dxdyVec) / (this.norm2(headFlankVec) * this.magnitude(dxdyVec))
-    const angle = Math.acos(cosTheta) * 180 / Math.PI // angle between 2
-    let flank = undefined
-    if (angle <= -135) {
-      flank = this.FLANKS.back// back flank
-    } else if (angle <= -45) {
-      flank = this.FLANKS.left// left flank
-    } else if (angle <= 45) {
+    const cosTheta = this.dot(headFlankVec, dxdyVec) / (this.norm2(headFlankVec) * this.norm2(dxdyVec))
+    const angle = Math.acos(cosTheta) * rad2deg // this angle wil always be positive.
+    let flank
+    if (angle <= 45) { // arcos always return positive angle
       flank = this.FLANKS.head// head
     } else if (angle <= 135) {
-      flank = this.FLANKS.left// right flank
+      flank = this.FLANKS.flank// left flank
     } else {
       flank = this.FLANKS.back// back flank
     }
     return flank
   }
-  // determine which fuel model you are in
-  // calculate spread.
-  // set time in future for patch to ignite
+
   getLatitudeOfPatch (p) {
     const W = this.world
     return (this.north - this.south) * ((p.y - W.minY) / (W.maxY - W.minY)) + this.south
   }
 
-  leaflet80(p) {
-    const neighbors = p.neighbors
-    for (const n of neighbors) {
-      // const flank = this.whatFlank(p, n)
-    }
-  }
-
-  calcLeaflet80 (fromP, toP) {
-    const slopeAngle = this.slopeAngle(fromP, toP)
-    var sacf = 0 // slope Adjusted Correction Factor
-    if (slopeAngle < 0) sacf = Math.pow(2, -(slopeAngle / 10)) / (Math.pow(2, 1 - slopeAngle / 10) - 1)
-    else sacf = Math.exp(0.069 * slopeAngle)
-    const fuelAvalabilityFactor = this.DROUGHT_FACTOR/10 // # 62
-    let windSpeedAt1_5m = 1.674+0.179*this.WIND_SPEED_10M// =IF(C15<3,0,1.674+0.179*C15)
-    if (windSpeedAt1_5m < 3) windSpeedAt1_5m = 0
+  spreadRateLeaflet80 (slopeAngle) {
+    var slopeCorrectionFactor = 0 // slope Adjusted Correction Factor
+    if (slopeAngle < 0) slopeCorrectionFactor = Math.pow(2, -(slopeAngle / 10)) / (Math.pow(2, 1 - slopeAngle / 10) - 1)
+    else slopeCorrectionFactor = Math.exp(0.069 * slopeAngle)
+    const fuelAvalabilityFactor = this.DROUGHT_FACTOR / 10 // # 62
+    let windSpeedAt1p5m = 1.674 + 0.179 * this.WIND_SPEED_10M// =IF(C15<3,0,1.674+0.179*C15)
+    if (windSpeedAt1p5m < 3) windSpeedAt1p5m = 0
     // head
-    let rosHeadFlatGround = 0.22 * this.FUEL_LOAD_tpha * Math.exp(0.158 * windSpeedAt1_5m - 0.277 * this.FINEFUEL_CURRENT_PCT) * 60// =0.22*C10*EXP(0.158*C63-0.277*C38)*60
-    const rosHeadFireAdjusted = rosHeadFlatGround * sacf// =C64*C26
-    const flameHeightHead = 0.0683 + (0.0225 * rosHeadFlatGround)// =0.0683+(0.0225*C64)
+    const rosHeadFlatGround = 0.22 * this.FUEL_LOAD_tpha * Math.exp(0.158 * windSpeedAt1p5m - 0.277 * this.FINEFUEL_CURRENT_PCT) * 60// =0.22*C10*EXP(0.158*C63-0.277*C38)*60
+    const rosHeadSlopeAdjusted = rosHeadFlatGround * slopeCorrectionFactor// =C64*C26
+    const flameHeightHead = 0.0683 + (0.0225 * rosHeadFlatGround) // =0.0683+(0.0225*C64)
     let scorchHeightHead = -0.296 + (2.23 * Math.sqrt(rosHeadFlatGround))// =IF(C13<20,-2.19+(2.23*SQRT(C64)),-0.296+(2.23*SQRT(C64)))
     if (this.AIR_TEMP_c < 20) scorchHeightHead = -2.19 + (2.23 * Math.sqrt(rosHeadFlatGround))
-    const intensityHead = 516.7 * this.FUEL_LOAD_tpha * this.DROUGHT_FACTOR / 10 * rosHeadFireAdjusted / 1000 // =516.7*C10*C7/10*C65/1000
+    const intensityHead = 516.7 * this.FUEL_LOAD_tpha * (this.DROUGHT_FACTOR / 10) * (rosHeadSlopeAdjusted / 1000) // =516.7*C10*C7/10*C65/1000
     // left flank
-    const rosFlankFlatGround = 0.22*st.FUEL_LOAD_tpha*Math.exp(-0.277*this.FINEFUEL_CURRENT_PCT)*60 // =0.22*C10*EXP(-0.277*C38)*60
-    const rosFlankSlopeAdjusted = C69*C28 // =C69*C28
-    const flameHeightFlank = 0.0683+(0.0225*C69) // =0.0683+(0.0225*C69)
-    let scorchHeightFlank = IF(C13<20,-2.19+(2.23*SQRT(C69)),-0.296+(2.23*SQRT(C69))) // =IF(C13<20,-2.19+(2.23*SQRT(C69)),-0.296+(2.23*SQRT(C69)))
-    const intensityFlank = 516.7*st.FUEL_LOAD_tpha*C7/10*C70/1000 // =516.7*C10*C7/10*C70/1000
+    const rosFlankFlatGround = 0.22 * this.FUEL_LOAD_tpha * Math.exp(-0.277 * this.FINEFUEL_CURRENT_PCT) * 60 // =0.22*C10*EXP(-0.277*C38)*60
+    const rosFlankSlopeAdjusted = rosFlankFlatGround * slopeCorrectionFactor // =C69*C28
+    const flameHeightFlank = 0.0683 + (0.0225 * rosFlankFlatGround) // =0.0683+(0.0225 * C69)
+    let scorchHeightFlank = -0.296 + (2.23 * Math.sqrt(rosFlankFlatGround))
+    if (this.AIR_TEMP_c < 20) {
+      scorchHeightFlank = -2.19 + (2.23 * Math.sqrt(rosFlankFlatGround))
+    } // =IF(C13<20,-2.19+(2.23 * SQRT(C69)),-0.296+(2.23 * SQRT(C69)))
+    const intensityFlank = 516.7 * this.FUEL_LOAD_tpha * this.DROUGHT_FACTOR / 10 * rosFlankSlopeAdjusted / 1000 // =516.7*C10*C7/10*C70/1000
     // Backing
-    const rosReductionFactor = -0.0000007*C15^3+0.0002*C15^2-0.02*C15+1 // =-0.0000007*C15^3+0.0002*C15^2-0.02*C15+1
-    const rosBackingFlatGround = (0.22*st.FUEL_LOAD_tpha*Math.exp(-0.277*this.FINEFUEL_CURRENT_PCT)*60)*rosReductionFactor // =(0.22*C10*EXP(-0.277*C38)*60)*C79
-    const rosBackingAdjustedFlatGround = C80*C32 // =C80*C32
-    const flameHeightBacking = 0.0683+(0.0225*C80) // =0.0683+(0.0225*C80)
-    let scorchingHeightBacking = IF(C38<20,-2.19+(2.23*SQRT(C80)),-0.296+(2.23*SQRT(C80))) // =IF(C38<20,-2.19+(2.23*SQRT(C80)),-0.296+(2.23*SQRT(C80)))
-    const intensityBacking = 516.7*st.FUEL_LOAD_tpha*C7/10*C81/1000 // =516.7*C10*C7/10*C81/1000
+    const rosReductionFactor = -0.0000007 * Math.pow(this.WIND_SPEED_10M, 3) + 0.0002 * Math.pow(this.WIND_SPEED_10M, 2) - 0.02 * this.WIND_SPEED_10M + 1 // =-0.0000007 * C15^3+0.0002 * C15^2-0.02 * C15+1
+    const rosBackingFlatGround = (0.22 * this.FUEL_LOAD_tpha * Math.exp(-0.277 * this.FINEFUEL_CURRENT_PCT) * 60) * rosReductionFactor // =(0.22 * C10*EXP(-0.277*C38)*60)*C79
+    const rosBackingSlopeAdjusted = rosBackingFlatGround * slopeCorrectionFactor // =C80*C32
+    const flameHeightBacking = 0.0683 + (0.0225 * rosBackingFlatGround) // =0.0683+(0.0225*C80)
+    let scorchingHeightBacking = -0.296 + (2.23 * Math.sqrt(rosBackingFlatGround))
+    if (this.FINEFUEL_CURRENT_PCT < 20) {
+      scorchingHeightBacking = -2.19 + (2.23 * Math.sqrt(rosBackingFlatGround))
+    } // =IF(C38<20,-2.19+(2.23*SQRT(C80)),-0.296+(2.23*SQRT(C80)))
+    const intensityBacking = 516.7 * this.FUEL_LOAD_tpha * this.DROUGHT_FACTOR / 10 * rosBackingSlopeAdjusted / 1000 // =516.7*C10*C7/10*C81/1000
+    return {
+      rosHeadFlatGround: rosHeadFlatGround, // head
+      rosHeadSlopeAdjusted: rosHeadSlopeAdjusted,
+      flameHeightHead: flameHeightHead,
+      scorchHeightHead: scorchHeightHead,
+      intensityHead: intensityHead,
+      rosFlankFlatGround: rosFlankFlatGround, // flank
+      rosFlankSlopeAdjusted: rosFlankSlopeAdjusted,
+      flameHeightFlank: flameHeightFlank,
+      scorchHeightFlank: scorchHeightFlank,
+      intensityFlank: intensityFlank,
+      rosBackingFlatGround: rosBackingFlatGround, // backing
+      rosBackingSlopeAdjusted: rosBackingSlopeAdjusted,
+      flameHeightBacking: flameHeightBacking,
+      scorchingHeightBacking: scorchingHeightBacking,
+      intensityBacking: intensityBacking
+    }
   }
   // might want to memoize this for speed, or just put it into the gpu.
   patchDimInMeters (lat) {
@@ -215,11 +279,26 @@ class FireModel extends Model {
   }
 
   norm2 (vec) {
-    return math.hypot(vec[0], vec[1])
+    return Math.hypot(vec[0], vec[1])
+  }
+
+  tests () {
+    console.assert(
+      JSON.stringify(model.spreadRateLeaflet80(15)) == `{"rosHeadFlatGround":85.18459328442042,"rosHeadSlopeAdjusted":239.80367973407172,"flameHeightHead":1.9849533488994593,"scorchHeightHead":20.28589650989661,"intensityHead":1783.4425355552346,"rosFlankFlatGround":37.139778332945866,"rosFlankSlopeAdjusted":104.55242157477143,"flameHeightFlank":0.903945012491282,"scorchHeightFlank":13.294158338735665,"intensityFlank":777.5661993115662,"rosBackingFlatGround":25.04706650773869,"rosBackingSlopeAdjusted":70.51015311002584,"flameHeightBacking":0.6318589964241206,"scorchingHeightBacking":8.970490895849238,"intensityBacking":524.3906448157202}`
+    , 'spread rate leaflet80')
+    this.WIND_DIRECTION_DEG = 45
+    this.computeDerivedConstants()
+    console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -1)) === this.FLANKS.head, 'head flank')
+    console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(1, 1)) === this.FLANKS.back, 'back flank')
+    console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, 1)) === this.FLANKS.flank, 'right flank')
+    console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(1, -1)) === this.FLANKS.flank, 'left flank')
+    console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-20, -1)) === this.FLANKS.head, 'head flank')
+    console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -20)) === this.FLANKS.head, 'head flank')
   }
 }
 // const [div, size, max, min] = ['layers', 4, 50, -50]
 const model = new FireModel('layers', {
+  debug:true,
   patchSize: 2,
   minX: -125,
   maxX: 125,
