@@ -326,7 +326,7 @@ class FireModel extends Model {
 
   // some vector operations, should maybe go in utils
   dot (vec0, vec1) {
-    return vec0[0] * vec1[0] + vec0[1] * vec1[1];
+    return vec0[0] * vec1[0] + vec0[1] * vec1[1]
   }
 
   norm2 (vec) {
@@ -345,7 +345,6 @@ class FireModel extends Model {
 }
 // const [div, size, max, min] = ['layers', 4, 50, -50]
 const model = new FireModel('layers', {
-  debug:true,
   patchSize: 2,
   minX: -125,
   maxX: 125,
