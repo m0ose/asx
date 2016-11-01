@@ -1,7 +1,7 @@
 'use strict';
 
-System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js', 'lib/TileDataSet.js'], function (_export, _context) {
-  var util, Color, ColorMap, Model, TileDataSet;
+System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js', 'lib/TileDataSet.js', 'https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js'], function (_export, _context) {
+  var util, Color, ColorMap, Model, TileDataSet, dat;
   return {
     setters: [function (_libUtilJs) {
       util = _libUtilJs.default;
@@ -13,10 +13,14 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
       Model = _libModelJs.default;
     }, function (_libTileDataSetJs) {
       TileDataSet = _libTileDataSetJs.default;
+    }, function (_httpsCdnjsCloudflareComAjaxLibsDatGui061DatGuiMinJs) {
+      dat = _httpsCdnjsCloudflareComAjaxLibsDatGui061DatGuiMinJs;
     }],
     execute: function () {
-      window.pps = util.pps; // Import the lib/ mmodules via relative paths
+      // Import the lib/ mmodules via relative paths
 
+
+      window.pps = util.pps;
 
       const modules = { Color, ColorMap, Model, util, pps: util.pps };
       util.toWindow(modules);
@@ -66,6 +70,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           //
           this.computeDerivedConstants();
           this.tests();
+          this.makeDatGUI();
         }
 
         computeDerivedConstants() {
@@ -351,6 +356,22 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-20, -1)) === this.FLANKS.head, 'head flank');
           console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -20)) === this.FLANKS.head, 'head flank');
         }
+
+        makeDatGUI() {
+          window.gewy = new dat.GUI();
+          gewy.add(model, 'WIND_DIRECTION_DEG', 0, 360);
+          gewy.add(model, 'WIND_SPEED_10M', 0, 120); // km/hour
+          gewy.add(model, 'modelTimeStep', 1, 240); // km/hour
+          gewy.add(model, 'KDBI', 10, 200);
+          gewy.add(model, 'RAINFALLmm', 0, 30);
+          gewy.add(model, 'DAYS_SINCE_LAST_RAIN', 1, 90);
+          //   weather
+          gewy.add(model, 'FUEL_LOAD_tpha', 1, 70); // t/ha
+          gewy.add(model, 'AIR_TEMP_c', 0, 40); // celsius
+          gewy.add(model, 'RELATIVE_HUMIDITY', 0, 100); // %
+          // Forest Fire Danger Index FFDI
+          gewy.add(model, 'FINEFUEL_CURRENT_PCT', 0, 100);
+        }
       }
       // const [div, size, max, min] = ['layers', 4, 50, -50]
       const model = new FireModel('layers', {
@@ -365,7 +386,6 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
       const world = model.world;
       const patches = model.patches;
       util.toWindow({ model, world, patches });
-
       // if (world.patchSize !== 1) util.addToDom(patches.pixels.ctx.canvas)
     }
   };
