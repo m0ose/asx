@@ -348,18 +348,18 @@ class FireModel extends Model {
 
   makeDatGUI () {
     window.gewy = new dat.GUI()
-    gewy.add(model, 'WIND_DIRECTION_DEG', 0, 360)
-    gewy.add(model, 'WIND_SPEED_10M', 0, 120) // km/hour
+    var weather = gewy.addFolder('Weather');
+    weather.add(model, 'WIND_DIRECTION_DEG', 0, 360)
+    weather.add(model, 'WIND_SPEED_10M', 0, 120) // km/hour
+    weather.add(model, 'AIR_TEMP_c', 0, 40) // celsius
+    weather.add(model, 'RELATIVE_HUMIDITY', 0, 100) // %
+    var fuel = gewy.addFolder('Fuel')
+    fuel.add(model, 'KDBI', 10, 200)
+    fuel.add(model, 'RAINFALLmm', 0, 30)
+    fuel.add(model, 'DAYS_SINCE_LAST_RAIN', 1, 90)
+    fuel.add(model, 'FUEL_LOAD_tpha', 1, 70) // t/ha
+    fuel.add(model, 'FINEFUEL_CURRENT_PCT', 0, 100)
     gewy.add(model, 'modelTimeStep', 1, 240) // km/hour
-    gewy.add(model, 'KDBI', 10,200)
-    gewy.add(model, 'RAINFALLmm', 0, 30)
-    gewy.add(model, 'DAYS_SINCE_LAST_RAIN', 1, 90)
-    //   weather
-    gewy.add(model, 'FUEL_LOAD_tpha', 1, 70) // t/ha
-    gewy.add(model, 'AIR_TEMP_c', 0, 40) // celsius
-    gewy.add(model, 'RELATIVE_HUMIDITY', 0,100) // %
-    // Forest Fire Danger Index FFDI
-    gewy.add(model, 'FINEFUEL_CURRENT_PCT', 0, 100)
   }
 }
 // const [div, size, max, min] = ['layers', 4, 50, -50]
