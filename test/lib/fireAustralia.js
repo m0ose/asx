@@ -29,6 +29,22 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
       class FireModel extends Model {
         startup() {
           console.log('startup called');
+          //
+          // F I R E   M O D E L   C O N S T A I N T S
+          //   drought
+          this.KDBI = 80;
+          this.RAINFALLmm = 8;
+          this.DAYS_SINCE_LAST_RAIN = 14;
+          //   weather
+          this.FUEL_LOAD_tpha = 18; // t/ha
+          this.DATE = new Date('January 30 2015 15:00');
+          this.AIR_TEMP_c = 22; // celsius
+          this.RELATIVE_HUMIDITY = 35; // %
+          this.WIND_SPEED_10M = 60; // km/hour
+          this.WIND_DIRECTION_DEG = 45; // degrees
+          // Forest Fire Danger Index FFDI
+          this.FINEFUEL_CURRENT_PCT = 6.7; // % . the spreadsheet has values for am pm and more.
+          this.FLANKS = { flank: 'flank', head: 'head', back: 'back' };
           return this.loadElevations(); // this returns a promise. setup will not run until this completes
         }
 
@@ -52,25 +68,9 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
             }
           }
           //
-          // F I R E   M O D E L   C O N S T A I N T S
-          //   drought
-          this.KDBI = 80;
-          this.RAINFALLmm = 8;
-          this.DAYS_SINCE_LAST_RAIN = 14;
-          //   weather
-          this.FUEL_LOAD_tpha = 18; // t/ha
-          this.DATE = new Date('January 30 2015 15:00');
-          this.AIR_TEMP_c = 22; // celsius
-          this.RELATIVE_HUMIDITY = 35; // %
-          this.WIND_SPEED_10M = 60; // km/hour
-          this.WIND_DIRECTION_DEG = 45; // degrees
-          // Forest Fire Danger Index FFDI
-          this.FINEFUEL_CURRENT_PCT = 6.7; // % . the spreadsheet has values for am pm and more.
-          this.FLANKS = { flank: 'flank', head: 'head', back: 'back' };
-          //
           this.computeDerivedConstants();
-          this.tests();
-          this.makeDatGUI();
+          // this.tests()
+          this.initDatGUI(); // dont add
         }
 
         computeDerivedConstants() {
@@ -357,7 +357,8 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -20)) === this.FLANKS.head, 'head flank');
         }
 
-        makeDatGUI() {
+        initDatGUI() {
+          if (window.gewy) return; // this gets called on restart also
           window.gewy = new dat.GUI();
           var weather = gewy.addFolder('Weather');
           weather.add(model, 'WIND_DIRECTION_DEG', 0, 360);
@@ -371,6 +372,29 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           fuel.add(model, 'FUEL_LOAD_tpha', 1, 70); // t/ha
           fuel.add(model, 'FINEFUEL_CURRENT_PCT', 0, 100);
           gewy.add(model, 'modelTimeStep', 1, 240); // km/hour
+          //
+          // buttons
+          var container = document.createElement('div');
+          container.style.cssText = 'position:absolute; left:20px; top:20px; z-index:80';
+          var but = document.createElement('button');
+          but.innerHTML = 'reset';
+          but.onclick = () => {
+            model.reset();model.start();
+          };
+          var but2 = document.createElement('button');
+          but2.innerHTML = 'start';
+          but2.onclick = () => {
+            model.start();
+          };
+          var but3 = document.createElement('button');
+          but3.innerHTML = 'stop';
+          but3.onclick = () => {
+            model.stop();
+          };
+          container.appendChild(but);
+          container.appendChild(but2);
+          container.appendChild(but3);
+          document.body.appendChild(container);
         }
       }
       // const [div, size, max, min] = ['layers', 4, 50, -50]
