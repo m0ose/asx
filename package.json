@@ -12,7 +12,7 @@
   "scripts": {
     "all": "npm run build && npm run docs && npm run postinstall",
     "clean": "shx rm lib/* test/lib/* docs/*.html etc/*",
-    "postinstall": "cd node_modules; cp lzma/src/lzma.js lzma/src/lzma_worker.js pako/dist/pako.min.js systemjs/dist/system.js three/build/* ../etc; cp webgl-debug/index.js ../etc/webgl-debug.js",
+    "postinstall": "mkdir etc; cd node_modules; cp lzma/src/lzma.js lzma/src/lzma_worker.js pako/dist/pako.min.js systemjs/dist/system.js three/build/* ../etc; cp webgl-debug/index.js ../etc/webgl-debug.js",
     "zip": "zip -r asx.zip etc lib test/lib test.html",
     "build:as": "babel --plugins transform-es2015-modules-systemjs src -d lib",
     "build:test": "babel --plugins transform-es2015-modules-systemjs test/apps -d test/lib",
