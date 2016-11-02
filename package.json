@@ -21,7 +21,7 @@
     "docs": "docco -o ./docs/ ./src/*.js",
     "git-prep": "npm run all && git add . && git status",
     "git-commit": "git commit -v && git push origin master",
-    "make-page": "git merge master && npm run all && git add . && git add -f docs lib test/lib && git commit -m 'master merge'",
+    "make-page": "git merge master && npm run all && git add . && git add -f docs lib test/lib etc && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages && git checkout master"
   },
   "dependencies": {
