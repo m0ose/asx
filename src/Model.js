@@ -135,7 +135,7 @@ class Model {
   setFont (name, font = '10px sans-serif', align = 'center', baseline = 'middle') {
     const ctx = this.contexts[name]
     if (!ctx) util.error(`Model.setFont: no context named "${name}"`)
-    util.ctxTextParams(ctx, font, align, baseline)
+    util.setTextParams(ctx, font, align, baseline)
   }
 
 // ### User Model Creation

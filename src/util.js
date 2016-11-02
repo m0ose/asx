@@ -56,7 +56,7 @@ const util = {
     return new Type(uint8array.buffer)
   },
 
-  // Convert between Uint8Array "buffer" and base64 string.
+  // Convert between Uint8Array buffer and base64 string.
   // https://coolaj86.com/articles/typedarray-buffer-to-base64-in-javascript/
   bufferToBase64 (uint8Array) {
     const binstr = Array.prototype.map.call(uint8Array, (ch) =>
@@ -72,7 +72,7 @@ const util = {
     })
     return uint8Array
   },
-  // Convert between Uint8Array "buffer" and utf8 8bit char strings (0-255).
+  // Convert between Uint8Array buffer and utf8 8bit char strings (0-255).
   escapeByteString (byteString) {
     const chars = '\'"\\\0\n\r\v\t\b\f'
     const regex = /['"\\\0\n\r\v\t\b\f]/g
@@ -94,7 +94,7 @@ const util = {
   },
   byteStringToBuffer (utf8) {
     const result = new Uint8Array(utf8.length)
-    for (var i = 0; i < utf8.length; i++) result[i] = utf8.codePointAt(i)
+    for (let i = 0; i < utf8.length; i++) result[i] = utf8.codePointAt(i)
     return result
   },
 
@@ -295,6 +295,14 @@ const util = {
   // Return range [0, length-1]. Note: 6x faster than Array.from!
   range (length) { return this.repeat(length, (i, a) => { a[i] = i }, []) },
 
+  // Return key for (first) given value in object, null if not found.
+  keyForValue (obj, value) {
+    for (const key in obj)
+      if (obj[key] === value) //  gl problems: && obj.hasOwnProperty(key)
+        return key
+    return null
+  },
+
   // Execute fcn for all own member of an obj or array (typed OK).
   // Return input arrayOrObj, transformed by fcn.
   // - Unlike forEach, does not skip undefines.
@@ -324,6 +332,14 @@ const util = {
     return array
   },
 
+  // Return an array with no sub-array elements
+  flatten (array) {
+    if (!Array.isArray(array[0])) return array
+    const result = []
+    array.forEach((a) => result.push(...a))
+    return this.flatten(result)
+  },
+
   // Return array's type (Array or TypedArray variant)
   arrayType (array) { return array.constructor },
 
@@ -344,7 +360,7 @@ const util = {
 
   // [Deep clone](http://goo.gl/MIaTxU) an obj or array. Clever!
   deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
-  // Compare Objects or Arrays via JSON string. TypedArrays !== Arrays
+  // Compare Objects or Arrays via JSON string. Note: TypedArrays !== Arrays
   objectsEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
   // Use JSON to return printable string of an object, array, other
   objectToString: (obj) => JSON.stringify(obj),
@@ -353,7 +369,8 @@ const util = {
   // Array Type allows conversion to Float32Array or integers (Int32Array etc)
   randomArray (length, min = 0, max = 1, Type = Array) {
     const a = new Type(length)
-    for (let i = 0; i < length; i++) { a[i] = this.randomFloat2(min, max) }
+    for (let i = 0; i < length; i++)
+      a[i] = this.randomFloat2(min, max)
     return a
   },
 
@@ -610,9 +627,16 @@ const util = {
   },
   // As above, but returing the context object.
   // NOTE: ctx.canvas is the canvas for the ctx, and can be use as an image.
-  createCtx (width, height, ctxType = '2d') {
+  createCtx (width, height, type = '2d', glAttributes = {}) {
     const can = this.createCanvas(width, height)
-    return can.getContext(ctxType === '2d' ? '2d' : 'webgl')
+    return this.getContext(can, type, glAttributes)
+  },
+  getContext (canvas, type = '2d', glAttributes = {}) {
+    if (typeof canvas === 'string') canvas = this.getCanvasByID(canvas)
+    if (type[0] !== '2') type = 'webgl'
+    const ctx = canvas.getContext(type, glAttributes)
+    if (!ctx) this.error('getContext error')
+    return ctx
   },
   // Return the (complete) ImageData object for this context object
   ctxImageData (ctx) {
@@ -667,17 +691,6 @@ const util = {
     ctx.fillText(string, x, y)
     ctx.restore()
   },
-  // Set the element text align and baseline drawing parameters
-  //
-  // * font is a HTML/CSS string like: "9px sans-serif"
-  // * align is left right center start end
-  // * baseline is top hanging middle alphabetic ideographic bottom
-  //
-  // See [reference](http://goo.gl/AvEAq) and
-  // [web-safe fonts](http://goo.gl/unmCw)
-  ctxTextParams (ctx, font, align = 'center', baseline = 'middle') {
-    ctx.font = font; ctx.textAlign = align; ctx.textBaseline = baseline
-  },
 
   // Convert an image, or part of an image, to a context.
   // img may be another canvas.
@@ -701,24 +714,16 @@ const util = {
 
 // ### WebGL
 
-  // Convert a canvas to a gl context, with given attributes.
-  // Attributes [listed here](
-  // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.2).
-  // For images, attribute `premultipliedAlpha: false` useful.
-  createGLContext (canvas, attributes = {}) {
-    const gl = canvas.getContext('webgl', attributes)
-    if (!gl) this.error('webgl getContext error')
-    return gl
-  },
+// ### WebGL methods
 
   // Use webgl texture to convert img to Uint8Array w/o alpha premultiply
   // or color profile modification.
   // Img can be Image, ImageData, Canvas: [See MDN](https://goo.gl/a3oyRA).
-  // `flipY` is used to invert image to "upright".
-  imageToBytes (img, imgFormat = 'RGBA', flipY = false) {
+  // `flipY` is used to invert image to upright.
+  imageToBytes (img, flipY = false, imgFormat = 'RGBA') {
     // Create the gl context using the image width and height
     const {width, height} = img
-    const gl = this.createGLContext(this.createCanvas(width, height), {
+    const gl = this.createCtx(width, height, 'webgl', {
       premultipliedAlpha: false
     })
     const fmt = gl[imgFormat]
@@ -726,7 +731,7 @@ const util = {
     // Create and initialize the texture.
     const texture = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_2D, texture)
-    if (flipY) // Mainly used for "pictures" rather than "data"
+    if (flipY) // Mainly used for pictures rather than data
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
     // Insure [no color profile applied](https://goo.gl/BzBVJ9):
     gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE)

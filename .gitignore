@@ -9,7 +9,10 @@ Attic/
 # The test page for es6-module-loader-dev.js & traceur.js
 # lib/test/
 
+etc/
 lib/
+src/glx.js
+test/apps/webgl.js
 test/lib/
 docs/
 asx.zip

@@ -129,8 +129,8 @@ class Patches extends AgentSet {
   draw (ctx = this.model.contexts.patches) {
     const {pixels} = this
     pixels.ctx.putImageData(pixels.imageData, 0, 0)
-    if (pixels.are1x1) return
-    util.fillCtxWithImage(ctx, pixels.ctx.canvas)
+    if (!pixels.are1x1)
+      util.fillCtxWithImage(ctx, pixels.ctx.canvas)
     for (const i in this.labels) { // `for .. in`: skips sparse array gaps.
       const label = this.labels[i]
       const {labelOffset: offset, labelColor: color} = this[i]

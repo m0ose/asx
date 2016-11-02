@@ -3,12 +3,56 @@ import util from 'lib/util.js'
 import Color from 'lib/Color.js'
 import ColorMap from 'lib/ColorMap.js'
 import Model from 'lib/Model.js'
+import * as THREE from 'etc/three.min.js'
 
-const modules = { Color, ColorMap, Model, util }
+const modules = { Color, ColorMap, Model, util, THREE }
 util.toWindow(modules)
 console.log(Object.keys(modules).join(', '))
 
+function initThree (canvas) {
+  const renderer = new THREE.WebGLRenderer()
+  const [width, height] = [window.innerWidth, window.innerHeight]
+  renderer.setSize(width, height)
+
+  document.body.appendChild(renderer.domElement);
+  // document.body.appendChild(canvas)
+
+  const scene = new THREE.Scene()
+
+  const camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000)
+  camera.position.z = 400
+
+  const texture = new THREE.Texture(canvas)
+  texture.generateMipmaps = false
+  texture.minFilter = THREE.LinearFilter
+  texture.magFilter = THREE.LinearFilter
+
+  const geometry = new THREE.PlaneGeometry(canvas.width, canvas.height, 1, 1)
+  const material = new THREE.MeshBasicMaterial({
+    map: texture, side: THREE.DoubleSide
+  })
+  const mesh = new THREE.Mesh(geometry, material)
+  scene.add(mesh)
+
+  return {scene, camera, renderer, texture, geometry, material, mesh}
+}
+
 class FireModel extends Model {
+  constructor (div, worldOptions = {}, contextOptions = {}) {
+    super(div, worldOptions, contextOptions)
+    this.div.hidden = true
+    this.threeObj = initThree(this.patches.pixels.ctx.canvas)
+  }
+  draw () {
+    const pixels = this.patches.pixels
+    pixels.ctx.putImageData(pixels.imageData, 0, 0)
+    const {renderer, scene, camera, texture, mesh} = this.threeObj
+    texture.needsUpdate = true
+    mesh.rotation.x += 0.01
+    // mesh.rotation.y += 0.01
+    renderer.render(scene, camera)
+  }
+
   setup () {
     this.patchBreeds('fires embers')
     this.anim.setRate(60)
@@ -85,4 +129,4 @@ const model = new FireModel('layers', {
 const world = model.world
 const patches = model.patches
 util.toWindow({ model, world, patches, p: patches.oneOf() })
-if (world.patchSize !== 1) util.addToDom(patches.pixels.ctx.canvas)
+// if (world.patchSize !== 1) util.addToDom(patches.pixels.ctx.canvas)
