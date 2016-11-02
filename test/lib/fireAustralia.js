@@ -29,8 +29,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
       class FireModel extends Model {
         startup() {
           console.log('startup called');
-          //
-          // F I R E   M O D E L   C O N S T A I N T S
+          // F I R E   M O D E L   V A R I A B L E S
           //   drought
           this.KDBI = 80;
           this.RAINFALLmm = 8;
@@ -44,25 +43,27 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           this.WIND_DIRECTION_DEG = 45; // degrees
           // Forest Fire Danger Index FFDI
           this.FINEFUEL_CURRENT_PCT = 6.7; // % . the spreadsheet has values for am pm and more.
-          this.FLANKS = { flank: 'flank', head: 'head', back: 'back' };
+          //
+          // Finally load elevation
           return this.loadElevations(); // this returns a promise. setup will not run until this completes
         }
 
         setup() {
           console.log('setup');
-          this.patchBreeds('fires embers');
           this.anim.setRate(60);
           this.elevColorMap = ColorMap.gradientColorMap(1000, ColorMap.jetColors);
           this.modelTime = 0; // seconds
           this.modelTimeStep = 60;
-          this.embers = [];
+          this.squareMburned = 0;
+          this.stats = [];
+          this.FLANKS = { flank: 'flank', head: 'head', back: 'back' };
           this.patches.importDataSet(this.elevation, 'elev', true);
           for (const p of this.patches) {
             p.fuelExausted = false;
             p.ignitionTime = 0;
           }
           for (const p of this.patches) {
-            if (p.x == 0 && p.y == 0 || p.x == 40 && p.y == 40) {
+            if (p.x === 0 && p.y === 0 || p.x === 40 && p.y === 40) {
               this.ignite(p);
               console.log('ignite');
             }
@@ -70,7 +71,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           //
           this.computeDerivedConstants();
           // this.tests()
-          this.initDatGUI(); // dont add
+          this.initDatGUI();
         }
 
         computeDerivedConstants() {
@@ -136,20 +137,21 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
             model.stop();
           }
           this.modelTime += this.modelTimeStep;
-          // console.log('step', burnedCount)
+          this.updateStats();
+          // UI stuff
+          this.updateUI();
         }
 
         patchStep(patch) {
           const neighbors = patch.neighbors;
           for (const n of neighbors) {
-            // const flank = this.whatFlank(p, n)
             const slopeAngle = this.getSlopeAngleBetween(patch, n);
             let ros;
             if (this.FFDI < 12.5) {
               ros = this.spreadRateLeaflet80(slopeAngle);
             } else {
               ros = this.spreadRateMK5(slopeAngle);
-            } // =IF(C41<12.5,C70,C94)
+            }
             const flank = this.whatFlank(patch, n);
             let ignitionTime = this.modelTime;
             if (flank === this.FLANKS.head) {
@@ -164,6 +166,11 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
             if (ignitionTime > this.modelTime) this.ignite(n, ignitionTime);
           }
           patch.fuelExausted = true;
+          // calculate km burned
+          const lat = this.getLatitudeOfPatch(patch);
+          const dims = this.patchDimInMeters(lat);
+          const kmsquared = Math.abs(dims[0] * dims[1]);
+          this.squareMburned += kmsquared;
         }
 
         ignite(p, ignitionTime = 1) {
@@ -213,6 +220,11 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
                 flank = this.FLANKS.back; // back flank
               }
           return flank;
+        }
+
+        getCurrentDate() {
+          const utc = this.DATE.getTime() + 1000 * this.modelTime;
+          return new Date(utc);
         }
 
         getLatitudeOfPatch(p) {
@@ -319,6 +331,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
             intensityBacking: intensityBacking
           };
         }
+
         // might want to memoize this for speed, or just put it into the gpu.
         patchDimInMeters(lat) {
           // Set up "Constants"
@@ -336,6 +349,41 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           const xDim = longlen * Math.abs(this.east - this.west) / Math.abs(this.world.maxX - this.world.minX);
           const yDim = latlen * Math.abs(this.north - this.south) / Math.abs(this.world.maxY - this.world.minY);
           return [xDim, yDim];
+        }
+
+        updateUI() {
+          let mdt = 0;
+          if (this.stats.length > 1) {
+            let st = this.stats[this.stats.length - 1];
+            mdt = st.meterPerMillisecond * 1000;
+          }
+          let divStr = `${ this.getCurrentDate().toString() }
+      <br>
+      ${ (this.squareMburned / (1000 * 1000)).toFixed(3) } square km burned
+      <br>
+      ${ mdt.toFixed(2) } Square meters per Second
+      `;
+          document.getElementById('timeDisplayDiv').innerHTML = divStr;
+        }
+
+        updateStats() {
+          if (this.anim.ticks % 60 == 0) {
+            while (this.stats.length > 20) {
+              this.stats.shift();
+            }
+            let meterPerMillisecond = 0;
+            if (this.stats.length > 1) {
+              let st = this.stats[this.stats.length - 1];
+              let dt = this.getCurrentDate().getTime() - st.time.getTime();
+              let mt = this.squareMburned - st.squareMburned;
+              meterPerMillisecond = mt / dt;
+            }
+            this.stats.push({
+              squareMburned: this.squareMburned,
+              time: this.getCurrentDate(),
+              meterPerMillisecond: meterPerMillisecond
+            });
+          }
         }
 
         // some vector operations, should maybe go in utils
@@ -394,6 +442,11 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           container.appendChild(but);
           container.appendChild(but2);
           container.appendChild(but3);
+          var timeDisp = document.createElement('div');
+          timeDisp.id = 'timeDisplayDiv';
+          timeDisp.style.background = 'white';
+          timeDisp.style.opacity = 0.6;
+          container.appendChild(timeDisp);
           document.body.appendChild(container);
         }
       }
