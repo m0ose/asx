@@ -15,8 +15,7 @@ console.log(Object.keys(modules).join(', '))
 class FireModel extends Model {
   startup () {
     console.log('startup called')
-    //
-    // F I R E   M O D E L   C O N S T A I N T S
+    // F I R E   M O D E L   V A R I A B L E S
     //   drought
     this.KDBI = 80
     this.RAINFALLmm = 8
@@ -30,25 +29,27 @@ class FireModel extends Model {
     this.WIND_DIRECTION_DEG = 45 // degrees
     // Forest Fire Danger Index FFDI
     this.FINEFUEL_CURRENT_PCT = 6.7 // % . the spreadsheet has values for am pm and more.
-    this.FLANKS = {flank: 'flank', head: 'head', back: 'back'}
+    //
+    // Finally load elevation
     return this.loadElevations() // this returns a promise. setup will not run until this completes
   }
 
   setup () {
     console.log('setup')
-    this.patchBreeds('fires embers')
     this.anim.setRate(60)
     this.elevColorMap = ColorMap.gradientColorMap(1000, ColorMap.jetColors)
     this.modelTime = 0 // seconds
     this.modelTimeStep = 60
-    this.embers = []
+    this.squareMburned = 0
+    this.stats = []
+    this.FLANKS = {flank: 'flank', head: 'head', back: 'back'}
     this.patches.importDataSet(this.elevation, 'elev', true)
     for (const p of this.patches) {
       p.fuelExausted = false
       p.ignitionTime = 0
     }
     for (const p of this.patches) {
-      if ((p.x == 0 && p.y == 0) || (p.x == 40 && p.y == 40)) {
+      if ((p.x === 0 && p.y === 0) || (p.x === 40 && p.y === 40)) {
         this.ignite(p)
         console.log('ignite')
       }
@@ -56,15 +57,15 @@ class FireModel extends Model {
     //
     this.computeDerivedConstants()
     // this.tests()
-    this.initDatGUI() // dont add
+    this.initDatGUI()
   }
 
   computeDerivedConstants () {
-    this.DROUGHT_FACTOR =(0.191 * (this.KDBI + 104) * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5)) / (3.52 * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5) + this.RAINFALLmm - 1)
+    this.DROUGHT_FACTOR = (0.191 * (this.KDBI + 104) * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5)) / (3.52 * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5) + this.RAINFALLmm - 1)
     this.WIND_HEAD_DIR = (this.WIND_DIRECTION_DEG + 180) % 360
     this.WIND_LFLANK_DIR = (this.WIND_DIRECTION_DEG + 90) % 360
     this.WIND_RFLANK_DIR = (this.WIND_DIRECTION_DEG + 270) % 360
-    this.FFDI = 34.81*Math.exp(0.987*Math.log(this.DROUGHT_FACTOR))*Math.pow(this.FINEFUEL_CURRENT_PCT, -2.1)*Math.exp(0.0234*this.FINEFUEL_CURRENT_PCT)
+    this.FFDI = 34.81 * Math.exp(0.987 * Math.log(this.DROUGHT_FACTOR)) * Math.pow(this.FINEFUEL_CURRENT_PCT, -2.1) * Math.exp(0.0234 * this.FINEFUEL_CURRENT_PCT)
   }
 
   // ak coast north = 60.0, south = 59.29, east = -151.37, west = -152.58
@@ -108,9 +109,9 @@ class FireModel extends Model {
     let burnedCount = 0
     for (var p of this.patches) {
       if (!p.fuelExausted && p.ignitionTime < this.modelTime && p.ignitionTime > 0) {
-          this.patchStep(p)
+        this.patchStep(p)
       }
-      if (p.fuelExausted) burnedCount ++
+      if (p.fuelExausted) burnedCount++
       if (p.ignitionTime > 0) {
         p.color = this.elevColorMap.scaleColor(0.8, 0, 1)
       } else {
@@ -122,20 +123,21 @@ class FireModel extends Model {
       model.stop()
     }
     this.modelTime += this.modelTimeStep
-    // console.log('step', burnedCount)
+    this.updateStats()
+    // UI stuff
+    this.updateUI()
   }
 
   patchStep (patch) {
     const neighbors = patch.neighbors
     for (const n of neighbors) {
-      // const flank = this.whatFlank(p, n)
       const slopeAngle = this.getSlopeAngleBetween(patch, n)
       let ros
       if (this.FFDI < 12.5) {
         ros = this.spreadRateLeaflet80(slopeAngle)
       } else {
         ros = this.spreadRateMK5(slopeAngle)
-      }  // =IF(C41<12.5,C70,C94)
+      }
       const flank = this.whatFlank(patch, n)
       let ignitionTime = this.modelTime
       if (flank === this.FLANKS.head) {
@@ -150,6 +152,11 @@ class FireModel extends Model {
       if (ignitionTime > this.modelTime) this.ignite(n, ignitionTime)
     }
     patch.fuelExausted = true
+    // calculate km burned
+    const lat = this.getLatitudeOfPatch(patch)
+    const dims = this.patchDimInMeters(lat)
+    const kmsquared = Math.abs(dims[0] * dims[1])
+    this.squareMburned += kmsquared
   }
 
   ignite (p, ignitionTime = 1) {
@@ -198,6 +205,11 @@ class FireModel extends Model {
       flank = this.FLANKS.back// back flank
     }
     return flank
+  }
+
+  getCurrentDate () {
+    const utc = this.DATE.getTime() + 1000 * this.modelTime
+    return new Date(utc)
   }
 
   getLatitudeOfPatch (p) {
@@ -268,7 +280,7 @@ class FireModel extends Model {
     const rosHeadSlopeAdjusted = rosHeadFlatGround * slopeCorrectionFactor // =C88*C26
     const flameHeightHead = (13 * (rosHeadFlatGround / 1000)) + 0.24 * (this.FUEL_LOAD_tpha * fuelAvalabilityFactor) - 2 // =(13*(C88/1000))+0.24*(C10*C62)-2
     let scorchHeightHead = -0.296 + (2.23 * Math.sqrt(rosHeadFlatGround))
-    if(this.AIR_TEMP_c < 20) {
+    if (this.AIR_TEMP_c < 20) {
       scorchHeightHead = -2.19 + (2.23 * Math.sqrt(rosHeadFlatGround))
     } // =IF(C13<20, - 2.19 + (2.23 * Math.sqrt(C88)), - 0.296 + (2.23 * Math.sqrt(C88)))
     const intensityHead = 516.7 * this.FUEL_LOAD_tpha * this.DROUGHT_FACTOR / 10 * rosHeadSlopeAdjusted / 1000 // =516.7 * C10 * C7/10 * C89/1000
@@ -306,6 +318,7 @@ class FireModel extends Model {
       intensityBacking: intensityBacking
     }
   }
+
   // might want to memoize this for speed, or just put it into the gpu.
   patchDimInMeters (lat) {
     // Set up "Constants"
@@ -325,6 +338,41 @@ class FireModel extends Model {
     const xDim = longlen * Math.abs(this.east - this.west) / Math.abs(this.world.maxX - this.world.minX)
     const yDim = latlen * Math.abs(this.north - this.south) / Math.abs(this.world.maxY - this.world.minY)
     return [xDim, yDim]
+  }
+
+  updateUI () {
+    let mdt = 0
+    if (this.stats.length > 1) {
+      let st = this.stats[this.stats.length - 1]
+      mdt = st.meterPerMillisecond * 1000
+    }
+    let divStr = `${this.getCurrentDate().toString()}
+      <br>
+      ${(this.squareMburned / (1000 * 1000)).toFixed(3)} square km burned
+      <br>
+      ${mdt.toFixed(2)} Square meters per Second
+      `
+    document.getElementById('timeDisplayDiv').innerHTML = divStr
+  }
+
+  updateStats () {
+    if (this.anim.ticks % 60 == 0) {
+      while (this.stats.length > 20) {
+        this.stats.shift()
+      }
+      let meterPerMillisecond = 0
+      if (this.stats.length > 1) {
+        let st = this.stats[this.stats.length - 1]
+        let dt = this.getCurrentDate().getTime() - st.time.getTime()
+        let mt = this.squareMburned - st.squareMburned
+        meterPerMillisecond = mt / dt
+      }
+      this.stats.push({
+        squareMburned: this.squareMburned,
+        time: this.getCurrentDate(),
+        meterPerMillisecond: meterPerMillisecond
+      })
+    }
   }
 
   // some vector operations, should maybe go in utils
@@ -349,7 +397,7 @@ class FireModel extends Model {
   initDatGUI () {
     if (window.gewy) return // this gets called on restart also
     window.gewy = new dat.GUI()
-    var weather = gewy.addFolder('Weather');
+    var weather = gewy.addFolder('Weather')
     weather.add(model, 'WIND_DIRECTION_DEG', 0, 360)
     weather.add(model, 'WIND_SPEED_10M', 0, 120) // km/hour
     weather.add(model, 'AIR_TEMP_c', 0, 40) // celsius
@@ -377,6 +425,11 @@ class FireModel extends Model {
     container.appendChild(but)
     container.appendChild(but2)
     container.appendChild(but3)
+    var timeDisp = document.createElement('div')
+    timeDisp.id = 'timeDisplayDiv'
+    timeDisp.style.background = 'white'
+    timeDisp.style.opacity = 0.6
+    container.appendChild(timeDisp)
     document.body.appendChild(container)
   }
 }
