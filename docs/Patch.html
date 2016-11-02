@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Patch.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="AgentSet.html">
+                  AgentSet.js
+                </a>
+              
+                
+                <a class="source" href="Animator.html">
+                  Animator.js
+                </a>
+              
+                
+                <a class="source" href="AscDataSet.html">
+                  AscDataSet.js
+                </a>
+              
+                
+                <a class="source" href="Color.html">
+                  Color.js
+                </a>
+              
+                
+                <a class="source" href="ColorMap.html">
+                  ColorMap.js
+                </a>
+              
+                
+                <a class="source" href="DataSet.html">
+                  DataSet.js
+                </a>
+              
+                
+                <a class="source" href="DataSetIO.html">
+                  DataSetIO.js
+                </a>
+              
+                
+                <a class="source" href="Model.html">
+                  Model.js
+                </a>
+              
+                
+                <a class="source" href="Mouse.html">
+                  Mouse.js
+                </a>
+              
+                
+                <a class="source" href="OofA.html">
+                  OofA.js
+                </a>
+              
+                
+                <a class="source" href="Patch.html">
+                  Patch.js
+                </a>
+              
+                
+                <a class="source" href="Patches.html">
+                  Patches.js
+                </a>
+              
+                
+                <a class="source" href="RGBADataSet.html">
+                  RGBADataSet.js
+                </a>
+              
+                
+                <a class="source" href="RGBDataSet.html">
+                  RGBDataSet.js
+                </a>
+              
+                
+                <a class="source" href="glx.html">
+                  glx.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>Patch.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> Color <span class="hljs-keyword">from</span> <span class="hljs-string">'./Color.js'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Objects within AgentSets use “prototypal inheritance”.
+The PatchProto is given to Patches for use creating Patch objects.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> PatchProto = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Initialize a Patch given its Patches AgentSet.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  init (agentSet) {
+    <span class="hljs-keyword">const</span> defaults = <span class="hljs-keyword">this</span>.baseVariables()
+    defaults.world = agentSet.world
+    defaults.patches = agentSet.baseSet
+    <span class="hljs-built_in">Object</span>.setPrototypeOf(defaults, <span class="hljs-keyword">this</span>)
+    <span class="hljs-keyword">return</span> defaults
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Return an object that will initially be the “default” variables
+layer in a patch prototype stack.
+Surprisingly <code>label</code> and <code>color</code> are not here, they are managed
+optimally by the Patches AgentSet.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  baseVariables () { <span class="hljs-comment">// Core variables for patches. Not 'own' variables.</span>
+    <span class="hljs-keyword">return</span> {
+      id: <span class="hljs-literal">null</span>,           <span class="hljs-comment">// unique id, set by agentset's add() method</span>
+      agentSet: <span class="hljs-literal">null</span>,     <span class="hljs-comment">// my agentset/breed, set by AgentSet ctor</span>
+      patches: <span class="hljs-literal">null</span>,      <span class="hljs-comment">// my patches/baseSet, set by init()</span>
+      labelOffset: [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>],  <span class="hljs-comment">// text pixel offset from the patch center</span>
+      labelColor: Color.newTypedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>) <span class="hljs-comment">// the label color</span>
+    }
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Getter for x,y derived from patch id, thus no setter.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  get x () {
+    <span class="hljs-keyword">return</span> (<span class="hljs-keyword">this</span>.id % <span class="hljs-keyword">this</span>.world.numX) + <span class="hljs-keyword">this</span>.world.minX
+  },
+  get y () {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.world.maxY - <span class="hljs-built_in">Math</span>.floor(<span class="hljs-keyword">this</span>.id / <span class="hljs-keyword">this</span>.world.numX)
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Getter for neighbors of this patch.
+Uses lazy evaluation to promote neighbors to instance variables.
+To avoid promotion, use <code>patches.neighbors(this)</code>.
+Promotion makes getters not needed.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  get neighbors () { <span class="hljs-comment">// lazy promote neighbors from getter to instance prop.</span>
+    <span class="hljs-keyword">const</span> n = <span class="hljs-keyword">this</span>.patches.neighbors(<span class="hljs-keyword">this</span>)
+    <span class="hljs-built_in">Object</span>.defineProperty(<span class="hljs-keyword">this</span>, <span class="hljs-string">'neighbors'</span>, {value: n, enumerable: <span class="hljs-literal">true</span>})
+    <span class="hljs-keyword">return</span> n
+  },
+  get neighbors4 () {
+    <span class="hljs-keyword">const</span> n = <span class="hljs-keyword">this</span>.patches.neighbors4(<span class="hljs-keyword">this</span>)
+    <span class="hljs-built_in">Object</span>.defineProperty(<span class="hljs-keyword">this</span>, <span class="hljs-string">'neighbors4'</span>, {value: n, enumerable: <span class="hljs-literal">true</span>})
+    <span class="hljs-keyword">return</span> n
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Manage colors by directly setting pixels in Patches pixels object.
+With getter/setters, slight performance hit.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setColor (typedColor) {
+    <span class="hljs-keyword">this</span>.patches.pixels.data[<span class="hljs-keyword">this</span>.id] = typedColor.getPixel()
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Optimization: If shared color provided, sharedColor is modified and
+returned. Otherwise new color returned.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  getColor (sharedColor = <span class="hljs-literal">null</span>) {
+    <span class="hljs-keyword">const</span> pixel = <span class="hljs-keyword">this</span>.patches.pixels.data[<span class="hljs-keyword">this</span>.id]
+    <span class="hljs-keyword">if</span> (sharedColor) {
+      sharedColor.pixel = pixel
+      <span class="hljs-keyword">return</span> sharedColor
+    }
+    <span class="hljs-keyword">return</span> Color.toTypedColor(pixel)
+  },
+  get color () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getColor() },
+  set color (typedColor) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.setColor(typedColor) },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Set label. Erase label via setting to undefined.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setLabel (label) {
+    <span class="hljs-keyword">this</span>.patches.setLabel(<span class="hljs-keyword">this</span>, label)
+  },
+  getLabel () {
+    <span class="hljs-keyword">this</span>.patches.getLabel(<span class="hljs-keyword">this</span>)
+  },
+  get label () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getLabel() },
+  set label (label) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.setColor(label) },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Return patch dx, dy from my position. Return undefined if off-world.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  patchAt (dx, dy) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.patches.patch(<span class="hljs-keyword">this</span>.x + dx, <span class="hljs-keyword">this</span>.y + dy)
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Breed get/set mathods and getter/setter versions.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setBreed (breed) { breed.setBreed(<span class="hljs-keyword">this</span>) },
+  getBreed () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet },
+  get breed () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getBreed() },
+  set breed (breed) { <span class="hljs-keyword">this</span>.setBreed(breed) }
+}
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PatchProto</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
