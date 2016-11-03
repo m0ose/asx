@@ -29,7 +29,6 @@ class FireModel extends Model {
     this.WIND_DIRECTION_DEG = 45 // degrees
     // Forest Fire Danger Index FFDI
     this.FINEFUEL_CURRENT_PCT = 6.7 // % . the spreadsheet has values for am pm and more.
-    //
     // Finally load elevation
     return this.loadElevations() // this returns a promise. setup will not run until this completes
   }
@@ -68,8 +67,6 @@ class FireModel extends Model {
     this.FFDI = 34.81 * Math.exp(0.987 * Math.log(this.DROUGHT_FACTOR)) * Math.pow(this.FINEFUEL_CURRENT_PCT, -2.1) * Math.exp(0.0234 * this.FINEFUEL_CURRENT_PCT)
   }
 
-  // ak coast north = 60.0, south = 59.29, east = -151.37, west = -152.58
-  // Australia : ll = -36.5931277,147.6396473, ur = -36.5442637,147.7104703
   loadElevations (north = -36.5442637, south = -36.5931277, east = 147.6396473, west = 147.7104703) {
     return new Promise((resolve, reject) => {
       const ds = new TileDataSet({
