@@ -43,7 +43,6 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           this.WIND_DIRECTION_DEG = 45; // degrees
           // Forest Fire Danger Index FFDI
           this.FINEFUEL_CURRENT_PCT = 6.7; // % . the spreadsheet has values for am pm and more.
-          //
           // Finally load elevation
           return this.loadElevations(); // this returns a promise. setup will not run until this completes
         }
@@ -56,7 +55,6 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           this.modelTimeStep = 60;
           this.squareMburned = 0;
           this.stats = [];
-          this.FLANKS = { flank: 'flank', head: 'head', back: 'back' };
           this.patches.importDataSet(this.elevation, 'elev', true);
           for (const p of this.patches) {
             p.fuelExausted = false;
@@ -70,20 +68,19 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           }
           //
           this.computeDerivedConstants();
-          // this.tests()
+          this.tests();
           this.initDatGUI();
         }
 
         computeDerivedConstants() {
           this.DROUGHT_FACTOR = 0.191 * (this.KDBI + 104) * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5) / (3.52 * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5) + this.RAINFALLmm - 1);
-          this.WIND_HEAD_DIR = (this.WIND_DIRECTION_DEG + 180) % 360;
-          this.WIND_LFLANK_DIR = (this.WIND_DIRECTION_DEG + 90) % 360;
-          this.WIND_RFLANK_DIR = (this.WIND_DIRECTION_DEG + 270) % 360;
+          const windAdjusted = 90 - this.WIND_DIRECTION_DEG;
+          this.WIND_HEAD_DIR = (windAdjusted + 180) % 360;
+          this.WIND_LFLANK_DIR = (windAdjusted + 90) % 360;
+          this.WIND_RFLANK_DIR = (windAdjusted + 270) % 360;
           this.FFDI = 34.81 * Math.exp(0.987 * Math.log(this.DROUGHT_FACTOR)) * Math.pow(this.FINEFUEL_CURRENT_PCT, -2.1) * Math.exp(0.0234 * this.FINEFUEL_CURRENT_PCT);
         }
 
-        // ak coast north = 60.0, south = 59.29, east = -151.37, west = -152.58
-        // Australia : ll = -36.5931277,147.6396473, ur = -36.5442637,147.7104703
         loadElevations(north = -36.5442637, south = -36.5931277, east = 147.6396473, west = 147.7104703) {
           return new Promise((resolve, reject) => {
             const ds = new TileDataSet({
@@ -152,17 +149,12 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
             } else {
               ros = this.spreadRateMK5(slopeAngle);
             }
-            const flank = this.whatFlank(patch, n);
+            const flank = this.flankContributions(patch, n);
+            let rosAdjusted = flank.head * ros.rosHeadSlopeAdjusted;
+            rosAdjusted += flank.back * ros.rosBackingSlopeAdjusted;
+            rosAdjusted += flank.flank * ros.rosFlankSlopeAdjusted;
             let ignitionTime = this.modelTime;
-            if (flank === this.FLANKS.head) {
-              ignitionTime += this.ignitionTimeFromROS(patch, n, ros.rosHeadSlopeAdjusted);
-            } else if (flank === this.FLANKS.flank) {
-              ignitionTime += this.ignitionTimeFromROS(patch, n, ros.rosFlankSlopeAdjusted);
-            } else if (flank === this.FLANKS.back) {
-              ignitionTime += this.ignitionTimeFromROS(patch, n, ros.rosBackingSlopeAdjusted);
-            } else {
-              console.warn('im so confused about this flank: ', flank);
-            }
+            ignitionTime += this.ignitionTimeFromROS(patch, n, rosAdjusted);
             if (ignitionTime > this.modelTime) this.ignite(n, ignitionTime);
           }
           patch.fuelExausted = true;
@@ -203,23 +195,27 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
 
         // what flank is patch in
         //   calculate angle between wind and patch
-        whatFlank(fromP, toP) {
+        flankContributions(fromP, toP) {
           const deg2rad = Math.PI / 180;
           const rad2deg = 180 / Math.PI;
           const headFlankVec = [Math.cos(deg2rad * this.WIND_HEAD_DIR), Math.sin(deg2rad * this.WIND_HEAD_DIR)];
           const dxdyVec = [toP.x - fromP.x, toP.y - fromP.y];
           const cosTheta = this.dot(headFlankVec, dxdyVec) / (this.norm2(headFlankVec) * this.norm2(dxdyVec));
           const angle = Math.acos(cosTheta) * rad2deg; // this angle wil always be positive.
-          let flank;
-          if (angle <= 45) {
-            // arcos always return positive angle
-            flank = this.FLANKS.head; // head
-          } else if (angle <= 135) {
-              flank = this.FLANKS.flank; // left flank
-            } else {
-                flank = this.FLANKS.back; // back flank
-              }
-          return flank;
+          let ratioHead = 1 - angle / 90;
+          let ratioFlank = angle / 90;
+          let ratioBack = 0;
+          if (angle > 90) {
+            ratioBack = (angle - 90) / 90;
+            ratioFlank = 1 - ratioBack;
+            ratioHead = 0;
+          }
+          const result = {
+            'head': ratioHead,
+            'flank': ratioFlank,
+            'back': ratioBack
+          };
+          return result;
         }
 
         getCurrentDate() {
@@ -354,8 +350,8 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
         updateUI() {
           let mdt = 0;
           if (this.stats.length > 1) {
-            let st = this.stats[this.stats.length - 1];
-            mdt = st.meterPerMillisecond * 1000;
+            const stat = this.stats[this.stats.length - 1];
+            mdt = stat.meterPerMillisecond * 1000;
           }
           let divStr = `${ this.getCurrentDate().toString() }
       <br>
@@ -367,15 +363,15 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
         }
 
         updateStats() {
-          if (this.anim.ticks % 60 == 0) {
+          if (this.anim.ticks % 60 === 0) {
             while (this.stats.length > 20) {
               this.stats.shift();
             }
             let meterPerMillisecond = 0;
             if (this.stats.length > 1) {
-              let st = this.stats[this.stats.length - 1];
-              let dt = this.getCurrentDate().getTime() - st.time.getTime();
-              let mt = this.squareMburned - st.squareMburned;
+              const stat = this.stats[this.stats.length - 1];
+              const dt = this.getCurrentDate().getTime() - stat.time.getTime();
+              const mt = this.squareMburned - stat.squareMburned;
               meterPerMillisecond = mt / dt;
             }
             this.stats.push({
@@ -397,12 +393,12 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
 
         tests() {
           // this is for 45 degrees
-          console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -1)) === this.FLANKS.head, 'head flank');
-          console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(1, 1)) === this.FLANKS.back, 'back flank');
-          console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, 1)) === this.FLANKS.flank, 'right flank');
-          console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(1, -1)) === this.FLANKS.flank, 'left flank');
-          console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-20, -1)) === this.FLANKS.head, 'head flank');
-          console.assert(this.whatFlank(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -20)) === this.FLANKS.head, 'head flank');
+          console.assert(this.flankContributions(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -1)).head >= 0.5, 'head flank');
+          console.assert(this.flankContributions(this.patches.patchXY(0, 0), this.patches.patchXY(1, 1)).back >= 0.5, 'back flank');
+          console.assert(this.flankContributions(this.patches.patchXY(0, 0), this.patches.patchXY(-1, 1)).flank >= 0.5, 'right flank');
+          console.assert(this.flankContributions(this.patches.patchXY(0, 0), this.patches.patchXY(1, -1)).flank >= 0.5, 'left flank');
+          console.assert(this.flankContributions(this.patches.patchXY(0, 0), this.patches.patchXY(-20, -1)).head >= 0.5, 'head flank');
+          console.assert(this.flankContributions(this.patches.patchXY(0, 0), this.patches.patchXY(-1, -20)).head >= 0.5, 'head flank');
         }
 
         initDatGUI() {
