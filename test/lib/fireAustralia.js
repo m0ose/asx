@@ -68,7 +68,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           }
           //
           this.computeDerivedConstants();
-          this.tests();
+          // this.tests()
           this.initDatGUI();
         }
 
@@ -145,6 +145,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
             const slopeAngle = this.getSlopeAngleBetween(patch, n);
             let ros;
             if (this.FFDI < 12.5) {
+              // 12.5 is the original
               ros = this.spreadRateLeaflet80(slopeAngle);
             } else {
               ros = this.spreadRateMK5(slopeAngle);
@@ -302,7 +303,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           } //  =IF(C13<20, - 2.19 + (2.23 * Math.sqrt(C93)), - 0.296 + (2.23 * Math.sqrt(C93)))
           const intensityFlank = 516.7 * this.FUEL_LOAD_tpha * this.DROUGHT_FACTOR / 10 * rosFlankSlopeAdjusted / 1000; //  =516.7 * C10 * C7/10 * C94/1000
           const rosBackingFlatGround = rosFlankFlatGround * rosReductionFactor; //  =C93 * C79
-          const rosBackingSlopeAdjusted = rosBackingFlatGround * this.slopeCorrectionFactor; //  =C103 * C32
+          const rosBackingSlopeAdjusted = rosBackingFlatGround * slopeCorrectionFactor; //  =C103 * C32
           const flameHeightBacking = 13 * (rosBackingFlatGround / 1000) + 0.24 * (this.FUEL_LOAD_tpha * fuelAvalabilityFactor) - 2; //  =(13 * (C103/1000)) + 0.24 * (C10 * C62) - 2
           let scorchHeightBacking = -0.296 + 2.23 * Math.sqrt(rosBackingFlatGround);
           if (this.AIR_TEMP_c < 20) {
@@ -358,6 +359,8 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
       ${ (this.squareMburned / (1000 * 1000)).toFixed(3) } square km burned
       <br>
       ${ mdt.toFixed(2) } Square meters per Second
+      <br>
+      FFDI : ${ this.FFDI.toFixed(2) }
       `;
           document.getElementById('timeDisplayDiv').innerHTML = divStr;
         }
@@ -414,7 +417,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           fuel.add(model, 'RAINFALLmm', 0, 30);
           fuel.add(model, 'DAYS_SINCE_LAST_RAIN', 1, 90);
           fuel.add(model, 'FUEL_LOAD_tpha', 1, 70); // t/ha
-          fuel.add(model, 'FINEFUEL_CURRENT_PCT', 0, 100);
+          fuel.add(model, 'FINEFUEL_CURRENT_PCT', 0.1, 100);
           gewy.add(model, 'modelTimeStep', 1, 240); // km/hour
           //
           // buttons
@@ -435,9 +438,30 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           but3.onclick = () => {
             model.stop();
           };
+          var but4 = document.createElement('button');
+          but4.innerHTML = 'flat terrain';
+          but4.onclick = () => {
+            model.stop();
+            for (var i = 0; i < this.elevation.width * this.elevation.height; i++) {
+              this.elevation.data[i] = 0;
+            }
+            model.setup();
+            model.start();
+          };
+          var but5 = document.createElement('button');
+          but5.innerHTML = 'real terrain';
+          but5.onclick = () => {
+            model.stop();
+            model.loadElevations().then(() => {
+              model.setup();
+              model.start();
+            });
+          };
           container.appendChild(but);
           container.appendChild(but2);
           container.appendChild(but3);
+          container.appendChild(but4);
+          container.appendChild(but5);
           var timeDisp = document.createElement('div');
           timeDisp.id = 'timeDisplayDiv';
           timeDisp.style.background = 'white';
