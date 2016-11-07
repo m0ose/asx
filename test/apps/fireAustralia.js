@@ -67,7 +67,7 @@ class FireModel extends Model {
     this.FFDI = 34.81 * Math.exp(0.987 * Math.log(this.DROUGHT_FACTOR)) * Math.pow(this.FINEFUEL_CURRENT_PCT, -2.1) * Math.exp(0.0234 * this.FINEFUEL_CURRENT_PCT)
   }
 
-  loadElevations (north = -36.5442637, south = -36.5931277, east = 147.6396473, west = 147.7104703) {
+  loadElevations (north = -36.5442637, south = -36.5931277, east = 147.6396473, west = 147.7504703) {
     return new Promise((resolve, reject) => {
       const ds = new TileDataSet({
         // url: 'https://s3-us-west-2.amazonaws.com/simtable-elevation-tiles/{z}/{x}/{y}.png',
@@ -343,6 +343,8 @@ class FireModel extends Model {
       const stat = this.stats[this.stats.length - 1]
       mdt = stat.meterPerMillisecond * 1000
     }
+    const ll = model.getLatitudeOfPatch(model.patches.patchXY(0, 0))
+    const dim = model.patchDimInMeters(ll)
     let divStr = `${this.getCurrentDate().toString()}
       <br>
       ${(this.squareMburned / (1000 * 1000)).toFixed(3)} square km burned
@@ -350,6 +352,10 @@ class FireModel extends Model {
       ${mdt.toFixed(2)} Square meters per Second
       <br>
       FFDI : ${this.FFDI.toFixed(2)}
+      <br>
+      ${((model.world.maxX - model.world.minX) * dim[0]).toFixed(0)} meters wide at center
+      <br>
+      ${((model.world.maxY - model.world.minY) * dim[1]).toFixed(0)} meters tall at center
       `
     document.getElementById('timeDisplayDiv').innerHTML = divStr
   }
