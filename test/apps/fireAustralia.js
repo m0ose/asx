@@ -54,7 +54,7 @@ class FireModel extends Model {
     }
     //
     this.computeDerivedConstants()
-    this.tests()
+    // this.tests()
     this.initDatGUI()
   }
 
@@ -349,7 +349,7 @@ class FireModel extends Model {
       <br>
       ${mdt.toFixed(2)} Square meters per Second
       <br>
-      FFDI : ${this.FFDI}
+      FFDI : ${this.FFDI.toFixed(2)}
       `
     document.getElementById('timeDisplayDiv').innerHTML = divStr
   }
@@ -406,7 +406,7 @@ class FireModel extends Model {
     fuel.add(model, 'RAINFALLmm', 0, 30)
     fuel.add(model, 'DAYS_SINCE_LAST_RAIN', 1, 90)
     fuel.add(model, 'FUEL_LOAD_tpha', 1, 70) // t/ha
-    fuel.add(model, 'FINEFUEL_CURRENT_PCT', 0, 100)
+    fuel.add(model, 'FINEFUEL_CURRENT_PCT', 0.1, 100)
     gewy.add(model, 'modelTimeStep', 1, 240) // km/hour
     //
     // buttons
@@ -421,9 +421,30 @@ class FireModel extends Model {
     var but3 = document.createElement('button')
     but3.innerHTML = 'stop'
     but3.onclick = () => { model.stop() }
+    var but4 = document.createElement('button')
+    but4.innerHTML = 'flat terrain'
+    but4.onclick = () => {
+      model.stop()
+      for (var i = 0; i < this.elevation.width * this.elevation.height; i++) {
+        this.elevation.data[i] = 0
+      }
+      model.setup()
+      model.start()
+    }
+    var but5 = document.createElement('button')
+    but5.innerHTML = 'real terrain'
+    but5.onclick = () => {
+      model.stop()
+      model.loadElevations().then(() => {
+        model.setup()
+        model.start()
+      })
+    }
     container.appendChild(but)
     container.appendChild(but2)
     container.appendChild(but3)
+    container.appendChild(but4)
+    container.appendChild(but5)
     var timeDisp = document.createElement('div')
     timeDisp.id = 'timeDisplayDiv'
     timeDisp.style.background = 'white'
