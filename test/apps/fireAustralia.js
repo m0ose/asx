@@ -130,7 +130,7 @@ class FireModel extends Model {
     for (const n of neighbors) {
       const slopeAngle = this.getSlopeAngleBetween(patch, n)
       let ros
-      if (this.FFDI < 12.5) {
+      if (this.FFDI < 12.5) { // 12.5 is the original
         ros = this.spreadRateLeaflet80(slopeAngle)
       } else {
         ros = this.spreadRateMK5(slopeAngle)
@@ -290,7 +290,7 @@ class FireModel extends Model {
     } //  =IF(C13<20, - 2.19 + (2.23 * Math.sqrt(C93)), - 0.296 + (2.23 * Math.sqrt(C93)))
     const intensityFlank = 516.7 * this.FUEL_LOAD_tpha * this.DROUGHT_FACTOR / 10 * rosFlankSlopeAdjusted / 1000 //  =516.7 * C10 * C7/10 * C94/1000
     const rosBackingFlatGround = rosFlankFlatGround * rosReductionFactor //  =C93 * C79
-    const rosBackingSlopeAdjusted = rosBackingFlatGround * this.slopeCorrectionFactor //  =C103 * C32
+    const rosBackingSlopeAdjusted = rosBackingFlatGround * slopeCorrectionFactor //  =C103 * C32
     const flameHeightBacking = (13 * (rosBackingFlatGround / 1000)) + 0.24 * (this.FUEL_LOAD_tpha * fuelAvalabilityFactor) - 2 //  =(13 * (C103/1000)) + 0.24 * (C10 * C62) - 2
     let scorchHeightBacking = -0.296 + (2.23 * Math.sqrt(rosBackingFlatGround))
     if (this.AIR_TEMP_c < 20) {
@@ -348,6 +348,8 @@ class FireModel extends Model {
       ${(this.squareMburned / (1000 * 1000)).toFixed(3)} square km burned
       <br>
       ${mdt.toFixed(2)} Square meters per Second
+      <br>
+      FFDI : ${this.FFDI}
       `
     document.getElementById('timeDisplayDiv').innerHTML = divStr
   }
