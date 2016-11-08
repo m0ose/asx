@@ -1,6 +1,6 @@
 {
   "name": "asx",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "description": "eXperimental modules for AgentScript, 2nd Edition",
   "main": "src/app.js",
   "author": "Owen Densmore",
@@ -19,11 +19,13 @@
     "build": "npm run build:as && npm run build:test",
     "watch": "npm run build:as -- --watch & npm run build:test -- --watch",
     "docs": "docco -o ./docs/ ./src/*.js",
+    "Comment": "Change version, then run git-tag",
+    "git-tag": "git tag -a 'v2.0.0'",
     "git-diff": "git diff --cached",
     "git-prep": "npm run all && git add . && git status",
-    "git-commit": "git commit -v && git push origin master",
+    "git-commit": "git commit -v && git push origin master --follow-tags",
     "make-page": "git merge master && npm run all && git add . && git add -f docs lib test/lib etc && git commit -m 'master merge'",
-    "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages && git checkout master"
+    "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master"
   },
   "dependencies": {
     "lzma": "^2.3.0",
