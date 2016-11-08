@@ -3,7 +3,8 @@ import util from 'lib/util.js'
 import Color from 'lib/Color.js'
 import ColorMap from 'lib/ColorMap.js'
 import Model from 'lib/Model.js'
-import * as THREE from 'etc/three.min.js'
+// import * as THREE from 'etc/three.min.js'
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r82/three.min.js'
 
 const modules = { Color, ColorMap, Model, util, THREE }
 util.toWindow(modules)
@@ -14,7 +15,7 @@ function initThree (canvas) {
   const [width, height] = [window.innerWidth, window.innerHeight]
   renderer.setSize(width, height)
 
-  document.body.appendChild(renderer.domElement);
+  document.body.appendChild(renderer.domElement)
   // document.body.appendChild(canvas)
 
   const scene = new THREE.Scene()
