@@ -2,8 +2,13 @@
 <head>
   <title>asx</title>
   <script src="etc/system.js"></script>
+
   <!-- <script src="etc/three.js"></script> -->
-</script>
+  <!-- <script src="etc/OrbitControls.js"></script> -->
+
+  <!-- <script src="etc/FlyControls.js"></script>
+  <script src="etc/FirstPersonControls.js"></script>
+  <script src="etc/TrackballControls.js"></script> -->
 </head>
 <body>
   <script>
@@ -15,7 +20,16 @@
       loc = `test/lib/${app}.js`
     }
     console.log('running', loc)
-    System.import(loc)
+
+    // System.config({
+    //   meta: {
+    //     'etc/three.min.js': { format: 'global' },
+    //     'etc/threelibs/OrbitControls.js': { exports: 'THREE.OrbitControls' },
+    //     'etc/threelibs/FlyControls.js': { exports: 'THREE.FlyControls' },
+    //     'etc/threelibs/FirstPersonControls.js': { exports: 'THREE.FirstPersonControls' }
+    //   }
+    // })
+    System.import(loc).then((m) => window.m = m)
   </script>
   <div id='layers'> </div>
   <!-- Misc tests -->

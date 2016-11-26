@@ -1,0 +1,20 @@
+#!/bin/bash
+
+fromPath='node_modules/three/examples/js/'
+toPath='etc/threelibs/'
+# Pairs: dir/filename in examples/ dir.
+fromPairs=`sed -n '/^ *"threelibs":/{s/^.*: *"//;s/".*//p;}' package.json`
+
+for fromPair in $fromPairs; do
+  fromFile=$fromPath$fromPair.js
+  moduleFile=`echo $fromPair | sed 's:.*/::'`
+  modulePath=$toPath$moduleFile.js
+  sed "
+    s:THREE.$moduleFile:$moduleFile:g
+    s:$moduleFile *=:const $moduleFile =:
+    1i\\
+import * as THREE from 'etc/three.min.js'
+    \$a\\
+export default $moduleFile
+  " < $fromFile > $modulePath
+done
