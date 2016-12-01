@@ -24,8 +24,8 @@ function initThree (canvas) {
 
   const camera = new THREE.PerspectiveCamera(
     45, window.innerWidth / window.innerHeight, 1, 1000)
-  camera.position.y = 200
-  camera.position.z = 400
+  camera.position.y = 150
+  camera.position.z = 250
   camera.lookAt(scene.position)
   const controls = new OrbitControls(camera, renderer.domElement)
 

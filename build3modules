@@ -1,7 +1,7 @@
 #!/bin/bash
 
 fromPath='node_modules/three/examples/js/'
-toPath='etc/threelibs/'
+toPath='etc/threelibssrc/'
 # Pairs: dir/filename in examples/ dir.
 fromPairs=`sed -n '/^ *"threelibs":/{s/^.*: *"//;s/".*//p;}' package.json`
 
