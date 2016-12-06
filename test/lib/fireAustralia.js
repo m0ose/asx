@@ -37,7 +37,7 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           this.DAYS_SINCE_LAST_RAIN = 14;
           //   weather
           this.FUEL_LOAD_tpha = 18; // t/ha
-          this.DATE = new Date('January 30 2015 15:00');
+          this.DATE = new Date(0);
           this.AIR_TEMP_c = 22; // celsius
           this.RELATIVE_HUMIDITY = 35; // %
           this.WIND_SPEED_10M = 60; // km/hour
@@ -240,11 +240,6 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           return result;
         }
 
-        getCurrentDate() {
-          const utc = this.DATE.getTime() + 1000 * this.modelTime;
-          return new Date(utc);
-        }
-
         getLatitudeOfPatch(p) {
           const W = this.world;
           return (this.north - this.south) * ((p.y - W.minY) / (W.maxY - W.minY)) + this.south;
@@ -377,7 +372,13 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
           }
           const ll = model.getLatitudeOfPatch(model.patches.patchXY(0, 0));
           const dim = model.patchDimInMeters(ll);
-          let divStr = `${ this.getCurrentDate().toString() }
+          var D = this.getCurrentDate();
+          const numhours = String(D.getUTCHours());
+          let numminutes = String(D.getUTCMinutes());
+          let numseconds = String(D.getUTCSeconds());
+          numseconds = ('00' + numseconds).substring(numseconds.length);
+          numminutes = ('00' + numminutes).substring(numminutes.length);
+          let divStr = ` Elapsed ${ numhours } hours, ${ numminutes } min, ${ numseconds } seconds
       <br>
       ${ (this.squareMburned / (1000 * 1000)).toFixed(3) } square km burned
       <br>
@@ -390,6 +391,10 @@ System.register(['lib/util.js', 'lib/Color.js', 'lib/ColorMap.js', 'lib/Model.js
       ${ ((model.world.maxY - model.world.minY) * dim[1]).toFixed(0) } meters tall at center
       `;
           document.getElementById('timeDisplayDiv').innerHTML = divStr;
+        }
+
+        getCurrentDate() {
+          return new Date(this.DATE.getTime() + 1000 * this.modelTime);
         }
 
         updateStats() {
