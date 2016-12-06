@@ -15,6 +15,7 @@ console.log(Object.keys(modules).join(', '))
 class FireModel extends Model {
   startup () {
     console.log('startup called')
+    this.modelTimeStep = 20
     // F I R E   M O D E L   V A R I A B L E S
     //   drought
     this.KDBI = 80
@@ -30,6 +31,8 @@ class FireModel extends Model {
     // Forest Fire Danger Index FFDI
     this.FINEFUEL_CURRENT_PCT = 6.7 // % . the spreadsheet has values for am pm and more.
     // Finally load elevation
+    this.hour = 15
+    this.month = 1
     return this.loadElevations() // this returns a promise. setup will not run until this completes
   }
 
@@ -38,7 +41,6 @@ class FireModel extends Model {
     this.anim.setRate(60)
     this.elevColorMap = ColorMap.gradientColorMap(1000, ColorMap.jetColors)
     this.modelTime = 0 // seconds
-    this.modelTimeStep = 60
     this.squareMburned = 0
     this.stats = []
     this.patches.importDataSet(this.elevation, 'elev', true)
@@ -59,12 +61,26 @@ class FireModel extends Model {
   }
 
   computeDerivedConstants () {
+    if ((this.month > 10 || this.month < 3) && (this.hour >= 13 && this.hour <= 17)) {
+      const a = Math.pow(this.RELATIVE_HUMIDITY, 1.5002 * Math.pow(0.0196, 1 / this.AIR_TEMP_c))
+      const b = 196.1 * Math.pow(this.AIR_TEMP_c, 0.3204)
+      const fineFuelCurrentSummerPM = ((1.6779 * Math.pow(this.AIR_TEMP_c, 0.09655)) * b + (18.944 * Math.pow(317433, 1 / this.AIR_TEMP_c)) * a) / (b + a)
+      this.FINEFUEL_CURRENT_PCT = fineFuelCurrentSummerPM
+    } else {
+      if (this.hour < 6 || this.hour > 20) {
+        const fineFuelCurrentNight = (2.943 - 0.0415 * this.AIR_TEMP_c) + (0.196 * Math.pow(1.2256, 1 / this.AIR_TEMP_c)) * this.RELATIVE_HUMIDITY
+        this.FINEFUEL_CURRENT_PCT = fineFuelCurrentNight
+      } else {
+        const a = Math.pow(this.RELATIVE_HUMIDITY, 0.9367 + 0.00487 * this.AIR_TEMP_c)
+        const b = 663.6 + 17.8 * this.AIR_TEMP_c
+        const fineFuelCurrentDay = ((2.143 + 0.0322 * this.AIR_TEMP_c - 0.0006135 * Math.pow(this.AIR_TEMP_c, 2)) * b + ((193 - 1.366 * this.AIR_TEMP_c) * a)) / (b + a)
+        this.FINEFUEL_CURRENT_PCT = fineFuelCurrentDay
+      }
+    }
     this.DROUGHT_FACTOR = (0.191 * (this.KDBI + 104) * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5)) / (3.52 * Math.pow(this.DAYS_SINCE_LAST_RAIN + 1, 1.5) + this.RAINFALLmm - 1)
     const windAdjusted = (90 - this.WIND_DIRECTION_DEG)
     this.WIND_HEAD_DIR = (windAdjusted + 180) % 360
-    this.WIND_LFLANK_DIR = (windAdjusted + 90) % 360
-    this.WIND_RFLANK_DIR = (windAdjusted + 270) % 360
-    this.FFDI = 34.81 * Math.exp(0.987 * Math.log(this.DROUGHT_FACTOR)) * Math.pow(this.FINEFUEL_CURRENT_PCT, -2.1) * Math.exp(0.0234 * this.FINEFUEL_CURRENT_PCT)
+    this.FFDI = 34.81 * Math.exp(0.987 * Math.log(this.DROUGHT_FACTOR)) * Math.pow(this.FINEFUEL_CURRENT_PCT, -2.1) * Math.exp(0.0234 * this.WIND_SPEED_10M)
   }
 
   loadElevations (north = -36.5442637, south = -36.5931277, east = 147.6396473, west = 147.7504703) {
@@ -117,6 +133,10 @@ class FireModel extends Model {
       }
     }
     if (burnedCount > this.world.numX * this.world.numY - 100) {
+      model.stop()
+    }
+    // for debugging
+    if (model.anim.ticks > 600) {
       model.stop()
     }
     this.modelTime += this.modelTimeStep
@@ -184,16 +204,17 @@ class FireModel extends Model {
   flankContributions (fromP, toP) {
     const deg2rad = Math.PI / 180
     const rad2deg = 180 / Math.PI
-    const headFlankVec = [Math.cos(deg2rad * this.WIND_HEAD_DIR), Math.sin(deg2rad * this.WIND_HEAD_DIR)]
+    const headWindVec = [Math.cos(deg2rad * this.WIND_HEAD_DIR), Math.sin(deg2rad * this.WIND_HEAD_DIR)]
     const dxdyVec = [toP.x - fromP.x, toP.y - fromP.y]
-    const cosTheta = this.dot(headFlankVec, dxdyVec) / (this.norm2(headFlankVec) * this.norm2(dxdyVec))
-    const angle = Math.acos(cosTheta) * rad2deg // this angle wil always be positive.
-    let ratioHead = 1 - (angle / 90)
-    let ratioFlank = angle / 90
+    const cosTheta = this.dot(headWindVec, dxdyVec) / (this.norm2(headWindVec) * this.norm2(dxdyVec))
+    const angleWHD = Math.acos(cosTheta) // this angleWHD wil always be positive.
+    let ratioFlank = Math.pow(Math.sin(angleWHD), 1/8)
+    // let ratioFlank = 1 - Math.abs((2*angleWHD)/Math.PI - 1)
+    // let ratioFlank = Math.sin(angleWHD)
+    let ratioHead = 1 - ratioFlank
     let ratioBack = 0
-    if (angle > 90) {
-      ratioBack = (angle - 90) / 90
-      ratioFlank = 1 - ratioBack
+    if (angleWHD * rad2deg >= 90) {
+      ratioBack = 1 - ratioFlank
       ratioHead = 0
     }
     const result = {
@@ -407,12 +428,13 @@ class FireModel extends Model {
     weather.add(model, 'WIND_SPEED_10M', 0, 120) // km/hour
     weather.add(model, 'AIR_TEMP_c', 0, 40) // celsius
     weather.add(model, 'RELATIVE_HUMIDITY', 0, 100) // %
+    weather.add(model, 'month', 1, 12)
+    weather.add(model, 'hour', 0, 23)
     var fuel = gewy.addFolder('Fuel')
     fuel.add(model, 'KDBI', 10, 200)
     fuel.add(model, 'RAINFALLmm', 0, 30)
     fuel.add(model, 'DAYS_SINCE_LAST_RAIN', 1, 90)
     fuel.add(model, 'FUEL_LOAD_tpha', 1, 70) // t/ha
-    fuel.add(model, 'FINEFUEL_CURRENT_PCT', 0.1, 100)
     gewy.add(model, 'modelTimeStep', 1, 240) // km/hour
     //
     // buttons
