@@ -11,13 +11,12 @@
   },
   "threelibs": "controls/OrbitControls controls/FlyControls controls/FirstPersonControls",
   "scripts": {
-    "clean": "shx rm -rf lib test/lib docs etc",
-    "help": "babel -h; docco -h; npm -h; git --help",
-    "zip": "rm asx.zip; zip -r asx.zip etc lib test/lib test.html",
-    "start": "node index.js",
+    "clean": "rm -rf lib test/lib docs etc",
+    "zip": "rm asx.zip; zip -r asx.zip etc lib test/lib test.html scripts",
+    "start": "node scripts/server.js",
     "build": "npm run build-src && npm run build-docs && npm run build-deps",
-    "build-deps": "mkdir -p etc/threelibssrc etc/threelibs; cd node_modules; cp lzma/src/lzma.js lzma/src/lzma_worker.js pako/dist/pako.min.js systemjs/dist/system.js three/build/* ../etc; cp webgl-debug/index.js ../etc/webgl-debug.js; npm run build-three",
-    "build-three": "./build3modules; babel --plugins transform-es2015-modules-systemjs etc/threelibssrc -d etc/threelibs",
+    "build-deps": "mkdir -p etc/threelibs; cp node_modules/lzma/src/lzma.js node_modules/lzma/src/lzma_worker.js node_modules/pako/dist/pako.min.js node_modules/systemjs/dist/system.js node_modules/three/build/three.js node_modules/three/build/three.min.js etc; cp node_modules/webgl-debug/index.js etc/webgl-debug.js; npm run build-three",
+    "build-three": "node scripts/build3modules.js; babel --plugins transform-es2015-modules-systemjs etc/threelibs -d etc/threelibs",
     "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
     "build-test": "mkdir test/lib; babel --plugins transform-es2015-modules-systemjs test/apps -d test/lib",
     "build-docs": "mkdir docs; docco -o docs/ src/*.js",
@@ -28,7 +27,7 @@
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
-    "make-page": "git merge master && npm run build-src && git add --all && git add -f docs lib test/lib etc && git commit -m 'master merge'",
+    "make-page": "git merge master && npm run build && git add --all && git add -f docs lib test/lib etc && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master"
   },
   "dependencies": {
