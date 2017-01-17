@@ -10,6 +10,7 @@
     "url": "git://github.com/backspaces/asx.git"
   },
   "threelibs": "controls/OrbitControls controls/FlyControls controls/FirstPersonControls",
+  "nowalias": "https://asx.now.sh",
   "scripts": {
     "clean": "rm -rf lib test/lib docs etc",
     "zip": "rm asx.zip; zip -r asx.zip etc lib test/lib test.html scripts",
@@ -22,6 +23,7 @@
     "build-docs": "mkdir docs; docco -o docs/ src/*.js",
     "build-src": "npm run build-as && npm run build-test",
     "watch": "npm run build-as -- --watch & npm run build-test -- --watch",
+    "now-alias": "node scripts/nowalias.js",
     "Comment": "Change vx.x.x, then run git-tag. Update version: above too",
     "git-tag": "git tag -a 'v2.0.0'",
     "git-diff": "git diff --cached",
