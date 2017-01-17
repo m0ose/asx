@@ -35,7 +35,7 @@ function initThree () {
   camera.position.y = -worldWidth
   camera.position.z = worldWidth
   camera.lookAt(scene.position)
-  camera.up.set( 0, 0, 1 )
+  camera.up.set(0, 0, 1)
   // camera.up = [0,0,1] // As of r.50, the camera no longer needs to be added to the scene
   const controls = new OrbitControls(camera, renderer.domElement)
 
