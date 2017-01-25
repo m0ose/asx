@@ -289,11 +289,12 @@ const util = {
 // ### Arrays, Objects and Iteration
 
   // Repeat function f(i) n times, n in 0, i-1.
-  repeat (n, f, o) { for (let i = 0; i < n; i++) f(i, o); return o },
+  repeat (n, f, o = []) { for (let i = 0; i < n; i++) f(i, o); return o },
   // Repeat function n/step times, incrementing i by step each step.
   step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },
   // Return range [0, length-1]. Note: 6x faster than Array.from!
-  range (length) { return this.repeat(length, (i, a) => { a[i] = i }, []) },
+  range (length) { return this.repeat(length, (i, a) => { a[i] = i }) },
+  // range (length) { return this.repeat(length, (i, a) => { a[i] = i }, []) },
 
   // Return key for (first) given value in object, null if not found.
   keyForValue (obj, value) {

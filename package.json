@@ -10,34 +10,36 @@
     "url": "git://github.com/backspaces/asx.git"
   },
   "threelibs": "controls/OrbitControls controls/FlyControls controls/FirstPersonControls",
-  "nowalias": "https://asx.now.sh",
+  "now": {
+    "alias": "https://asx.now.sh"
+  },
   "scripts": {
     "clean": "rm -rf lib test/lib docs etc",
     "zip": "rm asx.zip; zip -r asx.zip etc lib test/lib test.html scripts",
     "start": "node scripts/server.js",
     "build": "npm run build-src && npm run build-docs && npm run build-deps",
-    "build-deps": "mkdir -p etc/threelibs; cp node_modules/lzma/src/lzma.js node_modules/lzma/src/lzma_worker.js node_modules/pako/dist/pako.min.js node_modules/systemjs/dist/system.js node_modules/three/build/three.js node_modules/three/build/three.min.js etc; cp node_modules/webgl-debug/index.js etc/webgl-debug.js; npm run build-three",
+    "build-deps": "mkdir -p etc/threelibs; cp node_modules/lzma/src/lzma.js node_modules/lzma/src/lzma_worker.js node_modules/pako/dist/pako.min.js node_modules/systemjs/dist/system.js node_modules/three/build/three.js node_modules/three/build/three.min.js node_modules/three/examples/js/libs/stats.min.js node_modules/three/examples/js/libs/dat.gui.min.js etc; cp node_modules/webgl-debug/index.js etc/webgl-debug.js; npm run build-three",
     "build-three": "node scripts/build3modules.js; babel --plugins transform-es2015-modules-systemjs etc/threelibs -d etc/threelibs",
     "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
     "build-test": "mkdir test/lib; babel --plugins transform-es2015-modules-systemjs test/apps -d test/lib",
     "build-docs": "mkdir docs; docco -o docs/ src/*.js",
     "build-src": "npm run build-as && npm run build-test",
     "watch": "npm run build-as -- --watch & npm run build-test -- --watch",
-    "now-alias": "node scripts/nowalias.js",
     "Comment": "Change vx.x.x, then run git-tag. Update version: above too",
     "git-tag": "git tag -a 'v2.0.0'",
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
     "make-page": "git merge master && npm run build && git add --all && git add -f docs lib test/lib etc && git commit -m 'master merge'",
-    "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master"
+    "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
+    "now": "npm run clean && npm run build && now && now alias"
   },
   "dependencies": {
     "express": "^4.14.0",
     "lzma": "^2.3.0",
     "pako": "^1.0.0",
     "systemjs": "^0.19.23",
-    "three": "^0.82.1",
+    "three": "*",
     "webgl-debug": "^1.0.2"
   },
   "devDependencies": {
