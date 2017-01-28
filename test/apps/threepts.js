@@ -19,7 +19,6 @@ const worldRadius = worldWidth / 2
 const patchSize = 10
 const turtleSize = 2
 const turtleZ = patchSize / 4
-
 // const patches = worldWidth / patchSize
 
 function initThree () {
@@ -59,45 +58,27 @@ util.toWindow({scene, camera, renderer, controls, stats})
 
 // Models/Turtles
 
-function createTurtleGeometry (size = 1) {
-  const radius = size / 2
-  const turtleGeometry = new THREE.Geometry()
-  turtleGeometry.vertices = [
-    new THREE.Vector3(radius, 0, 0),
-    new THREE.Vector3(-radius, radius * 0.8, 0),
-    new THREE.Vector3(-radius * 0.4, 0, 0),
-    new THREE.Vector3(-radius, -radius * 0.8, 0)
-  ]
-  turtleGeometry.faces = [
-    new THREE.Face3(0, 1, 2),
-    new THREE.Face3(0, 2, 3)
-  ]
-  turtleGeometry.computeFaceNormals()
-  return turtleGeometry
-}
-const turtleGeometry = new // 1 fps faster
-  THREE.BufferGeometry().fromGeometry(createTurtleGeometry(turtleSize))
-// const turtleGeometry = createTurtleGeometry(turtleSize)
-// 1-2fps cost for double sided
-const turtleMaterial =
-  // new THREE.MeshBasicMaterial({color: 'red'})
-  new THREE.MeshBasicMaterial({color: 'red', side: THREE.DoubleSide})
-function createTurtleMesh () {
-  const turtle = new THREE.Mesh(turtleGeometry, turtleMaterial)
-  turtle.position.x = 0
-  turtle.position.y = 0
-  turtle.position.z = turtleZ
-  turtle.rotation.z = util.randomFloat(2 * Math.PI) // THREE.Math.degToRad(45)
-  return turtle
-}
+let turtleGeometry = new THREE.Geometry()
+// const turtles = turtleGeometry.vertices
+const turtleMaterial = // side: THREE.DoubleSide .. not needed, billboard
+  new THREE.PointsMaterial({size: turtleSize, color: 'red'})
+let turtleMesh = new THREE.Points(turtleGeometry, turtleMaterial)
+scene.add(turtleMesh)
 function createTurtles (num) {
-  return util.repeat(num, (i, a) => {
-    a[i] = createTurtleMesh()
-    scene.add(a[i])
-  })
+  // num = num - turtles.length
+  // if (num < 0)
+  //   turtleGeometry.vertices.length += num
+  // else
+    util.repeat(num, () => {
+      const vec = new THREE.Vector3(0, 0, turtleZ)
+      vec.theta = 2 * Math.PI * Math.random()
+      turtleGeometry.vertices.push(vec)
+      // turtleGeometry.vertices.push(vec)
+    })
 }
-let turtles = createTurtles(UI.KTurtles * 1e3)
-util.toWindow({turtleGeometry, turtleMaterial, turtles})
+// let turtles = createTurtles(UI.KTurtles * 1e3)
+createTurtles(UI.KTurtles * 1e3)
+util.toWindow({turtleGeometry, turtleMaterial})
 
 // Animator & Events
 window.addEventListener('resize', () => {
@@ -108,21 +89,22 @@ window.addEventListener('resize', () => {
 
 const speed = patchSize / 10
 function step () {
-  util.forEach(turtles, (turtle) => {
+  util.forEach(turtleGeometry.vertices, (turtle) => {
     const wiggle = Math.random() > 0.9 ? util.randomFloat2(-0.1, 0.1) : 0
-    const theta = turtle.rotation.z + wiggle
+    const theta = turtle.theta + wiggle
     let dx = speed * Math.cos(theta) // Cody: 1-2fps better w/o destructuring
     let dy = speed * Math.sin(theta)
-    const x0 = turtle.position.x // no obvious advantage over destructuring
-    const y0 = turtle.position.y
+    const x0 = turtle.x // no obvious advantage over destructuring
+    const y0 = turtle.y
     const x = THREE.Math.clamp(x0 + dx, -worldRadius, worldRadius)
     const y = THREE.Math.clamp(y0 + dy, -worldRadius, worldRadius)
     if (Math.abs(x) === worldRadius) dx = -dx
     if (Math.abs(y) === worldRadius) dy = -dy
-    turtle.position.x = x
-    turtle.position.y = y
-    turtle.rotation.z = Math.atan2(dy, dx)
+    turtle.x = x + dx
+    turtle.y = y + dy
+    turtle.theta = Math.atan2(dy, dx)
   })
+  turtleGeometry.verticesNeedUpdate = true
 }
 
 function animate () {
@@ -137,9 +119,11 @@ console.log('render info', renderer.info.render)
 
 const gui = new dat.GUI()
 function resetTurtles () {
-  turtles.forEach((turtle) => scene.remove(turtle))
-  turtles = createTurtles(UI.KTurtles * 1e3)
-  util.toWindow({turtles})
+  scene.remove(turtleMesh)
+  turtleGeometry = new THREE.Geometry()
+  turtleMesh = new THREE.Points(turtleGeometry, turtleMaterial)
+  createTurtles(UI.KTurtles * 1e3)
+  scene.add(turtleMesh)
 }
-gui.add(UI, 'KTurtles', 1, 50).step(1).onFinishChange(resetTurtles)
+gui.add(UI, 'KTurtles', 1, 100).step(1).onFinishChange(resetTurtles)
 util.toWindow({UI, gui})
