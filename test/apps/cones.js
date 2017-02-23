@@ -22,8 +22,6 @@ class ConeModel extends Model {
     this.backgroundColor = Color.toTypedColor('lightgray')
     this.turtleColor = Color.toTypedColor('black')
 
-    this.anim.setRate(60)
-
     this.turtles = this.patches.nOf(population)
     this.coneColors =
       util.repeat(population, (i, a) => { a[i] = cmap.randomColor() }, [])
@@ -54,12 +52,11 @@ class ConeModel extends Model {
     })
   }
 }
-// const [div, size, max, min] = ['layers', 2, 100, -100]
-const [div, size, max, min] = ['layers', 4, 50, -50]
-const opts =
-  {patchSize: size, minX: min, maxX: max, minY: min, maxY: max}
-const model = new ConeModel(div, opts).start()
-// const model = new ConeModel('layers').start()
+// const [div, size, max, min] = ['model', 2, 100, -100]
+const [size, max, min] = [4, 50, -50]
+const opts = {patchSize: size, minX: min, maxX: max, minY: min, maxY: max}
+const model = new ConeModel(document.body, opts).start()
+// const model = new ConeModel('model').start()
 
 // debugging
 const world = model.world

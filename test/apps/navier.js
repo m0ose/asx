@@ -37,7 +37,7 @@ class PatchModel extends Model {
     this.makeFakeBoundaries()
     //
     // for testing mouse
-    var la = document.getElementById('layers')
+    var la = document.getElementById('model')
     la.getBoundingClientRect()
     la.onclick = (ev) => {
       var bnd = la.getBoundingClientRect(la)
@@ -338,10 +338,10 @@ class PatchModel extends Model {
 
 }
 
-// const [div, size, max, min] = ['layers', 4, 50, -50]
+// const [div, size, max, min] = ['model', 4, 50, -50]
 const opts =
   {patchSize: 4, minX: -64, maxX: 64, minY: -64, maxY: 64}
-const model = new PatchModel('layers', opts)
+const model = new PatchModel(document.body, opts)
 model.start()
 
 // debugging

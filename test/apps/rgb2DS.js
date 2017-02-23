@@ -25,7 +25,7 @@ function testRGB () {
   })
 }
 
-const model = new Model('layers', {
+const model = new Model(document.body, {
   patchSize: 1,
   minX: -100,
   maxX: 355,

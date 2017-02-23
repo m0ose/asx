@@ -11,7 +11,7 @@ console.log(Object.keys(modules).join(', '))
 class FireModel extends Model {
   setup () {
     this.patchBreeds('fires embers')
-    this.anim.setRate(60)
+    // this.anim.setRate(60)
 
     this.fireColorMap = ColorMap.gradientColorMap(6, ['red', [128, 0, 0]])
     this.treeColor = Color.newTypedColor(0, 255, 0)
@@ -38,7 +38,8 @@ class FireModel extends Model {
       console.log('Stopping:', this.anim.toString())
       const percentBurned = this.burnedTrees / this.initialTrees * 100
       console.log('Percent burned', percentBurned.toFixed(2))
-      this.stop()
+      // this.stop()
+      return // keep three control running
     }
 
     for (const p of this.fires) {
@@ -72,8 +73,12 @@ class FireModel extends Model {
     }
   }
 }
-// const [div, size, max, min] = ['layers', 4, 50, -50]
-const model = new FireModel('layers', {
+
+// Test for container rather than entire window
+// const div = document.getElementById('model')
+// div.style = 'width:75%; height:500'
+const div = document.body
+const model = new FireModel(div, {
   patchSize: 2,
   minX: -125,
   maxX: 125,
@@ -85,4 +90,4 @@ const model = new FireModel('layers', {
 const world = model.world
 const patches = model.patches
 util.toWindow({ model, world, patches, p: patches.oneOf() })
-if (world.patchSize !== 1) util.addToDom(patches.pixels.ctx.canvas)
+// util.addToDom(patches.pixels.ctx.canvas)

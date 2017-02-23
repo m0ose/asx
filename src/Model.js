@@ -1,6 +1,10 @@
 import Patches from './Patches.js'
 import patchProto from './Patch.js'
 import Animator from './Animator.js'
+import * as THREE from 'etc/three.min.js'
+import OrbitControls from 'etc/threelibs/OrbitControls.js'
+import Stats from 'etc/stats.min.js'
+// import dat from 'etc/dat.gui.min.js'
 import util from './util.js'
 
 // Class Model is the primary interface for modelers, integrating
@@ -16,39 +20,32 @@ class Model {
       maxY: 16
     }
   }
-  static defaultContexts () {
+  static defaultThree () {
     return {
-      patches: { z: 10, ctx: '2d' },
-      drawing: { z: 20, ctx: '2d' },
-      links: { z: 30, ctx: '2d' },
-      turtles: { z: 40, ctx: '2d' }
-    }
-  }
-  static defaultFontParams () {
-    return {
-      font: '10px sans-serif',
-      align: 'center',
-      baseline: 'middle'
+      orthoView: false, // 'Perspective', 'Orthographic'
+      clearColor: 0x000000,
+      useAxes: true,
+      useGrid: true,
+      useStats: true,
+      useControls: true
     }
   }
 
   // The Model constructor takes a DOM div and overrides for defaults
-  constructor (div, worldOptions = {}, contextOptions = {}) {
+  constructor (div = document.body, worldOptions = {}, threeOptions = {}) {
+    // Store and initialize the model's div and contexts.
+    this.div = util.isString(div) ? document.getElementById(div) : div
+
     // Create this model's `world` object
     this.world = Model.defaultWorld()
     Object.assign(this.world, worldOptions)
     this.setWorld()
 
-    // Store and initialize the model's div and contexts.
-    this.div = div
-    this.setDiv()
-    if (this.div) { // otherwise 'headless'
-      if (!this.contexts) {
-        const contexts = Model.defaultContexts()
-        Object.assign(contexts, contextOptions)
-        this.initContexts(contexts)
-      }
-    }
+    // Initialize Three.js
+    this.three = Model.defaultThree()
+    Object.assign(this.three, threeOptions)
+    this.initThree()
+    this.initThreeHelpers()
 
     // Initialize the model by calling `startup` and `reset`.
     // If `startup` returns a promise, or generator/iterator, manage it.
@@ -59,83 +56,107 @@ class Model {
   }
   // (Re)initialize the model.
   reset (restart = false) {
-    if (this.anim) this.anim.stop()
+    if (this.anim) this.stop()
     this.setWorld()
-    this.setDiv()
-    this.setContexts()
-
     this.anim = new Animator(this)
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true
     this.patches = new Patches(this, patchProto, 'patches')
-
+    this.initPatchsMesh(this.patches.pixels.ctx.canvas)
+    // REMIND: temp
+    // this.div.appendChild(this.patches.pixels.ctx.canvas)
+    // document.body.appendChild(this.patches.pixels.ctx.canvas)
     this.setup()
     if (restart) this.start()
   }
+  initThree () {
+    const {clientWidth, clientHeight} = this.div
+    const {orthoView, clearColor} = this.three
+    const {width, height} = this.world
+    const [halfW, halfH] = [width / 2, height / 2]
 
+    const scene = new THREE.Scene()
+    const camera = orthoView
+      ? new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 1, 1000)
+      : new THREE.PerspectiveCamera(45, clientWidth / clientHeight, 1, 10000)
+
+    if (orthoView)
+      camera.position.set(0, 0, 100 * width)
+    else
+      camera.position.set(width, -width, width)
+    camera.up.set(0, 0, 1)
+
+    const renderer = new THREE.WebGLRenderer()
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(clientWidth, clientHeight)
+    renderer.setClearColor(clearColor)
+    this.div.appendChild(renderer.domElement)
+
+    window.addEventListener('resize', () => {
+      const {clientWidth, clientHeight} = this.div
+      camera.aspect = clientWidth / clientHeight
+      camera.updateProjectionMatrix()
+      renderer.setSize(clientWidth, clientHeight)
+    })
+
+    Object.assign(this.three, {scene, camera, renderer})
+  }
+  initThreeHelpers () {
+    const {scene, renderer, camera} = this.three
+    const {useAxes, useGrid, useControls, useStats} = this.three
+    const {width, patchSize} = this.world
+    const helpers = {}
+
+    if (useAxes) {
+      helpers.axes = new THREE.AxisHelper(1.5 * width / 2)
+      scene.add(helpers.axes)
+    }
+    if (useGrid) {
+      // helpers.grid = new THREE.GridHelper(width, width / patchSize)
+      helpers.grid = new THREE.GridHelper(1.25 * width, 10)
+      helpers.grid.rotation.x = THREE.Math.degToRad(90)
+      scene.add(helpers.grid)
+    }
+    if (useStats) {
+      helpers.stats = new Stats()
+      document.body.appendChild(helpers.stats.dom)
+    }
+    if (useControls) {
+      helpers.controls = new OrbitControls(camera, renderer.domElement)
+    }
+
+    Object.assign(this.three, helpers)
+    // this.three.helpers = helpers
+    // return {axes, grid, stats, controls}
+  }
   // Add additional world variables derived from constructor's `worldOptions`.
   setWorld () {
     const world = this.world
+    // REMIND: change to xPatches, yPatches?
     world.numX = world.maxX - world.minX + 1
     world.numY = world.maxY - world.minY + 1
-    world.pxWidth = world.numX * world.patchSize
-    world.pxHeight = world.numY * world.patchSize
+    world.width = world.numX * world.patchSize
+    world.height = world.numY * world.patchSize
     world.minXcor = world.minX - 0.5
     world.maxXcor = world.maxX + 0.5
     world.minYcor = world.minY - 0.5
     world.maxYcor = world.maxY + 0.5
   }
-  // Adjust the modle's `div` for adding layers of canvases.
-  setDiv () {
-    let div = this.div
-    div = util.isString(div) ? document.getElementById(div) : div
-    if (div) { // can be null for headless
-      // Note: el.setAttribute 'style' erases existing style,
-      // el.style.xx does not
-      div.style.position = 'relative'
-      div.style.width = this.world.pxWidth
-      div.style.height = this.world.pxHeight
-    }
-    this.div = div
-  }
+  initPatchsMesh (canvas) {
+    const {width, height, numX, numY} = this.world
+    const texture = new THREE.Texture(canvas)
+    // texture.generateMipmaps = false
+    texture.minFilter = THREE.NearestFilter
+    texture.magFilter = THREE.NearestFilter
+    // texture.premultiplyAlpha = false
 
-  // Initialize layers of canvas contexts within `div`.
-  initContexts (contexts) {
-    util.forEach(contexts, (val, key) => {
-      if (val === null) return
-      const ctx = util.createCtx(1, 1, val.ctx)
-      Object.assign(ctx.canvas.style, {
-        position: 'absolute', top: 0, left: 0, zIndex: val.z
-      })
-      this.div.appendChild(ctx.canvas)
-      contexts[key] = ctx
+    const geometry = new THREE.PlaneGeometry(width, height, numX, numY)
+    const material = new THREE.MeshBasicMaterial({
+      map: texture, shading: THREE.FlatShading
+      //, side: THREE.DoubleSide//, wireframe: true
     })
-    this.contexts = contexts
-  }
-  // Adjust contexts to current width/height, setting their transform.
-  // Set patches anti-aliasing off so as to have "crisp" pixels.
-  setContexts () {
-    const { pxWidth: width, pxHeight: height } = this.world
-    util.forEach(this.contexts, (ctx, key) => {
-      if (ctx === null) return
-      Object.assign(ctx.canvas, { width, height })
-      Object.assign(ctx.canvas.style, { width, height })
-      this.setFont(key)
-      this.setCtxTransform(ctx)
-      if (key === 'patches') util.setCtxSmoothing(ctx, false)
-    })
-  }
-  // Set the context transforms to be Patch coordinates.
-  setCtxTransform (ctx) {
-    ctx.save()
-    ctx.scale(this.world.patchSize, -this.world.patchSize)
-    ctx.translate(-this.world.minXcor, -this.world.maxYcor)
-  }
-  // Set the text params for a given named agentset.
-  // See [reference](http://goo.gl/AvEAq)
-  setFont (name, font = '10px sans-serif', align = 'center', baseline = 'middle') {
-    const ctx = this.contexts[name]
-    if (!ctx) util.error(`Model.setFont: no context named "${name}"`)
-    util.setTextParams(ctx, font, align, baseline)
+    const mesh = this.three.patchesMesh = new THREE.Mesh(geometry, material)
+    // mesh.rotation.x = -Math.PI / 2
+    this.three.scene.add(mesh)
   }
 
 // ### User Model Creation
@@ -159,27 +180,27 @@ class Model {
   // Animate once by `step(); draw()`.
   once () { this.stop(); this.anim.once() } // stop is no-op if already stopped
 
-  // Change the patch size, does not require a restart or stop/start
-  setPatchSize (size) {
-    this.world.patchSize = size
-    this.setWorld()
-    this.setDiv()
-    this.setContexts()
-    this.patches.setPixels()
-  }
   // Change the world parameters. Requires a reset.
   // Resets Patches, Turtles, Links & reinitializes canvases.
   // If restart argument is true (default), will restart after resetting.
-  resizeWorld (worldOptions, restart = true) {
-    Object.assign(this.world, worldOptions)
-    this.setWorld(this.world)
-    this.reset(restart)
-  }
+  // resizeWorld (worldOptions, restart = true) {
+  //   Object.assign(this.world, worldOptions)
+  //   this.setWorld(this.world)
+  //   this.reset(restart)
+  // }
 
   draw (force = this.anim.stopped || this.anim.draws === 1) {
+    const {scene, camera, renderer, patchesMesh} = this.three
     if (this.div) {
-      if (force || this.refreshPatches) this.patches.draw(this.contexts.patches)
+      // REMIND: use Three
+      if (force || this.refreshPatches) {
+        this.patches.getPixels()
+        patchesMesh.material.map.needsUpdate = true
+      }
+
+      renderer.render(scene, camera)
     }
+    if (this.three.stats) this.three.stats.update()
   }
 
   // Breeds: create subarrays of Patches, Agentss, Links

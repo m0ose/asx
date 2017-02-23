@@ -30,7 +30,7 @@ class MouseTest extends Model {
     }
   }
 }
-const model = new MouseTest('layers', {
+const model = new MouseTest(document.body, {
   patchSize: 2,
   minX: -100,
   maxX: 114,

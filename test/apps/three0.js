@@ -1,26 +1,18 @@
-// A naive implementation of turtles, one mesh per turtle
+// A naive implementation of turtles, one mesh per turtle, slow.
 import util from 'lib/util.js'
-import * as THREE from 'etc/three.min.js'
+import * as THREE from 'etc/three.js'
 import OrbitControls from 'etc/threelibs/OrbitControls.js'
 import Stats from 'etc/stats.min.js'
 import dat from 'etc/dat.gui.min.js'
 
-// const modules = { Color, ColorMap, Model, util, THREE }
-const modules = { THREE, OrbitControls, Stats, dat, util }
-util.toWindow(modules)
-console.log(Object.keys(modules).join(', '))
-
-// const numTurtles = 5e3 // N k turtles
 const UI = {
   KTurtles: 10
 }
 const worldWidth = 200 // -100 -> 100
 const worldRadius = worldWidth / 2
 const patchSize = 10
-const turtleSize = 2
+const turtleRadius = 1 // -1 -> 1
 const turtleZ = patchSize / 4
-
-// const patches = worldWidth / patchSize
 
 function initThree () {
   const renderer = new THREE.WebGLRenderer()
@@ -37,56 +29,46 @@ function initThree () {
   scene.add(grid)
 
   const camera = new THREE.PerspectiveCamera(
-    45, window.innerWidth / window.innerHeight, 0.1, 10000
-  )
-  camera.position.x = worldWidth
-  camera.position.y = -worldWidth
-  camera.position.z = worldWidth
-  camera.lookAt(scene.position)
+    45, window.innerWidth / window.innerHeight, 0.1, 10000)
+  camera.position.set(worldWidth, -worldWidth, worldWidth)
   camera.up.set(0, 0, 1)
-  // camera.up = [0,0,1] // As of r.50, the camera no longer needs to be added to the scene
-  const controls = new OrbitControls(camera, renderer.domElement)
+  camera.lookAt(scene.position)
 
+  const controls = new OrbitControls(camera, renderer.domElement)
   const stats = new Stats()
   document.body.appendChild(stats.dom)
 
-  util.toWindow({grid, axes})
   return {scene, camera, renderer, controls, stats}
 }
 
-const {scene, camera, renderer, controls, stats} = initThree()
-util.toWindow({scene, camera, renderer, controls, stats})
+const {scene, camera, renderer, stats} = initThree() // controls not needed
 
 // Models/Turtles
 
-function createTurtleGeometry (size = 1) {
-  const radius = size / 2
+function createTurtleGeometry (radius = 1) {
   const turtleGeometry = new THREE.Geometry()
   turtleGeometry.vertices = [
     new THREE.Vector3(radius, 0, 0),
     new THREE.Vector3(-radius, radius * 0.8, 0),
-    new THREE.Vector3(-radius * 0.4, 0, 0),
+    new THREE.Vector3(-radius * 0.4, 0, 0), // remove for just triangle
     new THREE.Vector3(-radius, -radius * 0.8, 0)
   ]
   turtleGeometry.faces = [
     new THREE.Face3(0, 1, 2),
-    new THREE.Face3(0, 2, 3)
+    new THREE.Face3(0, 2, 3) // remove for just triangle
   ]
   turtleGeometry.computeFaceNormals()
   return turtleGeometry
 }
 const turtleGeometry = new // 1 fps faster
-  THREE.BufferGeometry().fromGeometry(createTurtleGeometry(turtleSize))
-// const turtleGeometry = createTurtleGeometry(turtleSize)
+  THREE.BufferGeometry().fromGeometry(createTurtleGeometry(turtleRadius))
+// const turtleGeometry = createTurtleGeometry(turtleRadius)
 // 1-2fps cost for double sided
 const turtleMaterial =
-  // new THREE.MeshBasicMaterial({color: 'red'})
   new THREE.MeshBasicMaterial({color: 'red', side: THREE.DoubleSide})
 function createTurtleMesh () {
   const turtle = new THREE.Mesh(turtleGeometry, turtleMaterial)
-  turtle.position.x = 0
-  turtle.position.y = 0
-  turtle.position.z = turtleZ
+  turtle.position.set(0, 0, turtleZ)
   turtle.rotation.z = util.randomFloat(2 * Math.PI) // THREE.Math.degToRad(45)
   return turtle
 }
@@ -97,7 +79,6 @@ function createTurtles (num) {
   })
 }
 let turtles = createTurtles(UI.KTurtles * 1e3)
-util.toWindow({turtleGeometry, turtleMaterial, turtles})
 
 // Animator & Events
 window.addEventListener('resize', () => {
@@ -130,10 +111,10 @@ function animate () {
   step()
   renderer.render(scene, camera)
   stats.update()
-  // controls.update()  // have the mouse update the view
+  // controls.update()  // have the mouse update the view -- not needed?
 }
 animate()
-console.log('render info', renderer.info.render)
+console.log('renderer.info.render', renderer.info.render)
 
 const gui = new dat.GUI()
 function resetTurtles () {
@@ -141,5 +122,7 @@ function resetTurtles () {
   turtles = createTurtles(UI.KTurtles * 1e3)
   util.toWindow({turtles})
 }
-gui.add(UI, 'KTurtles', 1, 50).step(1).onFinishChange(resetTurtles)
-util.toWindow({UI, gui})
+gui.add(UI, 'KTurtles', 1, 100).step(1).onFinishChange(resetTurtles)
+
+function stop () { debugger } // eslint-disable-line
+window.stop = stop

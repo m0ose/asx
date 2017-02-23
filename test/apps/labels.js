@@ -18,7 +18,7 @@ class LabelModel extends Model {
     this.patches.setDefault('labelColor', Color.newTypedColor(256, 0, 0))
     this.setFont('patches', 'italic bold 20px sans-serif')
 
-    this.anim.setRate(60)
+    // this.anim.setRate(60)
 
     for (const p of this.patches)
       p.setColor(this.cmap.randomColor())
@@ -45,8 +45,8 @@ class LabelModel extends Model {
     }
   }
 }
-// const [div, size, max, min] = ['layers', 4, 50, -50]
-const [div, size, min, max] = ['layers', 5, 0, 99]
+// const [div, size, max, min] = ['model', 4, 50, -50]
+const [div, size, min, max] = ['model', 5, 0, 99]
 const opts = {patchSize: size, minX: 2 * min, maxX: 2 * max, minY: min, maxY: max}
 const model = new LabelModel(div, opts).start()
 const world = model.world

@@ -7,7 +7,8 @@ import DataSet from './DataSet.js'
 class Patches extends AgentSet {
   constructor (model, agentProto, name, baseSet = null) {
     super(model, agentProto, name, baseSet)
-    // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
+    // Skip if an basic Array ctor or a breedSet (don't rebuild patches!).
+    // See AgentSet comments.
     if (typeof model === 'number' || this.isBreedSet()) return
     this.world = model.world
     this.populate()
@@ -20,12 +21,15 @@ class Patches extends AgentSet {
       this.add(Object.create(this.agentProto))
     })
   }
-  // Setup pixels used for patch.color: `draw` and `importColors`
+  // Setup pixels ctx used for patch.color: `draw` and `importColors`
   setPixels () {
-    const {patchSize, numX, numY} = this.world
-    const ctx = this.model.contexts.patches
-    const pixels = this.pixels = {are1x1: patchSize === 1}
-    pixels.ctx = pixels.are1x1 ? ctx : util.createCtx(numX, numY)
+    const {numX, numY} = this.world
+    // const ctx = this.model.contexts.patches
+    // const pixels = this.pixels = {are1x1: patchSize === 1}
+    // pixels.ctx = pixels.are1x1 ? ctx : util.createCtx(numX, numY)
+    this.pixels = {
+      ctx: util.createCtx(numX, numY)
+    }
     this.setImageData()
   }
   // Create the pixels object used by `setPixels` and `installColors`
@@ -125,30 +129,37 @@ class Patches extends AgentSet {
     return this.patchAtAngleAndDistance(obj, util.angle(heading), distance)
   }
 
-  // Draw the patches onto the ctx using the pixel image data colors.
-  draw (ctx = this.model.contexts.patches) {
+  getPixels () {
     const {pixels} = this
     pixels.ctx.putImageData(pixels.imageData, 0, 0)
-    if (!pixels.are1x1)
-      util.fillCtxWithImage(ctx, pixels.ctx.canvas)
-    for (const i in this.labels) { // `for .. in`: skips sparse array gaps.
-      const label = this.labels[i]
-      const {labelOffset: offset, labelColor: color} = this[i]
-      const [x, y] = this.patchXYToPixelXY(...this.patchIndexToXY(i))
-      util.ctxDrawText(ctx, label, x + offset[0], y + offset[1], color.getCss())
-    }
+    return pixels
   }
-  // Draws, or "imports" an image URL into the drawing layer.
-  // The image is scaled to fit the drawing layer.
-  // This is an async function, using es6 Promises.
-  importDrawing (imageSrc) {
-    util.imagePromise(imageSrc)
-    .then((img) => this.installDrawing(img))
-  }
-  // Direct install image into the given context, not async.
-  installDrawing (img, ctx = this.model.contexts.drawing) {
-    util.fillCtxWithImage(ctx, img)
-  }
+  // REMIND: Three .. need pixels -> texture
+  // Draw the patches onto the ctx using the pixel image data colors.
+  // draw (ctx = this.model.contexts.patches) {
+  //   const {pixels} = this
+  //   pixels.ctx.putImageData(pixels.imageData, 0, 0)
+  //   if (!pixels.are1x1)
+  //     util.fillCtxWithImage(ctx, pixels.ctx.canvas)
+  //   for (const i in this.labels) { // `for .. in`: skips sparse array gaps.
+  //     const label = this.labels[i]
+  //     const {labelOffset: offset, labelColor: color} = this[i]
+  //     const [x, y] = this.patchXYToPixelXY(...this.patchIndexToXY(i))
+  //     util.ctxDrawText(ctx, label, x + offset[0], y + offset[1], color.getCss())
+  //   }
+  // }
+  // REMIND: No drawing layer yet
+  // // Draws, or "imports" an image URL into the drawing layer.
+  // // The image is scaled to fit the drawing layer.
+  // // This is an async function, using es6 Promises.
+  // importDrawing (imageSrc) {
+  //   util.imagePromise(imageSrc)
+  //   .then((img) => this.installDrawing(img))
+  // }
+  // // Direct install image into the given context, not async.
+  // installDrawing (img, ctx = this.model.contexts.drawing) {
+  //   util.fillCtxWithImage(ctx, img)
+  // }
   importColors (imageSrc) {
     util.imagePromise(imageSrc)
     .then((img) => this.installColors(img))
@@ -210,8 +221,7 @@ class Patches extends AgentSet {
   // Return a random valid float x,y point in patch space
   randomPt () {
     const {minXcor, maxXcor, minYcor, maxYcor} = this.world
-    return [util.randomFloat2(minXcor, maxXcor),
-            util.randomFloat2(minYcor, maxYcor)]
+    return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
   }
   // Return a random patch.
   randomPatch () { return this.oneOf() }
@@ -240,22 +250,30 @@ class Patches extends AgentSet {
     this.diffuseN(4, v, rate, colorMap, min, max)
   }
   diffuseN (n, v, rate, colorMap = null, min = 0, max = 1) {
-    if (n !== 4 && n !== 8) util.error('diffuseN n != 4 or 8')
+    // Note: for-of loops removed: chrome can't optimize them
+    // test/apps/patches.js 22fps -> 60fps
     // zero temp variable if not yet set
     if (this[0]._diffuseNext === undefined)
-      for (const p of this) p._diffuseNext = 0
+      // for (const p of this) p._diffuseNext = 0
+      for (let i = 0; i < this.length; i++) this[i]._diffuseNext = 0
+
     // pass 1: calculate contribution of all patches to themselves and neighbors
-    for (const p of this) {
+    // for (const p of this) {
+    for (let i = 0; i < this.length; i++) {
+      const p = this[i]
       const dv = p[v] * rate
       const dvn = dv / n
-      const neighbors = n === 8 ? p.neighbors : p.neighbors4
+      const neighbors = (n === 8) ? p.neighbors : p.neighbors4
       const nn = neighbors.length
       p._diffuseNext += p[v] - dv + (n - nn) * dvn
-      for (const n of neighbors) n._diffuseNext += dvn
+      // for (const n of neighbors) n._diffuseNext += dvn
+      for (let i = 0; i < neighbors.length; i++) neighbors[i]._diffuseNext += dvn
     }
     // pass 2: set new value for all patches, zero temp,
     // modify color if colorMap given
-    for (const p of this) {
+    // for (const p of this) {
+    for (let i = 0; i < this.length; i++) {
+      const p = this[i]
       p[v] = p._diffuseNext
       p._diffuseNext = 0
       if (colorMap)

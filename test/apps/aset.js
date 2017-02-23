@@ -34,19 +34,21 @@ class BreedTest extends Model {
   }
   step () {
     for (const p of this.patches) {
+    // for (var i = 0; i < this.patches.length; i++) {
+    //   const p = this.patches[i]
       if (p.agentSet === this.patches) // let breeds be static color
         p.setColor(this.cmap.randomColor())
     }
-    if (this.anim.ticks === 300) {
-      console.log(this.anim.toString())
-      this.stop()
-    }
+    // if (this.anim.ticks === 300) {
+    //   console.log(this.anim.toString())
+    //   this.stop()
+    // }
   }
 }
 
 const [size, max, min] = [4, 50, -50]
 const opts = {patchSize: size, minX: min, maxX: max, minY: min, maxY: max}
-const model = new BreedTest('layers', opts)
+const model = new BreedTest(document.body, opts)
 model.start()
 
 // Debugging
@@ -56,4 +58,4 @@ const roads = model.roads
 const houses = model.houses
 util.toWindow({ model, world, patches, roads, houses })
 util.toWindow({ p: patches.oneOf(), h: houses.oneOf(), r: roads.oneOf() })
-if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)
+// util.addToDom(patches.pixels.ctx.canvas)

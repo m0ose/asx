@@ -46,7 +46,7 @@ class PatchModel extends Model {
   setup () {
     this.BOUNDS_TYPES = {DENSITY: 'DENSITY', 'V': 'V', 'U': 'U'}
     util.error = console.warn
-    this.anim.setRate(60)
+    // this.anim.setRate(60)
     this.cmap = ColorMap.Jet
     this.dt = 1
     this.solverIterations = 12
@@ -69,7 +69,7 @@ class PatchModel extends Model {
     this.makeFakeBoundaries()
     //
     // for testing mouse
-    // var la = document.getElementById('layers')
+    // var la = document.getElementById('model')
     var la = document.body
     la.getBoundingClientRect()
     la.onclick = (ev) => {
@@ -377,10 +377,10 @@ class PatchModel extends Model {
 
 }
 
-// const [div, size, max, min] = ['layers', 4, 50, -50]
+// const [div, size, max, min] = ['model', 4, 50, -50]
 const opts =
   {patchSize: 4, minX: -64, maxX: 64, minY: -64, maxY: 64}
-const model = new PatchModel('layers', opts)
+const model = new PatchModel('model', opts)
 model.start()
 
 // debugging

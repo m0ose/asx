@@ -433,6 +433,7 @@ const util = {
     if (this.isString(f)) f = this.propFcn(f)
     return array.filter((ai, i, a) => (i === 0) || (f(ai) !== f(a[i - 1])))
   },
+  // unique = (array) => [...new Set(array)],
 
   // Binary search:
   // Return array index of item, where array is sorted.
@@ -452,7 +453,7 @@ const util = {
     return low
   },
   // Return index of value in array with given property or -1 if not found.
-  // Binary search if f isnt null
+  // Binary search if property isnt null
   // Property can be string or function.
   // Use property = identity to compare objs directly.
   indexOf (array, item, property) {
@@ -472,7 +473,7 @@ const util = {
   insertItem (array, item, f) {
     const i = this.sortedIndex(array, item, f)
     if (array[i] === item) this.error('insertItem: item already in array')
-    array.splice(i, 0, item)
+    array.splice(i, 0, item) // copyWithin?
   },
 
   // Return array composed of f(a1i, a2i) called pairwise on both arrays

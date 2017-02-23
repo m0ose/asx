@@ -73,7 +73,7 @@ class FireModel extends Model {
 
   setup () {
     this.patchBreeds('fires embers')
-    this.anim.setRate(60)
+    // this.anim.setRate(60)
 
     this.fireColorMap = ColorMap.gradientColorMap(6, ['red', [128, 0, 0]])
     this.treeColor = Color.newTypedColor(0, 255, 0)
@@ -137,8 +137,8 @@ class FireModel extends Model {
     }
   }
 }
-// const [div, size, max, min] = ['layers', 4, 50, -50]
-const model = new FireModel('layers', {
+// const [div, size, max, min] = ['model', 4, 50, -50]
+const model = new FireModel('model', {
   patchSize: 2,
   minX: -125,
   maxX: 125,

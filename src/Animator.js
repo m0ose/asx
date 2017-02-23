@@ -11,7 +11,7 @@ class Animator {
   // multiStep. Called by Model during initialization, use setRate to modify.
   // If multiStep, run the draw() and step() methods separately by
   // draw() using requestAnimationFrame and step() using setTimeout.
-  constructor (model, rate = 30, multiStep = false) {
+  constructor (model, rate = 60, multiStep = false) {
     Object.assign(this, {model, rate, multiStep})
     this.reset()
   }

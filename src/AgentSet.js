@@ -10,7 +10,7 @@ class AgentSet extends Array {
   // Create an empty `AgentSet` and initialize the `ID` counter for add().
   // If baseSet is supplied, the new agentset is a subarray of baseSet.
   // This sub-array feature is how breeds are managed, see class `Model`
-  constructor (model, agentProto, name, baseSet = null) {
+  constructor (model, AgentProto, name, baseSet = null) {
     // Because es6 JavaScript Array itself calls the Array ctor
     // (ex: slice() returning a new array), skip if not AgentSet ctor.
     if (typeof model === 'number') {
@@ -21,9 +21,9 @@ class AgentSet extends Array {
       // AgentSets know their model, name, baseSet, world.
       Object.assign(this, {model, name, baseSet, world: model.world})
       // Create a proto for our agents by having a defaults and instance layer
-      this.agentProto = agentProto.init(this)
-      // Link our agents to us
-      this.agentProto.agentSet = this
+      this.agentProto = new AgentProto(this)
+      // // Link our agents to us
+      // this.agentProto.agentSet = this
       // BaseSets know their breeds and keep the ID global
       if (this.isBaseSet()) {
         this.breeds = {} // will contain breedname: breed entries
@@ -47,6 +47,7 @@ class AgentSet extends Array {
   // the `id` property to all agents. Increment `ID`.
   // Returns the object for chaining. The set will be sorted by `id`.
   add (o) {
+    o = o || Object.create(this.agentProto)
     if (this.isBreedSet())
       this.baseSet.add(o)
     else
