@@ -13,7 +13,7 @@ To clone a fresh repo, for PRs or your own local verson:
 * git clone https://github.com/backspaces/asx # create skeleton repo
 * cd asx # go to new repo
 * npm install # install all dev dependencies.
-* npm run all # Create all derived files
+* npm run build # Create all derived files
 * open `http://<path to asx>/test.html` and check console for messages
 
 All workflow is npm run scripts.  See package.json's scripts, or simply run `npm run` for a list.
@@ -26,8 +26,16 @@ A [gh-pages branch](http://backspaces.github.io/asx/) is used for the site. It c
 * npm run gh-pages
 
 This can be used to run tests and access modules:
-* [http://backspaces.github.io/asx/test.html?navier](http://backspaces.github.io/asx/test.html?navier)
+* [http://backspaces.github.io/asx/test.html?patches](http://backspaces.github.io/asx/test.html?patches)
 * [http://backspaces.github.io/asx/docs/Model.html](http://backspaces.github.io/asx/docs/Model.html)
 
 It can also be used as a CDN for all the modules:
 * import Model from '[http://backspaces.github.io/asx/lib/Model.js](http://backspaces.github.io/asx/lib/Model.js)'
+
+### Three.js
+
+ASX has been converted from layers of 2D canvases to a single WebGL canvas, currently managed by [Three.js](https://threejs.org/). This is a breaking change, primarily changing subclassing of class Model.
+
+The 'div' used by Model's ctor should generally be `document.body`. In addition, there is a Three parameters object in the ctor, defaulting to that used by the test.html suite.
+
+The conversion of the [fire](http://backspaces.github.io/asx/test.html?fire) model is an example of the minor changes needed in converting to Three.js.

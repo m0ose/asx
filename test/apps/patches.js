@@ -48,16 +48,16 @@ const patches = model.patches
 util.toWindow({ model, world, patches, p: patches.oneOf() })
 
 // DataSets
-const dsetEx = patches.exportDataSet('id', Uint16Array)
-console.log('dsetEx 0-99', dsetEx.data.slice(0, 100).toString())
-const floatDs = DataSet.emptyDataSet(1000, 2000, Float32Array)
-util.repeat(floatDs.data.length, (i, a) => { a[i] = i / 100 }, floatDs.data)
-
-console.log('floatDs 0-99', util.fixedStrings(floatDs.data, 2).slice(0, 100))
-patches.importDataSet(floatDs, 'ds')
-const dsetIm = patches.exportDataSet('ds')
-console.log('dsetIm 0-99', util.fixedStrings(dsetIm.data, 2).slice(0, 100))
-util.toWindow({ dsetEx, floatDs, dsetIm })
+// const dsetEx = patches.exportDataSet('id', Uint16Array)
+// console.log('dsetEx 0-99', dsetEx.data.slice(0, 100).toString())
+// const floatDs = DataSet.emptyDataSet(1000, 2000, Float32Array)
+// util.repeat(floatDs.data.length, (i, a) => { a[i] = i / 100 }, floatDs.data)
+//
+// console.log('floatDs 0-99', util.fixedStrings(floatDs.data, 2).slice(0, 100))
+// patches.importDataSet(floatDs, 'ds')
+// const dsetIm = patches.exportDataSet('ds')
+// console.log('dsetIm 0-99', util.fixedStrings(dsetIm.data, 2).slice(0, 100))
+// util.toWindow({ dsetEx, floatDs, dsetIm })
 
 // const jetColorMap = ColorMap.Jet
 // const jetCtx = util.createCtx()
