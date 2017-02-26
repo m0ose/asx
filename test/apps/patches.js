@@ -41,6 +41,7 @@ const [size, max, min] = [2, 100, -100]
 const opts =
   {patchSize: size, minX: 2 * min, maxX: 2 * max, minY: min, maxY: max}
 const model = new PatchModel(document.body, opts).start()
+console.log('Patches:', model.patches.length)
 
 // debugging
 const world = model.world

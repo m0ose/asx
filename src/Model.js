@@ -103,7 +103,7 @@ class Model {
   initThreeHelpers () {
     const {scene, renderer, camera} = this.three
     const {useAxes, useGrid, useControls, useStats} = this.three
-    const {width, patchSize} = this.world
+    const {width} = this.world
     const helpers = {}
 
     if (useAxes) {
@@ -125,8 +125,6 @@ class Model {
     }
 
     Object.assign(this.three, helpers)
-    // this.three.helpers = helpers
-    // return {axes, grid, stats, controls}
   }
   // Add additional world variables derived from constructor's `worldOptions`.
   setWorld () {
@@ -194,7 +192,7 @@ class Model {
     if (this.div) {
       // REMIND: use Three
       if (force || this.refreshPatches) {
-        this.patches.getPixels()
+        this.patches.installPixels()
         patchesMesh.material.map.needsUpdate = true
       }
 

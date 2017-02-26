@@ -288,8 +288,8 @@ const util = {
 
 // ### Arrays, Objects and Iteration
 
-  // Repeat function f(i) n times, n in 0, i-1.
-  repeat (n, f, o = []) { for (let i = 0; i < n; i++) f(i, o); return o },
+  // Repeat function f(i, a) n times, n in 0, i-1, a is optional array
+  repeat (n, f, a = []) { for (let i = 0; i < n; i++) f(i, a); return a },
   // Repeat function n/step times, incrementing i by step each step.
   step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },
   // Return range [0, length-1]. Note: 6x faster than Array.from!
@@ -639,6 +639,19 @@ const util = {
     const ctx = canvas.getContext(type, glAttributes)
     if (!ctx) this.error('getContext error')
     return ctx
+  },
+  // Duplicate a ctx's image. Returns the new ctx (who's canvas is ctx.caanvas)
+  cloneCtx (ctx0) {
+    const ctx = this.createCtx(ctx0.canvas.width, ctx0.canvas.height)
+    ctx.drawImage(ctx0.canvas, 0, 0)
+    return ctx
+  },
+  // Resize a ctx/canvas and preserve data.
+  resizeCtx (ctx, width, height) {
+    const copy = this.cloneCtx(ctx)
+    ctx.canvas.width = width
+    ctx.canvas.height = height
+    ctx.drawImage(copy.canvas, 0, 0)
   },
   // Return the (complete) ImageData object for this context object
   ctxImageData (ctx) {

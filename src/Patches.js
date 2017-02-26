@@ -7,10 +7,10 @@ import DataSet from './DataSet.js'
 class Patches extends AgentSet {
   constructor (model, agentProto, name, baseSet = null) {
     super(model, agentProto, name, baseSet)
-    // Skip if an basic Array ctor or a breedSet (don't rebuild patches!).
+    // Skip if a basic Array ctor or a breedSet (don't rebuild patches!).
     // See AgentSet comments.
     if (typeof model === 'number' || this.isBreedSet()) return
-    this.world = model.world
+    // this.world = model.world
     this.populate()
     this.setPixels()
     this.labels = [] // sparse array for labels
@@ -129,7 +129,7 @@ class Patches extends AgentSet {
     return this.patchAtAngleAndDistance(obj, util.angle(heading), distance)
   }
 
-  getPixels () {
+  installPixels () {
     const {pixels} = this
     pixels.ctx.putImageData(pixels.imageData, 0, 0)
     return pixels

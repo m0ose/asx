@@ -1,15 +1,14 @@
 import Color from './Color.js'
 
-// Flyweight object creation:
-// Objects within AgentSets use "prototypal inheritance" via Object.create().
-// Here, the PatchProto class is given to Patches for use creating Proto objects
-// (new PatchProto(agentSet)), but only once per model/breed.
-// The flyweight Patch objects are created via Object.create(protoObject),
-// This lets the new PatchProto(agentset) obhect be "defaults".
+// Class Patch instances represent a rectangle on a grid.  They hold variables
+// that are in the patches the turtles live on.  The set of all patches
+// is the world on which the turtles live and the model runs.
 
 // The core variables needed by a Patch. Modelers add additional "own variables"
 // as needed. Surprisingly `label` and `color` are not here, they are managed
-// optimally by the Patches AgentSet.
+// optimally by the Patches AgentSet. Similarly `x` & `y` are derived from id.
+// The neighbors and neighbors4 variables are initially getters that
+// are "promoted" to instance variables if used.
 const patchVariables = { // Core variables for patches. Not 'own' variables.
   id: null,             // unique id, promoted by agentset's add() method
   defaults: null,       // pointer to defaults/proto object
@@ -18,12 +17,20 @@ const patchVariables = { // Core variables for patches. Not 'own' variables.
   patches: null,        // my patches/baseSet, set by ctor
   labelOffset: [0, 0],  // text pixel offset from the patch center
   labelColor: Color.newTypedColor(0, 0, 0) // the label color
+  // Derived variables: label, color, x, y, neighbors, neighbors4
 }
+
+// Flyweight object creation:
+// Objects within AgentSets use "prototypal inheritance" via Object.create().
+// Here, the PatchProto class is given to Patches for use creating Proto objects
+// (new PatchProto(agentSet)), but only once per model/breed.
+// The flyweight Patch objects are created via Object.create(protoObject),
+// This lets the new PatchProto(agentset) obhect be "defaults".
 class PatchProto {
   // Initialize a Patch given its Patches AgentSet.
   constructor (agentSet) {
-    this.defaults = this
     Object.assign(this, patchVariables)
+    this.defaults = this
     this.agentSet = agentSet
     this.world = agentSet.world
     this.patches = agentSet.baseSet
@@ -87,9 +94,7 @@ class PatchProto {
 
   // Breed get/set mathods and getter/setter versions.
   setBreed (breed) { breed.setBreed(this) }
-  getBreed () { return this.agentSet }
-  get breed () { return this.getBreed() }
-  set breed (breed) { this.setBreed(breed) }
+  get breed () { return this.agentSet }
 }
 
 export default PatchProto
