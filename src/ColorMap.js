@@ -240,7 +240,7 @@ const ColorMap = {
   // Aqua == Cyan and Fuchsia == Magenta, 18 total color names.
   // These sorted by hue/saturation/light, hue in 0-300 degrees.
   // See [Mozilla Color Docs](https://goo.gl/tolSnS) for *lots* more!
-  basicColorNames: 'white silver gray black red maroon yellow olive lime green aqua cyan teal blue navy fuchsia magenta purple'.split(' '),
+  basicColorNames: 'white silver gray black red maroon yellow olive lime green cyan teal blue navy magenta purple'.split(' '),
   // Create a named colors colormap
   cssColorMap (cssArray) {
     const array = cssArray.map(str => Color.stringToUint8s(str))
@@ -261,8 +261,10 @@ const ColorMap = {
     return this.LazyMap('Jet', this.gradientColorMap(256, this.jetColors))
   },
   get Rgb256 () { return this.LazyMap('Rgb256', this.rgbColorCube(8, 8, 4)) },
-  get Rgb () { return this.LazyMap('Rgb', this.rgbColorCube(16)) }
-
+  get Rgb () { return this.LazyMap('Rgb', this.rgbColorCube(16)) },
+  get Basic16 () {
+    return this.LazyMap('Basic16', this.cssColorMap(this.basicColorNames))
+  }
 }
 
 export default ColorMap

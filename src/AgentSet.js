@@ -20,8 +20,6 @@ class AgentSet extends Array {
       baseSet = baseSet || this // if not a breed, set baseSet to this
       // AgentSets know their model, name, baseSet, world.
       Object.assign(this, {model, name, baseSet, world: model.world})
-      // Create a proto for our agents by having a defaults and instance layer
-      this.agentProto = new AgentProto(this)
       // // Link our agents to us
       // this.agentProto.agentSet = this
       // BaseSets know their breeds and keep the ID global
@@ -33,7 +31,9 @@ class AgentSet extends Array {
         this.baseSet.breeds[name] = this
       }
       // Keep a list of this set's variables; see `own` below
-      this.ownVariables = ['id']
+      this.ownVariables = [] // ['id']
+      // Create a proto for our agents by having a defaults and instance layer
+      this.agentProto = new AgentProto(this)
     }
   }
 
@@ -42,7 +42,7 @@ class AgentSet extends Array {
   isBaseSet () { return this.baseSet === this }
 
   // Abstract method used by subclasses to create and add their instances.
-  create () {}
+  // create () {}
   // Add an agent to the list.  Only used by agentset factory methods. Adds
   // the `id` property to all agents. Increment `ID`.
   // Returns the object for chaining. The set will be sorted by `id`.
@@ -70,9 +70,10 @@ class AgentSet extends Array {
   // Declare variables of an agent class.
   // `varnames` is a string of space separated names
   own (varnames) {
-    if (this.isBreedSet())
-      this.ownVariables = util.clone(this.baseSet.ownVariables)
+    // if (this.isBreedSet())
+    //   this.ownVariables = util.clone(this.baseSet.ownVariables)
     for (const name of varnames.split(' ')) {
+      this.setDefault(name, null)
       this.ownVariables.push(name)
     }
   }
@@ -152,6 +153,7 @@ class AgentSet extends Array {
 
   // Return a random agent. Return undefined if empty.
   oneOf () { return this[ util.randomInt(this.length) ] }
+  // otherOneOf: nOf good enough?
   // Return the first agent having the min/max of given value of f(agent).
   // If reporter is a string, convert to a fcn returning that property
   minOrMaxOf (min, reporter) {

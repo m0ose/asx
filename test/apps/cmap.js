@@ -9,16 +9,17 @@ console.log('util, Color, ColorMap')
 console.log('u, c, cmap')
 
 const tc = Color.newTypedColor(255, 0, 0)
-console.log('typedColor tc: color', tc.toString(), 'string', tc.getCss(), 'pixel', tc.getPixel())
+console.log('typedColor tc: color', tc.toString(), 'string', tc.getCss(), 'pixel', tc.getPixel(), 'webgl', tc.webgl)
 
 const tcstr = Color.toTypedColor('red')
-const tcpix = Color.toTypedColor(4278190335) // red
+const tcpix = Color.toTypedColor(0xff0000ff) // red
 const tca = Color.toTypedColor([255, 0, 0])
-const tcta = Color.toTypedColor(new Uint8Array([255, 0, 0, 255]))
+const tcuia = Color.toTypedColor(new Uint8Array([255, 0, 0, 255]))
+const tcfa = Color.toTypedColor(new Float32Array([1, 0, 0, 1]))
 
-console.log('toTypedColor: tcstr, tcpix, tca, tcta',
-  tcstr.toString(), tcpix.toString(), tca.toString(), tcta.toString())
-util.toWindow({ tc, tcstr, tcpix, tca, tcta })
+console.log('toTypedColor: tcstr, tcpix, tca, tcuia tcfa',
+  tcstr.toString(), tcpix.toString(), tca.toString(), tcuia.toString(), tcfa.toString())
+util.toWindow({ tc, tcstr, tcpix, tca, tcfa })
 
 // util.step(10, 2, (i) => console.log(i))
 const gid = ColorMap.gradientImageData(10, ['red', 'green'])

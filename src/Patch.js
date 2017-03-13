@@ -12,7 +12,7 @@ import Color from './Color.js'
 const patchVariables = { // Core variables for patches. Not 'own' variables.
   id: null,             // unique id, promoted by agentset's add() method
   defaults: null,       // pointer to defaults/proto object
-  agentSet: null,       // my agentset/breed, set by ctor
+  agentSet: null,       // my agentset/breed
   world: null,          // my agent/agentset's world
   patches: null,        // my patches/baseSet, set by ctor
   labelOffset: [0, 0],  // text pixel offset from the patch center

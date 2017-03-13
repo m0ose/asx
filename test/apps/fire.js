@@ -17,6 +17,7 @@ class FireModel extends Model {
     this.treeColor = Color.newTypedColor(0, 255, 0)
     this.dirtColor = Color.toTypedColor('yellow')
     this.fireColor = this.fireColorMap[0]
+    this.done = false
 
     this.density = 60 // percent
     for (const p of this.patches) {
@@ -34,11 +35,13 @@ class FireModel extends Model {
   }
 
   step () {
+    if (this.done) return
     if (this.fires.length + this.embers.length === 0) {
-      console.log('Stopping:', this.anim.toString())
+      console.log('Done:', this.anim.toString())
       const percentBurned = this.burnedTrees / this.initialTrees * 100
       console.log('Percent burned', percentBurned.toFixed(2))
       // this.stop()
+      this.done = true
       return // keep three control running
     }
 

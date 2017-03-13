@@ -128,9 +128,10 @@ const Color = {
     if (this.isTypedColor(any)) return any
     const tc = this.newTypedColor(0, 0, 0, 0)
     if (util.isInteger(any)) tc.setPixel(any)
-    else if (Array.isArray(any) || util.isTypedArray(any)) tc.setColor(...any)
     else if (typeof any === 'string') tc.setCss(any)
-    else util.error('toTypedColor: invalid argument')
+    else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any)
+    else if (util.isFloatArray(any)) tc.setWebgl(any)
+    else util.error('toTypedColor: invalid argument', any)
     return tc
   },
   // Return a random rgb typedColor, a=255
@@ -146,6 +147,7 @@ const Color = {
 const TypedColorProto = {
   // Inherit from Uint8ClampedArray
   __proto__: Uint8ClampedArray.prototype,
+
   // Set the typedColor to new rgba values.
   setColor (r, g, b, a = 255) {
     this.checkColorChange()
@@ -181,10 +183,28 @@ const TypedColorProto = {
   get css () { return this.getCss() },
   set css (string) { this.setCss(string) },
 
+  // Note: webgl colors are 3 RGB floats (no A) if A is 255.
+  setWebgl (floatArray) {
+    this.setColor( // OK if float * 255 non-int, setColor stores into uint8 array
+      floatArray[0] * 255, floatArray[1] * 255, floatArray[2] * 255,
+      floatArray.length === 4 ? floatArray[3] * 255 : undefined)
+  },
+  getWebgl () {
+    if (this.floatArray == null) {
+      const floats = [this[0] / 255, this[1] / 255, this[2] / 255]
+      if (this[3] !== 255) floats.push(this[3] / 255)
+      this.floatArray = new Float32Array(floats)
+    }
+    return this.floatArray
+  },
+  get webgl () { return this.getWebgl() },
+  set webgl (floatArray) { this.setWebgl(floatArray) },
+
   // Housekeeping when the color is modified.
   checkColorChange () {
-    // Reset string on color change.
+    // Reset string & webgl on color change.
     this.string = null // will be lazy evaluated via getCss.
+    this.floatArray = null
   },
   // Return true if color is same value as myself, comparing pixels
   equals (color) { return this.getPixel() === color.getPixel() },

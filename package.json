@@ -32,7 +32,8 @@
     "git-commit": "git commit -v && git push origin master --follow-tags",
     "make-page": "git merge master && npm run build && git add --all && git add -f docs lib test/lib etc && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
-    "now": "npm run clean && npm run build && now && now alias"
+    "now": "npm run clean && npm run build && now && now alias",
+    "testing": "node -v; npm -v; babel -V"
   },
   "dependencies": {
     "express": "^4.14.0",

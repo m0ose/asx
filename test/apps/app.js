@@ -55,7 +55,7 @@ util.timeit(i => ad.f5(array), num, 'es5 array destructuring')
 const obj = {width: w, height: h, data: d}
 const od = { // object deconstruction
   f6 (obj) {
-    const {width, height, data} = obj
+    const { width, height, data } = obj
   },
   f5 (obj) {
     const width = obj.width, height = obj.height, data = obj.data

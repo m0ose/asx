@@ -3,9 +3,9 @@ import util from 'lib/util.js'
 
 document.body.style.backgroundColor = 'lightgrey'
 const ss = new SpriteSheet(64, 16)
-const paths = SpriteSheet.getPaths()
+// const paths = SpriteSheet.getPaths()
 
-const modules = { SpriteSheet, util, ss, paths }
+const modules = { SpriteSheet, util, ss }
 util.toWindow(modules)
 console.log(Object.keys(modules).join(', '))
 
@@ -15,38 +15,32 @@ const colors = 'white silver gray black red maroon yellow olive lime green cyan 
 function color2 (i) { return i === 0 ? colors[colors.length - 1] : colors[i - 1] }
 util.toWindow({colors, color2})
 
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('arrow', color, color2(i))
-))
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('circle', color, color2(i))
-))
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('dart', color, color2(i))
-))
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('ring', color, color2(i))
-))
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('ring2', color, color2(i))
-))
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('square', color, color2(i))
-))
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('triangle', color, color2(i))
-))
-colors.forEach((color, i) => ss.addSprite(
-  ss.drawImage('square2', color, color2(i))
-))
-// (ctx) => { paths.circle(ctx) }, color, color2(i)
-// drawImage (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
+colors.forEach((c, i) => ss.addDrawing('arrow', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('bug', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('circle', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('default', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('frame', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('ring', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('frame2', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('ring2', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('person', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('square', c, color2(i)))
+colors.forEach((c, i) => ss.addDrawing('triangle', c, color2(i)))
+
+function pentagon (ctx) {
+  ss.paths.poly(ctx,
+    [[0, -0.9], [-0.9, -0.2], [-0.6, 0.9], [0.6, 0.9], [0.9, -0.2]])
+}
+colors.forEach((c, i) => ss.addDrawing(pentagon, c, color2(i)))
+
+function pyramid (ctx) {
+  this.poly(ctx, [[0, -1], [-0.866, 0.5], [0.866, 0.5]])
+}
+ss.installDrawing(pyramid)
+colors.forEach((c, i) => ss.addDrawing('pyramid', c, color2(i)))
+
+// window.redfish = ss.addImage('test/data/redfish.png') // REMIND: try to fix
 
 util.imagePromise('test/data/redfish.png').then((img) => {
-  console.log(img, img.height, img.width)
-  // const ss = new SpriteSheet()
-  const sprites = util.repeat(16, (i, a) => { a[i] = ss.addSprite(img) })
-  util.toWindow({ss, img, sprites})
-  // const sprites = util.repeat(65, (i, a) => a[i] = ss.addSprite(img))
-  // repeat (n, f, a = []) { for (let i = 0; i < n; i++) f(i, a); return a },
+  ss.addImage(img)
 })

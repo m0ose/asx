@@ -5,8 +5,11 @@ import DataSet from './DataSet.js'
 // Patches are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Patches extends AgentSet {
-  constructor (model, agentProto, name, baseSet = null) {
-    super(model, agentProto, name, baseSet)
+  constructor (model, AgentProto, name, baseSet = null) {
+    // AgentSet sets these variables:
+    // model, name, baseSet, world: model.world, agentProto: new AgentProto
+    // REMIND: agentProto: defaults, agentSet, world, [name]=agentSet.baseSet
+    super(model, AgentProto, name, baseSet)
     // Skip if a basic Array ctor or a breedSet (don't rebuild patches!).
     // See AgentSet comments.
     if (typeof model === 'number' || this.isBreedSet()) return
@@ -123,14 +126,14 @@ class Patches extends AgentSet {
     let {x, y} = obj
     x = Math.round(x + distance * Math.cos(angle))
     y = Math.round(y + distance * Math.sin(angle))
-    return this.isOnWorld(x, y) ? this.patchXY(x, y) : undefined
+    return this.world.isOnWorld(x, y) ? this.patchXY(x, y) : undefined
   }
   patchAtHeadingAndDistance (obj, heading, distance) {
     return this.patchAtAngleAndDistance(obj, util.angle(heading), distance)
   }
 
   installPixels () {
-    const {pixels} = this
+    const pixels = this.pixels
     pixels.ctx.putImageData(pixels.imageData, 0, 0)
     return pixels
   }
@@ -186,14 +189,14 @@ class Patches extends AgentSet {
   }
 
   // Return true if x,y floats are within patch world.
-  isOnWorld (x, y) {
-    const {minXcor, maxXcor, minYcor, maxYcor} = this.world
-    return (minXcor <= x) && (x <= maxXcor) && (minYcor <= y) && (y <= maxYcor)
-  }
+  // isOnWorld (x, y) {
+  //   const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+  //   return (minXcor <= x) && (x <= maxXcor) && (minYcor <= y) && (y <= maxYcor)
+  // }
   // Return patch at x,y float values according to topology.
   // Return undefined if off-world
   patch (x, y) {
-    if (!this.isOnWorld) return undefined
+    if (!this.world.isOnWorld(x, y)) return undefined
     return this.patchXY(Math.round(x), Math.round(y))
   }
   // Return the patch id/index given valid integer x,y in patch coords
@@ -229,7 +232,7 @@ class Patches extends AgentSet {
   // Get/Set label.
   // Set removes label if label is null or undefined.
   // Get returns undefined if no label.
-  setLabel (patch, label) {
+  setLabel (patch, label) { // REMIND: does this work for breeds?
     if (label == null) // null or undefined
       delete this.labels[patch.id]
     else

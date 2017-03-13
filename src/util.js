@@ -1,12 +1,20 @@
 // A set of useful misc utils which will eventually move to individual modules.
+// Note we use arrow functions one-liners, more likely to be optimized.
+// REMIND: Test optimization, if none, remove arrow one-liners.
 const util = {
 
 // ### Types
 
   // Fixing the javascript [typeof operator](https://goo.gl/Efdzk5)
   typeOf: (obj) => ({}).toString.call(obj).match(/\s(\w+)/)[1].toLowerCase(),
-  // Is obj Array or Object (but not typed array)?
-  isAorO: (obj) => ['array', 'object'].indexOf(util.typeOf(obj)) >= 0,
+  isOneOf: (obj, array) => array.includes(util.typeOf(obj)),
+  // isUintArray: (obj) => util.typeOf(obj).match(/uint.*array/),
+  isUintArray: (obj) => /^uint.*array$/.test(util.typeOf(obj)),
+  isIntArray: (obj) => /^int.*array$/.test(util.typeOf(obj)),
+  isFloatArray: (obj) => /^float.*array$/.test(util.typeOf(obj)),
+  isImage: (obj) => util.typeOf(obj) === 'image',
+  isImageable: (obj) => util.isOneOf(obj,
+    ['image', 'htmlimageelement', 'htmlcanvaselement']),
   // Is obj TypedArray? If obj.buffer not present, works, type is 'undefined'
   isTypedArray: (obj) => util.typeOf(obj.buffer) === 'arraybuffer',
   // Is a number an integer (rather than a float w/ non-zero fractional part)
@@ -221,7 +229,12 @@ const util = {
     if (v > max) return max
     return v
   },
-
+  // Wrap v around min, max values if v outside min, max
+  wrap (v, min, max) {
+    if (v < min) return max
+    if (v > max) return min
+    return v
+  },
   // Return true is val in [min, max] enclusive
   between: (val, min, max) => min <= val && val <= max,
 
@@ -409,6 +422,9 @@ const util = {
   oneOf: (array) => array[util.randomInt(array.length)],
   // Create an array of properties from an array of objects
   arrayProps: (array, propName) => array.map((a) => a[propName]),
+  // Random key/val of object
+  oneKeyOf: (obj) => util.oneOf(Object.keys(obj)),
+  oneValOf: (obj) => obj[util.oneKeyOf(obj)],
 
   // You'd think this wasn't necessary, but I always forget. Damn.
   // NOTE: this, like sort, sorts in place. Clone array if needed.
@@ -573,7 +589,7 @@ const util = {
   // promise initially yielded by the generator function.
   // The `it` argument can be either a generator function or it's iterator.
   runGenerator (it, callback = (lastVal) => {}) {
-    it = util.typeOf(it) === 'generator' ? it : it()
+    it = this.typeOf(it) === 'generator' ? it : it()
     ;(function iterate (val) { // asynchronously iterate over generator
       const ret = it.next(val)
       if (!ret.done) // wait on promise, `then` calls iterate w/ a value
@@ -609,9 +625,9 @@ const util = {
   // If neither, run fcn & thenFcn synchronously
   runAsyncFcn (fcn, thenFcn) {
     const startup = fcn()
-    if (util.typeOf(startup) === 'generator')
-      util.runGenerator(startup, thenFcn)
-    else if (util.typeOf(startup) === 'promise')
+    if (this.typeOf(startup) === 'generator')
+      this.runGenerator(startup, thenFcn)
+    else if (this.typeOf(startup) === 'promise')
       startup.then(thenFcn)
     else
       thenFcn()
@@ -727,9 +743,13 @@ const util = {
     return ctx
   },
 
-// ### WebGL
+// ### WebGL/Three.js
 
-// ### WebGL methods
+  createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
+    const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z]
+    const indices = [0, 1, 2, 0, 2, 3]
+    return {vertices, indices}
+  },
 
   // Use webgl texture to convert img to Uint8Array w/o alpha premultiply
   // or color profile modification.
