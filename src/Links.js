@@ -11,17 +11,12 @@ class Links extends AgentSet {
     super(model, AgentProto, name, baseSet)
     // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
     if (typeof model === 'number' || this.isBreedSet()) return
-    this.labels = [] // sparse array for labels
+    // this.labels = [] // sparse array for labels
   }
 
   // Factory: Add 1 or more links from the from turtle to the to turtle(s) which
   // can be a single turtle or an array of turtles. The optional init
   // proc is called on the new link after inserting in the agentSet.
-  // create (end0, end1, initFcn = (line) => {}) {
-  //   const link = this.add()
-  //   initFcn(link)
-  //   return link
-  // }
   create (from, to, initFcn = (link) => {}) {
     if (!Array.isArray(to)) to = [to]
     return to.map((t) => { // REMIND: skip dups
@@ -29,8 +24,9 @@ class Links extends AgentSet {
       link.init(from, t)
       initFcn(link)
       return link
-    }) // REMIND: return single link if to not an array
+    }) // REMIND: return single link if to not an array?
   }
+
 }
 
 export default Links

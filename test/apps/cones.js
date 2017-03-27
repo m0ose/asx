@@ -17,21 +17,21 @@ class ConeModel extends Model {
     this.radius = 10
     this.width = util.radians(135)
     this.useInRadius = false
-    this.useOther = true
+    // this.useOther = true
     // this.backgroundColor = cmap.closestColor(200, 200, 200)
     this.backgroundColor = Color.toTypedColor('lightgray')
     this.turtleColor = Color.toTypedColor('black')
 
-    this.turtles = this.patches.nOf(population)
+    this.turtlePatches = this.patches.nOf(population)
     this.coneColors =
       util.repeat(population, (i, a) => { a[i] = cmap.randomColor() }, [])
     this.headings =
       util.repeat(population, (i, a) => { a[i] = util.randomInt(360) }, [])
   }
   step () {
-    const {radius, width, patches, headings, turtles} = this
+    const {radius, width, patches, headings, turtlePatches} = this
     patches.forEach((p) => { p.color = this.backgroundColor })
-    turtles.forEach((t, i) => {
+    turtlePatches.forEach((t, i) => {
       const heading = headings[i]
       const pset = this.useInRadius
         ? patches.inRadius(t, radius)
@@ -39,15 +39,15 @@ class ConeModel extends Model {
       pset.forEach((p) => { p.color = this.coneColors[i] })
       t.color = this.turtleColor
 
-      let tnext = patches.patchAtHeadingAndDistance(t, heading, 1.415)
+      let tnext = patches.patchAtAngleAndDistance(t, util.angle(headings[i]), 1.415)
       let hnext = heading
       if (!tnext) {
         tnext = t.neighbors.oneOf()
         hnext += 180
       }
-      // turtles[i] = t.neighbors.oneOf()
+      // turtlePatches[i] = t.neighbors.oneOf()
       // headings[i] += util.randomCentered(45)
-      turtles[i] = tnext
+      turtlePatches[i] = tnext
       headings[i] = hnext
     })
   }

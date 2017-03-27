@@ -5,7 +5,7 @@ import Mouse from 'lib/Mouse.js'
 import Model from 'lib/Model.js'
 import util from 'lib/util.js'
 
-const modules = { ColorMap, DataSet, Mouse, Model, util, pps: util.pps }
+const modules = { ColorMap, DataSet, Mouse, Model, util }
 util.toWindow(modules)
 console.log(Object.keys(modules).join(', '))
 
@@ -34,4 +34,4 @@ console.log('patches:', model.patches.length)
 
 // debugging
 const {world, patches, turtles, links} = model
-util.toWindow({ world, patches, turtles, links })
+util.toWindow({ model, world, patches, turtles, links })

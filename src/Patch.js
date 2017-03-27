@@ -1,3 +1,4 @@
+import util from './util.js'
 import Color from './Color.js'
 
 // Class Patch instances represent a rectangle on a grid.  They hold variables
@@ -15,9 +16,11 @@ const patchVariables = { // Core variables for patches. Not 'own' variables.
   agentSet: null,       // my agentset/breed
   world: null,          // my agent/agentset's world
   patches: null,        // my patches/baseSet, set by ctor
+
+  turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
   labelOffset: [0, 0],  // text pixel offset from the patch center
   labelColor: Color.newTypedColor(0, 0, 0) // the label color
-  // Derived variables: label, color, x, y, neighbors, neighbors4
+  // Getter variables: label, color, x, y, neighbors, neighbors4
 }
 
 // Flyweight object creation:
@@ -35,7 +38,6 @@ class PatchProto {
     this.world = agentSet.world
     this.patches = agentSet.baseSet
   }
-
   // Getter for x,y derived from patch id, thus no setter.
   get x () {
     return (this.id % this.world.numX) + this.world.minX
@@ -43,11 +45,11 @@ class PatchProto {
   get y () {
     return this.world.maxY - Math.floor(this.id / this.world.numX)
   }
-
   // Getter for neighbors of this patch.
   // Uses lazy evaluation to promote neighbors to instance variables.
   // To avoid promotion, use `patches.neighbors(this)`.
-  // Promotion makes getters not needed.
+  // Promotion makes getters accessed only once.
+  // defineProperty required: can't set this.neighbors when getter defined.
   get neighbors () { // lazy promote neighbors from getter to instance prop.
     const n = this.patches.neighbors(this)
     Object.defineProperty(this, 'neighbors', {value: n, enumerable: true})
@@ -58,6 +60,11 @@ class PatchProto {
     Object.defineProperty(this, 'neighbors4', {value: n, enumerable: true})
     return n
   }
+  // Similar for caching turtles here
+  // get turtles () {
+  //   Object.defineProperty(this, 'turtles', {value: [], enumerable: true})
+  //   return this.turtles
+  // }
 
   // Manage colors by directly setting pixels in Patches pixels object.
   // With getter/setters, slight performance hit.
@@ -87,9 +94,46 @@ class PatchProto {
   get label () { return this.getLabel() }
   set label (label) { return this.setColor(label) }
 
-  // Return patch dx, dy from my position. Return undefined if off-world.
-  patchAt (dx, dy) {
-    return this.patches.patch(this.x + dx, this.y + dy)
+  // Promote this.turtles on first call to turtlesHere.
+  turtlesHere () {
+    if (this.turtles == null) {
+      // this.patches.forEach((patch) => { patch.turtles = [] })
+      // this.model.turtles.forEach((turtle) => {
+      //   turtle.patch.turtles.push(this)
+      // })
+      for (const patch in this.patches)
+        patch.turtles = []
+      for (const turtle in this.model.turtles)
+        turtle.patch.turtles.push(this)
+    }
+    return this.turtles
+  }
+  breedsHere (breed) {
+    const turtles = this.turtlesHere()
+    return turtles.filter((turtle) => turtle.agentSet === breed)
+  }
+
+  // 6 methods in both Patch & Turtle modules
+  // Distance from me to x, y. REMIND: No off-world test done
+  distanceXY (x, y) { util.distance(this.x, this.y, x, y) }
+  // Return distance from me to object having an x,y pair (turtle, patch, ...)
+  distance (agent) { this.distanceXY(agent.x, agent.y) }
+  // Return angle towards agent/x,y
+  // Use util.heading to convert to heading
+  towards (agent) { return this.towardsXY(agent.x, agent.y) }
+  towardsXY (x, y) { return util.radiansToward(this.x, this.y, x, y) }
+  // Return patch w/ given parameters. Return undefined if off-world.
+  // Return patch dx, dy from my position.
+  patchAt (dx, dy) { return this.patches.patch(this.x + dx, this.y + dy) }
+  patchAtAngleAndDistance (angle, distance) {
+    return this.patches.patchAtAngleAndDistance(this, angle, distance)
+  }
+
+  inRadius (radius, meToo = true) { // radius is integer
+    return this.patches.inRadius(this, radius, meToo)
+  }
+  inCone (radius, coneAngle, direction, meToo = true) {
+    return this.patches.inRadius(this, radius, coneAngle, direction, meToo)
   }
 
   // Breed get/set mathods and getter/setter versions.

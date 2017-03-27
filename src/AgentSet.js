@@ -14,7 +14,7 @@ class AgentSet extends Array {
     // Because es6 JavaScript Array itself calls the Array ctor
     // (ex: slice() returning a new array), skip if not AgentSet ctor.
     if (typeof model === 'number') {
-      super(model) // model is a number, return Array of that size
+      super(model) // model is a number, return AgentSet array of that size
     } else {
       super(0) // create empty array
       baseSet = baseSet || this // if not a breed, set baseSet to this
@@ -31,7 +31,7 @@ class AgentSet extends Array {
         this.baseSet.breeds[name] = this
       }
       // Keep a list of this set's variables; see `own` below
-      this.ownVariables = [] // ['id']
+      this.ownVariables = []
       // Create a proto for our agents by having a defaults and instance layer
       this.agentProto = new AgentProto(this)
     }
@@ -55,6 +55,7 @@ class AgentSet extends Array {
     this.push(o)
     return o
   }
+  clear () { while (this.any()) this.last.die() } // die() is an agent method
   // Remove an agent from the agentset, returning the agentset for chaining.
   remove (o) {
     // Remove me from my baseSet
@@ -103,18 +104,9 @@ class AgentSet extends Array {
   }
 
   // Method to convert an array to the same AgentSet type as this.
-  asAgentSet (array) {
-    return Object.setPrototypeOf(array, Object.getPrototypeOf(this))
-  }
-  // Convert agentset to plain JS Array
-  asArray (agentSet = this) {
-    return Object.setPrototypeOf(agentSet, Array.prototype)
-  }
-  // Experimental: call a filter on this agentset as a JS Array.
-  // Avoids agentset & subclass constructors
-  afilter (callback) {
-    return this.asArray().filter(callback)
-  }
+  // asAgentSet (array) {
+  //   return Object.setPrototypeOf(array, Object.getPrototypeOf(this))
+  // }
 
 // ### General Array of Objects methods
 
@@ -152,7 +144,9 @@ class AgentSet extends Array {
   }
 
   // Return a random agent. Return undefined if empty.
-  oneOf () { return this[ util.randomInt(this.length) ] }
+  oneOf () { return util.oneOf(this) }
+  // Return a random agent, not equal to a
+  otherOneOf (item) { return util.otherOneOf(this, item) }
   // otherOneOf: nOf good enough?
   // Return the first agent having the min/max of given value of f(agent).
   // If reporter is a string, convert to a fcn returning that property
@@ -180,12 +174,13 @@ class AgentSet extends Array {
   nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
     if (n > this.length) util.error('nOf: n larger than agentset')
     if (n === this.length) return this
-    const result = []
+    const result = new AgentSet(0) // []
     while (result.length < n) {
       const o = this.oneOf()
       if (!(o in result)) result.push(o)
     }
-    return this.asAgentSet(result)
+    // return this.asAgentSet(result)
+    return result
   }
   // Return a new agentset of the n min/max agents of the value of reporter,
   // in ascending order.
@@ -198,6 +193,61 @@ class AgentSet extends Array {
   }
   minNOf (n, reporter) { return this.minOrMaxNOf(true, n, reporter) }
   maxNOf (n, reporter) { return this.minOrMaxNOf(false, n, reporter) }
+
+  // Geometry methods for patches, turtles, and other agentsets which have x,y.
+  // Return all agents within rect, radius, cone from given agent o.
+  // If meToo, include given object, default excludes it
+  // Typically the agentset is a subset of larger sets, reducing
+  // the size, then uses these inRect, inRadius or inCone methods
+
+  // Return all agents within rectangle from given agent o.
+  // dx & dy are (float) half width/height of rect
+  inRect (o, dx, dy = dx, meToo = false) {
+    const agents = new AgentSet(0)
+    const minX = o.x - dx // ok if max/min off-world, presume o & a are in-world
+    const maxX = o.x + dx
+    const minY = o.y - dy
+    const maxY = o.y + dy
+    for (const a of this) {
+      if (minX <= a.x && a.x <= maxX && minY <= a.y && a.y <= maxY) {
+        if (meToo || o !== a) agents.push(a)
+      }
+    }
+    return agents
+  }
+
+  // Return all agents in agentset within d distance from given object.
+  inRadius (o, radius, meToo = false) {
+    const agents = new AgentSet(0)
+    // const {x, y} = o
+    const d2 = radius * radius
+    const sqDistance = util.sqDistance // Local function 2-3x faster, inlined?
+    for (const a of this) {
+      if (sqDistance(o.x, o.y, a.x, a.y) <= d2)
+        if (meToo || o !== a) agents.push(a)
+    }
+    return agents
+  }
+
+  // As above, but also limited to the angle `coneAngle` around
+  // a `direction` from object `o`.
+  inCone (o, radius, coneAngle, direction, x0, y0, meToo = false) {
+    const agents = new AgentSet(0)
+    // const {x, y} = o
+    for (const a of this) {
+      if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y))
+        if (meToo || o !== a) agents.push(a)
+    }
+    return agents
+  }
+    // x = o.x; y = o.y
+    // if @model.patches.isTorus
+    //   w = @model.patches.numX; h = @model.patches.numY
+    //   @asSet (a for a in @ when \
+    //     u.inTorusCone(radius, angle, heading, x, y, a.x, a.y, w, h))
+    // else
+    //   @asSet (a for a in @ when \
+    //     u.inCone(radius, angle, heading, x, y, a.x, a.y))
 
 }
 

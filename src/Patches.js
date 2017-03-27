@@ -42,6 +42,18 @@ class Patches extends AgentSet {
     pixels.data8 = pixels.imageData.data
     pixels.data = new Uint32Array(pixels.data8.buffer)
   }
+  // Get/Set label. REMIND: not implemented.
+  // Set removes label if label is null or undefined.
+  // Get returns undefined if no label.
+  setLabel (patch, label) { // REMIND: does this work for breeds?
+    if (label == null) // null or undefined
+      delete this.labels[patch.id]
+    else
+      this.labels[patch.id] = label
+  }
+  getLabel (patch) {
+    return this.labels[patch.id]
+  }
 
   // Return the offsets from a patch for its 8 element neighbors.
   // Specialized to be faster than patchRect below.
@@ -62,74 +74,58 @@ class Patches extends AgentSet {
     return [-numX - 1, -numX, -numX + 1, 1, numX + 1, numX, numX - 1, -1]
   }
   // Return the offsets from a patch for its 4 element neighbors (N,S,E,W)
-  nighbors4Offsets (x, y) {
+  neighbors4Offsets (x, y) {
     const numX = this.world.numX
     return this.neighborsOffsets(x, y)
-      .filter((n) => [1, -1, numX, -numX].indexOf(n) >= 0)
+      .filter((n) => Math.abs(n) === 1 || Math.abs(n) === numX) // slightly faster
+      // .filter((n) => [1, -1, numX, -numX].indexOf(n) >= 0)
+      // .filter((n) => [1, -1, numX, -numX].includes(n)) // slower than indexOf
   }
   // Return my 8 patch neighbors
   neighbors (patch) {
     const {id, x, y} = patch
     const offsets = this.neighborsOffsets(x, y)
-    offsets.forEach((o, i, a) => { a[i] = this[o + id] })
-    return this.asAgentSet(offsets)
+    const as = new AgentSet(offsets.length)
+    offsets.forEach((o, i) => { as[i] = this[o + id] })
+    return as
+    // offsets.forEach((o, i, a) => { a[i] = this[o + id] })
+    // return this.asAgentSet(offsets)
   }
   // Return my 4 patch neighbors
   neighbors4 (patch) {
     const {id, x, y} = patch
-    const offsets = this.nighbors4Offsets(x, y)
-    offsets.forEach((o, i, a) => { a[i] = this[o + id] })
-    return this.asAgentSet(offsets)
+    const offsets = this.neighbors4Offsets(x, y)
+    const as = new AgentSet(offsets.length)
+    offsets.forEach((o, i) => { as[i] = this[o + id] })
+    return as
   }
 
+  // Return a random valid float x,y point in patch space
+  randomPt () {
+    const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+    return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
+  }
+  // Return a random patch.
+  randomPatch () { return this.oneOf() }
+
   // Patches in rectangle dx, dy from p, dx, dy integers.
+  // Both dx & dy are half width/height of rect
   patchRect (p, dx, dy = dx, meToo = true) {
     // Return cached rect if one exists.
     if (p.pRect && p.pRect.length === dx * dy) return p.pRect
-    const rect = []
-    const {minX, maxX, minY, maxY} = this.world
-    const [xmin, xmax] = [Math.max(minX, p.x - dx), Math.min(maxX, p.x + dx)]
-    const [ymin, ymax] = [Math.max(minY, p.y - dy), Math.min(maxY, p.y + dy)]
-    for (let y = ymin; y <= ymax; y++)
-      for (let x = xmin; x <= xmax; x++) {
+    const rect = new AgentSet(0)
+    let {minX, maxX, minY, maxY} = this.world
+    minX = Math.max(minX, p.x - dx)
+    maxX = Math.min(maxX, p.x + dx)
+    minY = Math.max(minY, p.y - dy)
+    maxY = Math.min(maxY, p.y + dy)
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
         const pnext = this.patchXY(x, y)
-        if (meToo || p !== pnext) rect.push(pnext)
+        if (p !== pnext || meToo) rect.push(pnext)
       }
-    return this.asAgentSet(rect)
-  }
-  // Return patches within the patch rect, default is square & meToo
-  inRect (p, dx, dy = dx, meToo = true) {
-    return this.patchRect(p, dx, dy, meToo)
-  }
-  // Patches in square around p with radius from p to edges.
-  inSquare (p, radius, meToo = true) {
-    return this.patchRect(p, radius, radius, meToo)
-  }
-  // Patches in circle r from p, r integer.
-  inRadius (p, radius, meToo = true) {
-    const pset = this.inSquare(p, radius, meToo)
-    const rSq = radius * radius
-    const distSq = (p1) => util.distanceSq(p1.x, p1.y, p.x, p.y)
-    return pset.filter((p1) => distSq(p1) <= rSq) // REMIND: perf vs forEach?
-  }
-  // Patches in cone from p in direction `angle`, with `width` and `radius`
-  inCone (p, radius, width, angle, meToo = true) {
-    const pset = this.inSquare(p, radius, meToo)
-    return pset.filter(
-      (p1) => util.inCone(radius, width, angle, p.x, p.y, p1.x, p1.y) ||
-            (meToo && p === p1)
-    )
-  }
-  // Return patch at distance and heading/angle from obj's (patch or turtle)
-  // x, y (floats). If off world, return undefined.
-  patchAtAngleAndDistance (obj, angle, distance) {
-    let {x, y} = obj
-    x = Math.round(x + distance * Math.cos(angle))
-    y = Math.round(y + distance * Math.sin(angle))
-    return this.world.isOnWorld(x, y) ? this.patchXY(x, y) : undefined
-  }
-  patchAtHeadingAndDistance (obj, heading, distance) {
-    return this.patchAtAngleAndDistance(obj, util.angle(heading), distance)
+    }
+    return rect
   }
 
   installPixels () {
@@ -193,12 +189,6 @@ class Patches extends AgentSet {
   //   const {minXcor, maxXcor, minYcor, maxYcor} = this.world
   //   return (minXcor <= x) && (x <= maxXcor) && (minYcor <= y) && (y <= maxYcor)
   // }
-  // Return patch at x,y float values according to topology.
-  // Return undefined if off-world
-  patch (x, y) {
-    if (!this.world.isOnWorld(x, y)) return undefined
-    return this.patchXY(Math.round(x), Math.round(y))
-  }
   // Return the patch id/index given valid integer x,y in patch coords
   patchXYToIndex (x, y) {
     const {minX, maxY, numX} = this.world
@@ -209,8 +199,6 @@ class Patches extends AgentSet {
     const {minX, maxY, numX} = this.world
     return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
   }
-  // Return the patch at x,y where both are valid integer patch coordinates.
-  patchXY (x, y) { return this[this.patchXYToIndex(x, y)] }
   // Convert to/from pixel coords & patch coords
   pixelXYToPatchXY (x, y) {
     const {patchSize, minXcor, maxYcor} = this.world
@@ -221,25 +209,62 @@ class Patches extends AgentSet {
     return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
   }
 
-  // Return a random valid float x,y point in patch space
-  randomPt () {
-    const {minXcor, maxXcor, minYcor, maxYcor} = this.world
-    return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
-  }
-  // Return a random patch.
-  randomPatch () { return this.oneOf() }
+  // Utils for NetLogo patch location methods.
+  // All return `undefined` if not onworld.
+  // Note that foo == null checks for both undefined and null (== vs ===)
+  // and is considered an OK practice.
 
-  // Get/Set label.
-  // Set removes label if label is null or undefined.
-  // Get returns undefined if no label.
-  setLabel (patch, label) { // REMIND: does this work for breeds?
-    if (label == null) // null or undefined
-      delete this.labels[patch.id]
-    else
-      this.labels[patch.id] = label
+  // Return patch at x,y float values according to topology.
+  // Return undefined if off-world
+  patch (x, y) {
+    if (!this.world.isOnWorld(x, y)) return undefined
+    return this.patchXY(Math.round(x), Math.round(y))
   }
-  getLabel (patch) {
-    return this.labels[patch.id]
+  // Return the patch at x,y where both are valid integer patch coordinates.
+  patchXY (x, y) { return this[this.patchXYToIndex(x, y)] }
+
+  // Return patches within the patch rect, default is square & meToo
+  // inRect (patch, dx, dy = dx, meToo = true) {
+  //   return this.patchRect(patch, dx, dy, meToo)
+  // }
+  // Patches in circle radius (integer) from patch
+  inRadius (patch, radius, meToo = true) {
+    const rSq = radius * radius
+    const result = new AgentSet(0)
+    const sqDistance = util.sqDistance // 10% faster
+    const pRect = this.patchRect(patch, radius, radius, meToo)
+    for (let i = 0; i < pRect.length; i++) {
+      const p = pRect[i]
+      if (sqDistance(patch.x, patch.y, p.x, p.y) <= rSq) result.push(p)
+    }
+    return result
+  }
+  // Patches in cone from p in direction `angle`, with `coneAngle` and `radius`
+  inCone (patch, radius, coneAngle, direction, meToo = true) {
+    const pRect = this.patchRect(patch, radius, radius, meToo)
+    const result = new AgentSet(0)
+    for (let i = 0; i < pRect.length; i++) {
+      const p = pRect[i]
+      const isIn = util.inCone(p.x, p.y, radius, coneAngle, direction, patch.x, patch.y)
+      if (isIn && (patch !== p || meToo)) result.push(p)
+    }
+    return result
+  }
+
+  // Return patch at distance and angle from obj's (patch or turtle)
+  // x, y (floats). If off world, return undefined.
+  // To use heading: patchAtAngleAndDistance(obj, util.angle(heading), distance)
+  patchAtAngleAndDistance (obj, angle, distance) {
+    let {x, y} = obj
+    x = x + distance * Math.cos(angle)
+    y = y + distance * Math.sin(angle)
+    return this.patch(x, y)
+  }
+  patchLeftAndAhead (dTheta, distance) {
+    return this.patchAtAngleAndDistance(dTheta, distance)
+  }
+  patchRightAndAhead (dTheta, distance) {
+    return this.patchAtAngleAndDistance(-dTheta, distance)
   }
 
   // Diffuse the value of patch variable `p.v` by distributing `rate` percent

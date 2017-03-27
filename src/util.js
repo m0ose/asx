@@ -200,6 +200,8 @@ const util = {
   randomFloat: (max) => Math.random() * max,
   randomFloat2: (min, max) => min + Math.random() * (max - min),
   randomCentered: (r) => util.randomFloat2(-r / 2, r / 2),
+  // min: (a, b) => (a < b) ? a : b, // Math.max/min now faster, yay!
+  // max: (a, b) => (a < b) ? b : a,
 
   // Return float Gaussian normal with given mean, std deviation.
   randomNormal (mean = 0.0, sigma = 1.0) { // Box-Muller
@@ -207,11 +209,6 @@ const util = {
     const norm = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2)
     return norm * sigma + mean
   },
-
-  // A [modulus](http://mathjs.org/docs/reference/functions/mod.html)
-  // function rather than %, the remainder function.
-  // [`((v % n) + n) % n`](http://goo.gl/spr24) also works.
-  mod: (v, n) => v - n * Math.floor(v / n),
 
   // Return whether num is [Power of Two](http://goo.gl/tCfg5). Very clever!
   isPowerOf2: (num) => (num & (num - 1)) === 0, // twgl library
@@ -222,17 +219,17 @@ const util = {
     return Math.round(n * p) / p
   },
 
+  // A [modulus](http://mathjs.org/docs/reference/functions/mod.html)
+  // function rather than %, the remainder function.
+  // [`((v % n) + n) % n`](http://goo.gl/spr24) also works.
+  mod: (v, n) => ((v % n) + n) % n, // v - n * Math.floor(v / n),
+  // Wrap v around min, max values if v outside min, max
+  wrap: (v, min, max) => min + util.mod(v - min, max - min),
   // Clamp a number to be between min/max.
   // Much faster than Math.max(Math.min(v, max), min)
   clamp (v, min, max) {
     if (v < min) return min
     if (v > max) return max
-    return v
-  },
-  // Wrap v around min, max values if v outside min, max
-  wrap (v, min, max) {
-    if (v < min) return max
-    if (v > max) return min
     return v
   },
   // Return true is val in [min, max] enclusive
@@ -249,59 +246,59 @@ const util = {
 
 // ### Geometry
 
-  // Hypotenuse/distance from origin of point x,y
-  distanceSq: (x, y, x0 = 0, y0 = 0) =>
-    (x - x0) * (x - x0) + (y - y0) * (y - y0),
-  distance: (x, y, x0 = 0, y0 = 0) =>
-    Math.sqrt(util.distanceSq(x, y, x0, y0)),
-
-  // Return angle in [-pi,pi] radians from x1,y1 to x2,y2
-  // [See: Math.atan2](http://goo.gl/JS8DF)
-  radiansToward: (x1, y1, x2, y2) => Math.atan2(y2 - y1, x2 - x1),
-
-  // Return angle in [-pi,pi] that added to rad2 = rad1
-  // See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
-  subtractAngles (rad1, rad2) {
-    const PI = Math.PI
-    let dr = rad1 - rad2
-    if (dr <= -PI) dr += 2 * PI
-    if (dr > PI) dr -= 2 * PI
-    return dr
-  },
-  // Above using headings (degrees) returning degrees in [-90, 90]
-  subtractHeadings (deg1, deg2) {
-    const dAngle = this.subtractAngles(this.angle(deg1), this.angle(deg2))
-    return this.degrees(dAngle)
-  },
-
-  // Is p2 withn a cone from p1 in direction angle and width wide,
-  // and within radius distance
-  inCone (radius, width, angle, x1, y1, x2, y2) {
-    if (radius * radius < this.distanceSq(x1, y1, x2, y2))
-      return false
-    const angle12 = this.radiansToward(x1, y1, x2, y2) // angle from 1 to 2
-    return (width / 2) >= Math.abs(this.subtractAngles(angle, angle12))
-  },
-
   // Degrees & Radians
+  // radians: (degrees) => util.mod(degrees * Math.PI / 180, Math.PI * 2),
+  // degrees: (radians) => util.mod(radians * 180 / Math.PI, 360),
   radians: (degrees) => degrees * Math.PI / 180,
   degrees: (radians) => radians * 180 / Math.PI,
-
   // Heading & Angles:
   // * Heading is 0-up (y-axis), clockwise angle measured in degrees.
-  // * Angle is math: 0-right (x-axis), counterclockwise in radians
-  heading (angle) { // angleToHeading?
-    const degrees = this.degrees(angle)
+  // * Angle is euclidean: 0-right (x-axis), counterclockwise in radians
+  heading (radians) { // angleToHeading?
+    const degrees = this.degrees(radians)
     return this.mod((90 - degrees), 360)
   },
   angle (heading) { // headingToAngle?
-    const degrees = this.mod(90 - heading, 360)
+    const degrees = this.mod(360 - heading, 360)
     return this.radians(degrees)
+  },
+  // Return angle (radians) in (-pi,pi] that added to rad0 = rad1
+  // See NetLogo's [subtract-headings](http://goo.gl/CjoHuV) for explanation
+  subtractRadians (rad1, rad0) {
+    let dr = this.mod(rad1 - rad0, 2 * Math.PI)
+    if (dr > Math.PI) dr = dr - 2 * Math.PI
+    return dr
+  },
+  // Above using headings (degrees) returning degrees in (-180, 180]
+  subtractHeadings (deg1, deg0) {
+    let dAngle = this.mod(deg1 - deg0, 360)
+    if (dAngle > 180) dAngle = dAngle - 360
+    return dAngle
+  },
+  // Return angle in [-pi,pi] radians from (x,y) to (x1,y1)
+  // [See: Math.atan2](http://goo.gl/JS8DF)
+  radiansToward: (x, y, x1, y1) => Math.atan2(y1 - y, x1 - x),
+  // Above using headings (degrees) returning degrees in [-90, 90]
+  headingToward (x, y, x1, y1) {
+    return this.heading(this.radiansToward(x, y, x1, y1))
+  },
+
+  // Return distance between (x, y), (x1, y1)
+  distance: (x, y, x1, y1) => Math.sqrt(util.sqDistance(x, y, x1, y1)),
+  // Return squared distance .. i.e. avoid Math.sqrt. Faster comparisons
+  sqDistance: (x, y, x1, y1) => (x - x1) * (x - x1) + (y - y1) * (y - y1),
+  // Return true if x,y is within cone.
+  // Cone: origin x0,y0 in given direction, with coneAngle width in radians.
+  // All angles in radians
+  inCone (x, y, radius, coneAngle, direction, x0, y0) {
+    if (this.sqDistance(x0, y0, x, y) > (radius * radius)) return false
+    const angle12 = this.radiansToward(x0, y0, x, y) // angle from 1 to 2
+    return coneAngle / 2 >= Math.abs(this.subtractRadians(direction, angle12))
   },
 
 // ### Arrays, Objects and Iteration
 
-  // Repeat function f(i, a) n times, n in 0, i-1, a is optional array
+  // Repeat function f(i, a) n times, i in 0, n-1, a is optional array
   repeat (n, f, a = []) { for (let i = 0; i < n; i++) f(i, a); return a },
   // Repeat function n/step times, incrementing i by step each step.
   step (n, step, f) { for (let i = 0; i < n; i += step) f(i) },
@@ -418,8 +415,12 @@ const util = {
   arrayMin: (array) => array.reduce((a, b) => Math.min(a, b)),
   arraySum: (array) => array.reduce((a, b) => a + b),
   arrayAvg: (array) => util.arraySum(array) / array.length,
-  // Return random one of array items
+  // Return random one of array items. No array.length tests
   oneOf: (array) => array[util.randomInt(array.length)],
+  otherOneOf (array, item) {
+    do { var other = this.oneOf(array) } while (item === other) // note var use
+    return other
+  },
   // Create an array of properties from an array of objects
   arrayProps: (array, propName) => array.map((a) => a[propName]),
   // Random key/val of object
@@ -483,7 +484,7 @@ const util = {
   // Array unchanged if item not found.
   removeItem (array, item, f) {
     const i = this.indexOf(array, item, f)
-    if (i >= 0) array.splice(i, 1)
+    if (i !== -1) array.splice(i, 1)
   },
   // Insert an item in a sorted array
   insertItem (array, item, f) {

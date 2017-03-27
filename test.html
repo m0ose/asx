@@ -13,8 +13,8 @@
       loc = `test/lib/${app}.js`
     }
     console.log('running', loc)
-    System.import(loc).then((m) => window.m = m)
+    System.import(loc) // .then((m) => window.m = m)
   </script>
-  <div id='model'> </div>
+  <div id='modeldiv'> </div>
 </body>
 </html>

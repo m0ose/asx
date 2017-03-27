@@ -323,12 +323,12 @@ class Model {
       }
       if (force || this.refreshTurtles) {
         // patchesMesh.material.map.needsUpdate = true
-        if (this.turtles.length !== 0)
+        if (this.turtles.length > 0)
           this.updateTurtlesMesh()
       }
       if (force || this.refreshLinks) {
         // patchesMesh.material.map.needsUpdate = true
-        if (this.links.length !== 0)
+        if (this.links.length > 0)
           this.updateLinksMesh()
       }
 

@@ -6,9 +6,11 @@ import ColorMap from 'lib/ColorMap.js'
 import Model from 'lib/Model.js'
 import util from 'lib/util.js'
 
-// const modules = { ColorMap, DataSet, Model, util, pps: util.pps }
-// util.toWindow(modules)
-// console.log(Object.keys(modules).join(', '))
+const modules = { ColorMap, Model, util }
+util.toWindow(modules)
+console.log(Object.keys(modules).join(', '))
+
+const numTurtles = 10000
 
 class TurtlesModel extends Model {
   setup () {
@@ -23,7 +25,7 @@ class TurtlesModel extends Model {
       p.color = this.cmap.randomColor()
     }
 
-    this.turtles.create(10000, (t) => {
+    this.turtles.create(numTurtles, (t) => {
       t.size = util.randomFloat2(0.2, 0.5) // + Math.random()
       t.speed = util.randomFloat2(0.01, 0.05) // 0.5 + Math.random()
     })
@@ -59,5 +61,5 @@ console.log('patches:', model.patches.length)
 console.log('turtles:', model.turtles.length)
 
 // debugging
-const {world, patches, turtles, links} = model
+const {world, patches, turtles, links} = window.model = model
 util.toWindow({ world, patches, turtles, links })

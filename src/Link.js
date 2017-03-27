@@ -1,4 +1,4 @@
-// import util from './util.js'
+import util from './util.js'
 import Color from './Color.js'
 // import ColorMap from './ColorMap.js'
 // import SpriteSheet from './SpriteSheet'
@@ -38,7 +38,19 @@ class LinkProto {
   init (from, to) {
     this.end0 = from
     this.end1 = to
+    from.links.push(this)
+    to.links.push(this)
   }
+  // Remove this link from its agentset
+  die () {
+    this.agentSet.remove(this)
+    util.removeItem(this.end0.links, this)
+    util.removeItem(this.end1.links, this)
+  }
+
+  bothEnds () { return [this.end0, this.end1] }
+  length () { return this.end0.distance(this.end1) }
+  otherEnd (turtle) { return turtle === this.end0 ? this.end1 : this.end0 }
 
   // Breed get/set mathods.
   setBreed (breed) { breed.setBreed(this) }
