@@ -14,6 +14,7 @@
     "alias": "https://asx.now.sh"
   },
   "scripts": {
+    "postinstall": "npm run build",
     "clean": "rm -rf lib test/lib docs etc",
     "zip": "rm asx.zip; zip -r asx.zip etc lib test/lib test.html scripts",
     "start": "node scripts/server.js",
@@ -30,7 +31,7 @@
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
-    "make-page": "git merge master && npm run build && git add --all && git add -f docs lib test/lib etc && git commit -m 'master merge'",
+    "make-page": "git merge master && npm run clean && npm run build && git add --all && git add -f docs lib test/lib etc && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
     "now": "npm run clean && npm run build && now && now alias",
     "testing": "node -v; npm -v; babel -V"
