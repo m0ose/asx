@@ -1,11 +1,11 @@
 // Import the lib/ mmodules via relative paths
 import ColorMap from 'lib/ColorMap.js'
 import DataSet from 'lib/DataSet.js'
-import Mouse from 'lib/Mouse.js'
+// import Mouse from 'lib/Mouse.js'
 import Model from 'lib/Model.js'
 import util from 'lib/util.js'
 
-const modules = { ColorMap, DataSet, Mouse, Model, util }
+const modules = { ColorMap, DataSet, Model, util }
 util.toWindow(modules)
 console.log(Object.keys(modules).join(', '))
 
@@ -14,7 +14,7 @@ class PatchModel extends Model {
     this.patches.own('ran ds')
     // this.anim.setRate(60)
     this.cmap = ColorMap.Rgb256 // this.cmap = ColorMap.Jet
-    this.mouse = new Mouse(this, true).start()
+    // this.mouse = new Mouse(this, true).start()
     for (const p of this.patches) {
       p.ran = util.randomFloat(1.0)
       p.ds = 0

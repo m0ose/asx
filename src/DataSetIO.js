@@ -1,9 +1,13 @@
 // Export/Import DataSets
-import DataSet from 'lib/DataSet.js'
-import util from 'lib/util.js'
-import LZMA from 'etc/lzma.js'
-import pako from 'etc/pako.min.js'
+import DataSet from './DataSet.js'
+import util from './util.js'
+
+/* global LZMA, pako */
+// import LZMA from '../etc/lzma.js'
+// import pako from '../etc/pako.min.js'
+
 const lzma = new LZMA('etc/lzma_worker.js')
+// const lzma = new LZMA()
 
 const DataSetIO = {
   // JSON import/export. The JSON returned looks like:

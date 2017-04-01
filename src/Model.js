@@ -8,10 +8,10 @@ import SpriteSheet from './SpriteSheet.js'
 import Animator from './Animator.js'
 import util from './util.js'
 
-import * as THREE from 'etc/three.min.js'
-import OrbitControls from 'etc/threelibs/OrbitControls.js'
-import Stats from 'etc/stats.min.js'
-import dat from 'etc/dat.gui.min.js'
+// import * as THREE from '../etc/three.min.js'
+// import OrbitControls from '../etc/threelibs/OrbitControls.js'
+// import Stats from '../etc/stats.min.js'
+// import dat from '../etc/dat.gui.min.js'
 
 // util.toWindow({three: THREE}) // REMIND
 
@@ -148,7 +148,8 @@ class Model {
       document.body.appendChild(helpers.stats.dom)
     }
     if (useControls) {
-      helpers.controls = new OrbitControls(camera, renderer.domElement)
+      // helpers.controls = new OrbitControls(camera, renderer.domElement)
+      helpers.controls = new THREE.OrbitControls(camera, renderer.domElement)
     }
     if (useGUI) {
       helpers.gui = new dat.GUI()

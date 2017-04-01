@@ -47,6 +47,7 @@ class AsyncTest extends Model {
     if (this.anim.ticks === 10) { console.log('stopping'); this.stop() }
   }
 }
-const model = new AsyncTest('model').start()
+// const model = new AsyncTest('model').start()
+const model = new AsyncTest().start()
 util.toWindow({model})
 // model.start()

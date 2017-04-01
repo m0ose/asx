@@ -1,9 +1,10 @@
 // A naive implementation of turtles, one mesh per turtle, slow.
 import util from 'lib/util.js'
-import * as THREE from 'etc/three.js'
-import OrbitControls from 'etc/threelibs/OrbitControls.js'
-import Stats from 'etc/stats.min.js'
-import dat from 'etc/dat.gui.min.js'
+
+// import * as THREE from '../etc/three.js'
+// import OrbitControls from '../etc/threelibs/OrbitControls.js'
+// import Stats from '../etc/stats.min.js'
+// import dat from '../etc/dat.gui.min.js'
 
 const UI = {
   KTurtles: 10
@@ -34,7 +35,7 @@ function initThree () {
   camera.up.set(0, 0, 1)
   camera.lookAt(scene.position)
 
-  const controls = new OrbitControls(camera, renderer.domElement)
+  const controls = new THREE.OrbitControls(camera, renderer.domElement)
   const stats = new Stats()
   document.body.appendChild(stats.dom)
 

@@ -1,5 +1,5 @@
-import util from 'lib/util.js'
-import DataSet from 'lib/DataSet.js'
+import util from './util.js'
+import DataSet from './DataSet.js'
 
 class RGBDataSet extends DataSet {
 

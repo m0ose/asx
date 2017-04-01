@@ -1,4 +1,4 @@
-import util from 'lib/util.js'
+import util from './util.js'
 // A minimal mouse module, defaulting to NetLogo's state based approach:
 // `mouse.down`, `mouse.moved` sampled in Model.step.
 // `mouse.x` and `mouse.y` are in patch coords, float.

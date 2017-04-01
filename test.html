@@ -1,19 +1,41 @@
 <html>
 <head>
   <title>asx</title>
-  <script src="etc/system.js"></script>
+  <script src="./etc/system.js"></script>
+
+  <script src="./etc/dat.gui.min.js"></script>
+  <script src="./etc/lzma.js"></script>
+  <!-- <script src="etc/lzma_worker.js"></script> -->
+  <script src="./etc/pako.min.js"></script>
+  <script src="./etc/stats.min.js"></script>
+
+  <script src="./etc/AS.js"></script>
+
+  <script src="./etc/three.min.js"></script>
+  <script src="./etc/OrbitControls.js"></script>
+  <script src="./etc/FlyControls.js"></script>
+  <script src="./etc/FirstPersonControls.js"></script>
+
 </head>
 <body>
   <script>
+
+    var useScript = true // false => modules
+
     var app = document.location.search.substring(1) || 'app'
     var loc
     if (app.search('http:') >= 0 || app.search('https:') >= 0) {
       loc = app
     } else {
-      loc = `test/lib/${app}.js`
+      loc = useScript ? `test/scripts/${app}.js` : `test/lib/${app}.js`
     }
-    console.log('running', loc)
-    System.import(loc) // .then((m) => window.m = m)
+    console.log('running', loc, 'useScript', useScript)
+
+    if (useScript)
+      AS.util.setScript(loc)
+    else
+      System.import(loc) // .then((m) => window.m = m)
+
   </script>
   <div id='modeldiv'> </div>
 </body>

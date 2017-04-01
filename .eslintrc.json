@@ -10,5 +10,11 @@
   "rules": {
     "curly": [ 0 ],
     "prefer-const": [ 2 ]
+  },
+  "globals": {
+    "THREE": false,
+    "LZMA": false,
+    "dat": false,
+    "Stats": false
   }
 }

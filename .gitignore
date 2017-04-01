@@ -11,10 +11,9 @@ Attic/
 
 etc/
 lib/
-# src/glx.js
-# test/apps/webgl.js
 test/lib/
 docs/
+test/scripts
 asx.zip
 
 node_modules/

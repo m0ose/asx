@@ -1,14 +1,15 @@
 // Import the lib/ mmodules via relative paths
 import DataSet from 'lib/DataSet.js'
 import util from 'lib/util.js'
-import lzma from 'etc/lzma_worker.js'
-import LZMA from 'etc/lzma.js'
-import pako from 'etc/pako.min.js'
 
-// const lzma = new LZMA('node_modules/lzma/src/lzma_worker.js')
+// import lzma from '../etc/lzma_worker.js'
+// import LZMA from '../etc/lzma.js'
+// import pako from '../etc/pako.min.js'
+
+const lzma = new LZMA('../etc/lzma_worker.js')
 // const lzma = new LZMA()
 
-const modules = { DataSet, util, LZMA, lzma, pako, pps: util.pps }
+const modules = { DataSet, util, LZMA, lzma, pako }
 util.toWindow(modules)
 // window.pps = util.pps
 console.log(Object.keys(modules).join(', '))
