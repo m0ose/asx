@@ -1,7 +1,7 @@
 // Import the lib/ mmodules via relative paths
-import Color from '../../lib/Color.js'
-import ColorMap from '../../lib/ColorMap.js'
-import util from '../../lib/util.js'
+import Color from '../../src/Color.js'
+import ColorMap from '../../src/ColorMap.js'
+import util from '../../src/util.js'
 
 util.toWindow({ util, Color, ColorMap, pps: util.pps })
 

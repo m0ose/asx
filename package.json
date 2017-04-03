@@ -53,6 +53,7 @@
     "babel-cli": "^6.6.0",
     "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0",
     "docco": "^0.7.0",
+    "rollup": "^0.41.6",
     "rollup-watch": "^3.2.2"
   }
 }

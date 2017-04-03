@@ -20,21 +20,17 @@
 <body>
   <script>
 
-    var useScript = true // false => modules
+    const app = document.location.search.substring(1) || 'scripts/app'
+    const [appDir, appName] = app.split('/')
+    const loc = `test/${appDir}/${appName}.js`
+    console.log('running:', loc, 'dir:', appDir, 'name:', appName + '.js')
 
-    var app = document.location.search.substring(1) || 'app'
-    var loc
-    if (app.search('http:') >= 0 || app.search('https:') >= 0) {
-      loc = app
-    } else {
-      loc = useScript ? `test/scripts/${app}.js` : `test/lib/${app}.js`
+    switch (appDir) {
+      case 'scripts': AS.util.setScript(loc); break
+      case 'lib': System.import(loc); break
+      case 'modules': AS.util.setScript(loc, {type: 'module'}); break
+      default: throw `Oops: ${appDir} not valid dir`
     }
-    console.log('running', loc, 'useScript', useScript)
-
-    if (useScript)
-      AS.util.setScript(loc)
-    else
-      System.import(loc) // .then((m) => window.m = m)
 
   </script>
   <div id='modeldiv'> </div>

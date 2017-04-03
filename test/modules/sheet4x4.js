@@ -1,5 +1,5 @@
-import SpriteSheet from '../../lib/SpriteSheet.js'
-import util from '../../lib/util.js'
+import SpriteSheet from '../../src/SpriteSheet.js'
+import util from '../../src/util.js'
 
 // Create and export a spritesheet as a data image, base64
 

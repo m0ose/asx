@@ -1,4 +1,4 @@
-import util from '../../lib/util.js'
+import util from '../../src/util.js'
 
 window.util = util
 util.toWindow({util, pps: util.pps})

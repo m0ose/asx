@@ -170,9 +170,11 @@ const util = {
   },
 
   // Create dynamic `<script>` tag, appending to `<head>`
-  setScript (path) {
+  //   <script src="./test/modules/three0.js" type="module"></script>
+  setScript (path, props = {}) {
     const scriptTag = document.createElement('script')
     scriptTag.src = path
+    this.forEach(props, (val, key) => { scriptTag[key] = val })
     document.querySelector('head').appendChild(scriptTag)
   },
 

@@ -1,6 +1,6 @@
 // Import the lib/ mmodules
-import DataSet from '../../lib/DataSet.js'
-import util from '../../lib/util.js'
+import DataSet from '../../src/DataSet.js'
+import util from '../../src/util.js'
 import LZMA from 'node_modules/lzma/src/lzma_worker.js'
 import pako from 'node_modules/pako/dist/pako.js'
 

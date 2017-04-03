@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd test/apps # pwd is asx, not scripts
+cd test/modules # pwd is asx, not scripts
 pwd
 
 # mkdir ../scripts
@@ -16,5 +16,10 @@ for file in $files; do
       s: : = AS.:
       s:^:const :
     }
-    ' < $file > ../scripts/$file
+  ' < $file > ../scripts/$file
+  # sed '
+  #   /^import/{
+  #     s:src:lib:
+  #   }
+  # ' < $file > ../apps/$file
 done

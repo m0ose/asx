@@ -1,5 +1,5 @@
 // A billboarded points implementation turtles, fast!
-import util from 'lib/util.js'
+import util from '../../lib/util.js'
 
 // import * as THREE from '../etc/three.min.js'
 // import OrbitControls from '../etc/threelibs/OrbitControls.js'

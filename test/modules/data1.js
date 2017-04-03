@@ -1,7 +1,7 @@
 // Import the lib/ mmodules via relative paths
-import DataSet from '../../lib/DataSet.js'
-import RGBDataSet from '../../lib/RGBDataSet.js'
-import util from '../../lib/util.js'
+import DataSet from '../../src/DataSet.js'
+import RGBDataSet from '../../src/RGBDataSet.js'
+import util from '../../src/util.js'
 
 // import LZMA from '../etc/lzma-min.js'
 // import pako from '../etc/pako.min.js'

@@ -13,7 +13,7 @@ etc/
 lib/
 test/lib/
 docs/
-test/scripts
+test/scripts/
 asx.zip
 
 node_modules/

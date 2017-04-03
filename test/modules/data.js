@@ -1,6 +1,6 @@
 // Import the lib/ mmodules via relative paths
-import DataSet from '../../lib/DataSet.js'
-import util from '../../lib/util.js'
+import DataSet from '../../src/DataSet.js'
+import util from '../../src/util.js'
 
 // import lzma from '../etc/lzma_worker.js'
 // import LZMA from '../etc/lzma.js'

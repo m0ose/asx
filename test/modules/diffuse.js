@@ -1,9 +1,9 @@
 // Import the lib/ mmodules via relative paths
-import ColorMap from '../../lib/ColorMap.js'
-import DataSet from '../../lib/DataSet.js'
-// import Mouse from '../../lib/Mouse.js'
-import Model from '../../lib/Model.js'
-import util from '../../lib/util.js'
+import ColorMap from '../../src/ColorMap.js'
+import DataSet from '../../src/DataSet.js'
+// import Mouse from '../../src/Mouse.js'
+import Model from '../../src/Model.js'
+import util from '../../src/util.js'
 
 const modules = { ColorMap, DataSet, Model, util }
 util.toWindow(modules)

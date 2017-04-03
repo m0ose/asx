@@ -1,8 +1,8 @@
 // Import the lib/ mmodules via relative paths
-import util from '../../lib/util.js'
-import Color from '../../lib/Color.js'
-import ColorMap from '../../lib/ColorMap.js'
-import Model from '../../lib/Model.js'
+import util from '../../src/util.js'
+import Color from '../../src/Color.js'
+import ColorMap from '../../src/ColorMap.js'
+import Model from '../../src/Model.js'
 
 const modules = { ColorMap, Color, Model, util }
 util.toWindow(modules)
