@@ -9,49 +9,45 @@
     "type": "git",
     "url": "git://github.com/backspaces/asx.git"
   },
+  "homepage": "http://backspaces.github.io/asx/",
   "attic": {
     "threelibs": "controls/OrbitControls controls/FlyControls controls/FirstPersonControls",
     "build-three": "node scripts/build3modules.js; babel --plugins transform-es2015-modules-systemjs etc/threelibs -d etc/threelibs",
-    "build-dirs": "mkdir lib test/lib docs etc"
-  },
-  "now": {
-    "alias": "https://asx.now.sh"
+    "build-dirs": "mkdir lib test/lib docs etc",
+    "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
+    "versions": "node -v; npm -v; babel -V",
+    "start": "node scripts/server.js",
+    "now": {
+      "alias": "https://asx.now.sh"
+    },
+    "express": "^4.14.0",
+    "build-webgldebug": "; cp node_modules/webgl-debug/index.js etc/webgl-debug.js"
   },
   "scripts": {
     "postinstall": "npm run build",
-    "clean": "rm -rf lib test/lib test/scripts docs etc",
-    "zip": "rm asx.zip; zip -r asx.zip etc src lib test test.html scripts",
-    "start": "node scripts/server.js",
+    "clean": "rm -rf docs etc test/scripts",
+    "zip": "rm asx.zip; zip -r asx.zip etc src test test.html scripts",
     "build": "npm run build-src && npm run build-docs && npm run build-deps",
-    "build-deps": "mkdir -p etc/threelibs; cp node_modules/lzma/src/lzma.js node_modules/lzma/src/lzma_worker.js node_modules/pako/dist/pako.min.js node_modules/systemjs/dist/system.js node_modules/three/build/three.js node_modules/three/build/three.min.js node_modules/three/examples/js/controls/OrbitControls.js node_modules/three/examples/js/controls/FlyControls.js node_modules/three/examples/js/controls/FirstPersonControls.js node_modules/three/examples/js/libs/stats.min.js node_modules/three/examples/js/libs/dat.gui.min.js etc; cp node_modules/webgl-debug/index.js etc/webgl-debug.js",
-    "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
+    "build-deps": "mkdir -p etc/threelibs; cp node_modules/lzma/src/lzma.js node_modules/lzma/src/lzma_worker.js node_modules/pako/dist/pako.min.js node_modules/three/build/three.js node_modules/three/build/three.min.js node_modules/three/examples/js/controls/OrbitControls.js node_modules/three/examples/js/controls/FlyControls.js node_modules/three/examples/js/controls/FirstPersonControls.js node_modules/three/examples/js/libs/stats.min.js node_modules/three/examples/js/libs/dat.gui.min.js etc",
     "build-docs": "mkdir docs; docco -o docs/ src/*.js",
-    "build-src": "npm run build-as && npm run build-test && npm run bundle",
-    "build-test": "mkdir test/lib test/scripts; babel --plugins transform-es2015-modules-systemjs test/apps -d test/lib && scripts/buildscripts",
+    "build-src": "npm run build-test && npm run bundle",
+    "build-test": "mkdir test/scripts; scripts/buildscripts.sh",
     "bundle": "rollup -c",
-    "watch": "npm run build-as -- --watch & npm run build-test -- --watch & npm run bundle -- --watch",
-    "Comment": "Change vx.x.x, then run git-tag. Update version: above too",
-    "git-tag": "git tag -a 'v2.0.0'",
+    "watch": "npm run build-test -- --watch & npm run bundle -- --watch",
+    "git-tag": "git tag -a 'v2.0.0' # Change vx.x.x, run git-tag, change version: above",
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
-    "make-page": "git merge master && npm run clean && npm run build && git add --all && git add -f docs lib test/lib test/scripts etc && git commit -m 'master merge'",
+    "make-page": "git merge master && npm run clean && npm run build && git add --all && git add -f docs test/scripts etc && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
-    "now": "npm run clean && npm run build && now && now alias",
-    "versions": "node -v; npm -v; babel -V",
     "testing": "ls"
   },
   "dependencies": {
-    "express": "^4.14.0",
     "lzma": "^2.3.0",
     "pako": "^1.0.0",
-    "systemjs": "^0.19.23",
-    "three": "*",
-    "webgl-debug": "^1.0.2"
+    "three": "*"
   },
   "devDependencies": {
-    "babel-cli": "^6.6.0",
-    "babel-plugin-transform-es2015-modules-systemjs": "^6.6.0",
     "docco": "^0.7.0",
     "rollup": "^0.41.6",
     "rollup-watch": "^3.2.2"

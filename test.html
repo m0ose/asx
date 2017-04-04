@@ -1,7 +1,7 @@
 <html>
 <head>
   <title>asx</title>
-  <script src="./etc/system.js"></script>
+  <!-- <script src="./etc/system.js"></script> -->
 
   <script src="./etc/dat.gui.min.js"></script>
   <script src="./etc/lzma.js"></script>
@@ -19,11 +19,17 @@
 </head>
 <body>
   <script>
-
     const app = document.location.search.substring(1) || 'scripts/app'
-    const [appDir, appName] = app.split('/')
+    let [appDir, appName] = app.split('/')
+    if (appName === undefined) {
+      console.log('Warning: test format is "dir/name", dir is "scripts" or "modules"')
+      console.log('..Using "scripts" as default')
+      appName = appDir
+      appDir = 'scripts'
+    }
     const loc = `test/${appDir}/${appName}.js`
     console.log('running:', loc, 'dir:', appDir, 'name:', appName + '.js')
+    document.title = `asx:${appName}`
 
     switch (appDir) {
       case 'scripts': AS.util.setScript(loc); break

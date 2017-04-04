@@ -5,13 +5,9 @@
 
 # A dir of old or temp files
 Attic/
-
-# The test page for es6-module-loader-dev.js & traceur.js
-# lib/test/
-
 etc/
-lib/
-test/lib/
+# lib/
+# test/lib/
 docs/
 test/scripts/
 asx.zip

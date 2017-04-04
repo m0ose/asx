@@ -1,6 +1,6 @@
 ## AgentScript Modules Repository
 
-This is a repository for the future version of [AgentScript](http://agentscript.org), an es6 module based project.
+This is a repository for the future version of [AgentScript 1.0](http://agentscript.org), an es6 module based project.
 
 ### Documentation
 
@@ -24,17 +24,25 @@ The repo has no "derived" files, i.e. won't run by just cloning. To complete the
 A [gh-pages branch](http://backspaces.github.io/asx/) is used for the site. It contains the complete master repo, including the derived files. A new page is made from master by:
 * npm run gh-pages
 
-This can be used to run tests and access modules:
-* [http://backspaces.github.io/asx/test.html?diffuse](http://backspaces.github.io/asx/test.html?diffuse)
+This can be used to run tests and access documentation:
+* [http://backspaces.github.io/asx/test.html?scripts/diffuse](http://backspaces.github.io/asx/test.html?scripts/diffuse)
 * [http://backspaces.github.io/asx/docs/Model.html](http://backspaces.github.io/asx/docs/Model.html)
 
-It can also be used as a CDN for all the modules:
-* import Model from '[http://backspaces.github.io/asx/lib/Model.js](http://backspaces.github.io/asx/lib/Model.js)'
+It can also be used as a CDN for all the es6 Modules:
+
+* import Model from '[http://backspaces.github.io/asx/src/Model.js](http://backspaces.github.io/asx/src/Model.js)'
+
+..as well as these modules bundled into a traditional IIFE, see **Modules and Bundles** below.
+* `<script src="`[http://backspaces.github.io/asx/etc/AS.js](http://backspaces.github.io/asx/etc/AS.js)`"></script>`
 
 ### Three.js
 
 ASX has been converted from layers of 2D canvases to a single WebGL canvas, currently managed by [Three.js](https://threejs.org/). This is a breaking change, primarily changing subclassing of class Model.
 
-The 'div' used by Model's ctor should generally be `document.body`. In addition, there is a Three parameters object in the ctor, defaulting to that used by the test.html suite.
+The 'div' used by Model's constructor defaults to `document.body`, the whole page. In addition, there is a Three parameters object in the constructor, defaulting to that used by the test.html suite.
 
 The conversion of the [fire](http://backspaces.github.io/asx/test.html?fire) model is an example of the minor changes needed in converting to Three.js.
+
+### Modules and Bundles
+
+ASX src/ is entirely es6 Modules based, and the dist/ dir includes both a [Rollup](https://rollupjs.org/) generated legacy [IIFE](http://adripofjavascript.com/blog/drips/an-introduction-to-iffes-immediately-invoked-function-expressions.html) global, window.AS, for script users, and the module source for direct native module implementations (Edge, FFox Nightly, iOS Safari and Safari Technology Preview), see the [CanIUse](http://caniuse.com/#search=modules) page for current browser support.
