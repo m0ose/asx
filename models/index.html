@@ -28,7 +28,6 @@
 
     switch (appDir) {
       case 'scripts': AS.util.setScript(loc); break
-      case 'lib': System.import(loc); break
       case 'src': AS.util.setScript(loc, {type: 'module'}); break
       default: throw `Oops: ${appDir} not valid dir`
     }

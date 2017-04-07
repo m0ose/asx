@@ -25,15 +25,15 @@ A [gh-pages branch](http://backspaces.github.io/asx/) is used for the site. It c
 * npm run gh-pages
 
 This can be used to run example models and access documentation:
-* http://backspaces.github.io/asx/models?diffuse
-* http://backspaces.github.io/asx/docs/Model.html
+* [http://backspaces.github.io/asx/models?diffuse](http://backspaces.github.io/asx/models?diffuse)
+* [http://backspaces.github.io/asx/docs/Model.html](http://backspaces.github.io/asx/docs/Model.html)
 
 It can also be used as a CDN for all the es6 Modules:
 
-* import Model from http://backspaces.github.io/asx/src/Model.js
+* `import Model from` '[http://backspaces.github.io/asx/src/Model.js](http://backspaces.github.io/asx/src/Model.js)'
 
 ..as well as these modules bundled into a traditional IIFE, see **Modules and Bundles** below.
-* `<script src="`http://backspaces.github.io/asx/dist/AS.js`"></script>`
+* `<script src="`[http://backspaces.github.io/asx/dist/AS.js](http://backspaces.github.io/asx/dist/AS.js)`"></script>`
 
 ### Three.js
 
@@ -66,7 +66,7 @@ There are currently two ways to run a sample model: es6 modules (src/) or legacy
 * http://backspaces.github.io/asx/models?scripts/fire
 * http://backspaces.github.io/asx/models?src/fire
 
-The default style is scripts for now, but will convert to es6 modules when widely supported. This will default scripts:
+The default directory is scripts/ for now, but will convert to es6 modules, src/, when widely supported. This url will use the default:
 
 * http://backspaces.github.io/asx/models?fire
 
