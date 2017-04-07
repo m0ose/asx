@@ -10,7 +10,7 @@ const modules = {
   DataSet, DataSetIO, AscDataSet, RGBDataSet, RGBADataSet, util
 }
 util.toWindow(modules)
-console.log('modules:', Object.keys(modules).join(', '))
+console.log(Object.keys(modules).join(', '))
 
 const int8s =
   util.repeat(1e4, (i, a) => { a[i] = i }, new Uint8Array(1e4))

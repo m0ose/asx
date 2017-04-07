@@ -8,10 +8,10 @@ import SpriteSheet from './SpriteSheet.js'
 import Animator from './Animator.js'
 import util from './util.js'
 
-// import * as THREE from '../etc/three.min.js'
-// import OrbitControls from '../etc/threelibs/OrbitControls.js'
-// import Stats from '../etc/stats.min.js'
-// import dat from '../etc/dat.gui.min.js'
+// import * as THREE from '../dist/three.min.js'
+// import OrbitControls from '../dist/threelibs/OrbitControls.js'
+// import Stats from '../dist/stats.min.js'
+// import dat from '../dist/dat.gui.min.js'
 
 // util.toWindow({three: THREE}) // REMIND
 

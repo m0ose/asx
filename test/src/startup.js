@@ -4,7 +4,7 @@ import Model from '../../src/Model.js'
 
 const modules = { Model, util }
 util.toWindow(modules)
-console.log('modules:', Object.keys(modules).join(', '))
+console.log(Object.keys(modules).join(', '))
 
 // Switch between startup as generator or startup as promise.
 const startupWithPromise = false

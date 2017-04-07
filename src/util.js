@@ -1,4 +1,4 @@
-// A set of useful misc utils which will eventually move to individual modules.
+// A set of useful misc utils which will eventually move to individual files.
 // Note we use arrow functions one-liners, more likely to be optimized.
 // REMIND: Test optimization, if none, remove arrow one-liners.
 const util = {
@@ -170,7 +170,7 @@ const util = {
   },
 
   // Create dynamic `<script>` tag, appending to `<head>`
-  //   <script src="./test/modules/three0.js" type="module"></script>
+  //   <script src="./test/src/three0.js" type="module"></script>
   setScript (path, props = {}) {
     const scriptTag = document.createElement('script')
     scriptTag.src = path

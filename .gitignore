@@ -5,11 +5,12 @@
 
 # A dir of old or temp files
 Attic/
-etc/
-# lib/
-# test/lib/
+
+# Derived files
+dist/
 docs/
 test/scripts/
+models/scripts/
 asx.zip
 
 node_modules/

@@ -1,0 +1,39 @@
+<html>
+<head>
+  <title>asx</title>
+  <script src="../dist/dat.gui.min.js"></script>
+  <script src="../dist/pako.min.js"></script>
+  <script src="../dist/stats.min.js"></script>
+
+  <script src="../dist/AS.js"></script>
+
+  <script src="../dist/three.min.js"></script>
+  <script src="../dist/OrbitControls.js"></script>
+  <script src="../dist/FlyControls.js"></script>
+  <script src="../dist/FirstPersonControls.js"></script>
+</head>
+<body>
+  <script>
+    const app = document.location.search.substring(1) || 'scripts/diffuse'
+    let [appDir, appName] = app.split('/')
+    if (appName === undefined) {
+      console.log('Warning: test format is "dir/name", dir is "scripts" or "src"')
+      console.log('..Using "scripts" as default')
+      appName = appDir
+      appDir = 'scripts'
+    }
+    const loc = `./${appDir}/${appName}.js`
+    console.log('running:', loc, 'dir:', appDir, 'name:', appName + '.js')
+    document.title = `asx:${appName}`
+
+    switch (appDir) {
+      case 'scripts': AS.util.setScript(loc); break
+      case 'lib': System.import(loc); break
+      case 'src': AS.util.setScript(loc, {type: 'module'}); break
+      default: throw `Oops: ${appDir} not valid dir`
+    }
+
+  </script>
+  <div id='modeldiv'> </div>
+</body>
+</html>

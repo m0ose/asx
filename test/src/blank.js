@@ -14,8 +14,7 @@ import Patches from '../../src/Patches.js'
 import RGBDataSet from '../../src/RGBDataSet.js'
 
 const modules = {
-  AgentSet, Animator, Color, ColorMap, DataSet, DataSetIO,
-  Mouse, Model, OofA, Patch, Patches, RGBDataSet, util
+  AgentSet, Animator, Color, ColorMap, DataSet, DataSetIO, Mouse, Model, OofA, Patch, Patches, RGBDataSet, util
 }
 util.toWindow(modules)
-console.log('modules:', Object.keys(modules).join(', '))
+console.log(Object.keys(modules).join(', '))
