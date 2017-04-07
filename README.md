@@ -61,14 +61,14 @@ test: tests of AS modules
 
 Within models and test directories are src/ (es6 modules) and scripts/ (legacy) and an index.html which runs the src/scripts files as a query string/REST. Both index.html files have a default.
 
-There are currently two ways to run a sample model: es6 modules (src/) or legacy scripts (scripts/):
+There are currently two ways to run a sample model: es6 modules (src/) or legacy scripts (scripts/), the latter runs only in browsers supporting modules (see above):
 
-* http://backspaces.github.io/asx/models?scripts/fire
-* http://backspaces.github.io/asx/models?src/fire
+* [http://backspaces.github.io/asx/models?scripts/fire](http://backspaces.github.io/asx/models?scripts/fire)
+* [http://backspaces.github.io/asx/models?src/fire](http://backspaces.github.io/asx/models?src/fire)
 
 The default directory is scripts/ for now, but will convert to es6 modules, src/, when widely supported. This url will use the default:
 
-* http://backspaces.github.io/asx/models?fire
+* [http://backspaces.github.io/asx/models?fire](http://backspaces.github.io/asx/models?fire)
 
 The current sample models are: diffuse, fire, links, turtles
 
