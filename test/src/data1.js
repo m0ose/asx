@@ -3,16 +3,16 @@ import DataSet from '../../src/DataSet.js'
 import RGBDataSet from '../../src/RGBDataSet.js'
 import util from '../../src/util.js'
 
-// import LZMA from '../dist/lzma-min.js'
-// import pako from '../dist/pako.min.js'
-// const lzma = new LZMA('../dist/lzma_worker-min.js')
-// import lzma from '../dist/lzma_worker.js'
+// import LZMA from '../libs/lzma-min.js'
+// import pako from '../libs/pako.min.js'
+// const lzma = new LZMA('../libs/lzma_worker-min.js')
+// import lzma from '../libs/lzma_worker.js'
 
 // import LZMA from 'node_modules/lzma/src/lzma.js'
-// import pako from 'node_modules/pako/dist/pako.js'
+// import pako from 'libs/pako.min.js'
 // const lzma = new LZMA('node_modules/lzma/src/lzma_worker.js')
 // import LZMA from 'node_modules/lzma/src/lzma-min.js'
-// import pako from 'node_modules/pako/dist/pako.min.js'
+// import pako from 'node_modules/pako/libs/pako.min.js'
 // const lzma = new LZMA('node_modules/lzma/src/lzma_worker-min.js')
 
 const modules = { DataSet, RGBDataSet, util, LZMA, lzma, pako }
@@ -25,7 +25,7 @@ const imageUrl = 'test/data/redfish.png' // 26k
 // const imageUrl = 'test/data/ASTGTM2_N00E035_dem.png' // 4.8MB (16->8 bit gray)
 const useImg = false
 const async = false
-if (async) lzma = new LZMA('../dist/lzma_worker.js')
+if (async) lzma = new LZMA('../libs/lzma_worker.js')
 const png24 = imageUrl.match(/.*\/[0-9]/) != null
 const [compress, level] = [lzma, 9] // pako or lzma
 

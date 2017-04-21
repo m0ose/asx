@@ -1,10 +1,10 @@
 // A billboarded points implementation turtles, fast!
 import util from '../../src/util.js'
 
-// import * as THREE from '../dist/three.min.js'
-// import OrbitControls from '../dist/threelibs/OrbitControls.js'
-// import Stats from '../dist/stats.min.js'
-// import dat from '../dist/dat.gui.min.js'
+// import * as THREE from '../libs/three.min.js'
+// import OrbitControls from '../libs/threelibs/OrbitControls.js'
+// import Stats from '../libs/stats.min.js'
+// import dat from '../libs/dat.gui.min.js'
 
 const UI = {
   KTurtles: 10

@@ -1,6 +1,6 @@
 // The Animator runs the Model's step() and draw() methods.
 
-// Because not all models have the same amimator requirements, we build a class
+// Because not all models have the same animator requirements, we build a class
 // for customization by the programmer.  See these URLs for more info:
 // * [JavaScript timers docs](
 //    https://developer.mozilla.org/en-US/docs/JavaScript/Timers)

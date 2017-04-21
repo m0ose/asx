@@ -2,11 +2,11 @@
 import DataSet from '../../src/DataSet.js'
 import util from '../../src/util.js'
 
-// import lzma from '../dist/lzma_worker.js'
-// import LZMA from '../dist/lzma.js'
-// import pako from '../dist/pako.min.js'
+// import lzma from '../libs/lzma_worker.js'
+// import LZMA from '../libs/lzma.js'
+// import pako from '../libs/pako.min.js'
 
-const lzma = new LZMA('../dist/lzma_worker.js')
+const lzma = new LZMA('../libs/lzma_worker.js')
 // const lzma = new LZMA()
 
 const modules = { DataSet, util, LZMA, lzma, pako }

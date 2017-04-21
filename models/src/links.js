@@ -51,4 +51,4 @@ console.log('links:', model.links.length)
 
 // debugging
 const {world, patches, turtles, links} = model
-util.toWindow({ world, patches, turtles, links })
+util.toWindow({ world, patches, turtles, links, model })

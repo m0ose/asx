@@ -52,10 +52,11 @@ ASX src/ is entirely es6 Modules based, and the dist/ dir includes both a [Rollu
 Our directory layout is:
 ```
 bin: workflow scripts
-dist: AS bundle & source distribution; currently dependencies too
+dist: AS bundle & es6 modules distribution
 docs: docco src documentation
+libs: dependencies
 models: sample models
-src: es6 modules for AS, w/ Rollup import/export file
+src: es6 modules for AS
 test: tests of AS modules
 ```
 

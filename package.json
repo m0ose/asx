@@ -10,15 +10,10 @@
     "type": "git",
     "url": "git://github.com/backspaces/asx.git"
   },
-  "keywords": [
-    "netlogo",
-    "3D",
-    "three.js"
-  ],
+  "keywords": ["netlogo", "3D", "three.js"],
   "attic": {
     "threelibs": "controls/OrbitControls controls/FlyControls controls/FirstPersonControls",
-    "build-three": "node bin/build3modules.js; babel --plugins transform-es2015-modules-systemjs dist/threelibs -d dist/threelibs",
-    "build-dirs": "mkdir lib test/lib docs dist",
+    "build-three": "node bin/build3modules.js; babel --plugins transform-es2015-modules-systemjs libs/threelibs -d libs/threelibs",
     "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
     "versions": "node -v; npm -v; babel -V",
     "start": "node bin/server.js",
@@ -26,27 +21,46 @@
       "alias": "https://asx.now.sh"
     },
     "express": "^4.14.0",
-    "build-webgldebug": "; cp node_modules/webgl-debug/index.js dist/webgl-debug.js"
+    "build-bundle": "rollup -c"
   },
+  "libs": [
+    "node_modules/lzma/src/lzma.js",
+    "node_modules/lzma/src/lzma_worker.js",
+    "node_modules/pako/dist/pako.min.js",
+    "node_modules/three/build/three.js",
+    "node_modules/three/build/three.min.js",
+    "node_modules/three/examples/js/controls/OrbitControls.js",
+    "node_modules/three/examples/js/controls/FlyControls.js",
+    "node_modules/three/examples/js/controls/FirstPersonControls.js",
+    "node_modules/three/examples/js/libs/stats.min.js",
+    "node_modules/three/examples/js/libs/dat.gui.min.js"
+  ],
+  "mkdirs": "docs dist libs test/scripts models/scripts",
   "scripts": {
-    "postinstall": "npm run build",
-    "clean": "rm -rf docs dist etc lib test/scripts models/scripts",
-    "zip": "rm asx.zip; zip -r asx.zip dist src test models bin",
+    "postinstall": "npm run mkdirs && npm run build",
+    "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
+    "mkdirs": "mkdir -p `node bin/pkgkey.js mkdirs`",
+    "zip": "rm asx.zip; zip -r asx.zip dist libs src test models",
     "build": "npm run build-src && npm run build-docs && npm run build-deps",
-    "build-deps": "mkdir -p dist/threelibs; cp node_modules/lzma/src/lzma.js node_modules/lzma/src/lzma_worker.js node_modules/pako/dist/pako.min.js node_modules/three/build/three.js node_modules/three/build/three.min.js node_modules/three/examples/js/controls/OrbitControls.js node_modules/three/examples/js/controls/FlyControls.js node_modules/three/examples/js/controls/FirstPersonControls.js node_modules/three/examples/js/libs/stats.min.js node_modules/three/examples/js/libs/dat.gui.min.js dist",
-    "build-docs": "mkdir docs; docco -o docs/ src/*.js",
-    "build-src": "npm run build-test && npm run build-models && npm run bundle",
-    "build-test": "mkdir test/scripts; bin/buildscripts.sh test/src",
-    "build-models": "mkdir models/scripts; bin/buildscripts.sh models/src",
-    "bundle": "rollup -c",
-    "watch": "npm run build-test -- --watch & npm run bundle -- --watch",
-    "git-tag": "git tag -a 'v2.0.0' # Change vx.x.x, run git-tag, change version: above",
+    "build-deps": "cp `node bin/pkgkey.js libs` libs",
+    "build-docs": "docco -o docs/ src/*.js",
+    "build-src": "npm run build-test && npm run build-models && npm run build-dist",
+    "build-test": "bin/buildscripts.sh test/src",
+    "build-models": "bin/buildscripts.sh models/src",
+    "build-dist": "npm run build-bundle && cp -Rp src dist/modules",
+    "build-bundle": "rollup --format iife --name AS src/AS.js > dist/AS.js",
+    "watch-test": "sane 'npm run build-test' './test/src/'",
+    "watch-models": "sane 'npm run build-models' './models/src/'",
+    "watch-bundle": "sane 'npm run build-bundle' './src/'",
+    "watch": "npm run watch-test & npm run watch-models & npm run watch-bundle",
+    "git-tag": "git tag -a 'v2.0.0' # Change vx.x.x, change version: above",
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
-    "make-page": "git merge master && npm run clean && npm run build && git add --all && git add -f docs test/scripts models/scripts dist && git commit -m 'master merge'",
+    "make-page": "git merge master && npm run clean && npm run build && git add --all && git add -f docs test/scripts models/scripts dist libs && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
-    "testing": "ls"
+    "foo": "ls `node bin/pkgkey.js dirs`",
+    "bar": "rollup --format cjs src/AS.js > /tmp/ASnode.js"
   },
   "dependencies": {
     "lzma": "^2.3.0",
@@ -56,6 +70,6 @@
   "devDependencies": {
     "docco": "^0.7.0",
     "rollup": "^0.41.6",
-    "rollup-watch": "^3.2.2"
+    "sane": "^1.6.0"
   }
 }

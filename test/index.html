@@ -1,23 +1,26 @@
 <html>
 <head>
   <title>asx</title>
-  <script src="../dist/dat.gui.min.js"></script>
-  <script src="../dist/pako.min.js"></script>
-  <script src="../dist/stats.min.js"></script>
+  <script src="../libs/dat.gui.min.js"></script>
+  <script src="../libs/pako.min.js"></script>
+  <script src="../libs/stats.min.js"></script>
 
   <script src="../dist/AS.js"></script>
 
-  <script src="../dist/three.min.js"></script>
-  <script src="../dist/OrbitControls.js"></script>
-  <script src="../dist/FlyControls.js"></script>
-  <script src="../dist/FirstPersonControls.js"></script>
+  <script src="../libs/three.min.js"></script>
+  <script src="../libs/OrbitControls.js"></script>
+  <script src="../libs/FlyControls.js"></script>
+  <script src="../libs/FirstPersonControls.js"></script>
 </head>
 <body>
   <script>
-    const app = document.location.search.substring(1) || 'scripts/app'
+    let app = document.location.search.substring(1) || 'scripts/app'
+    // trailing / problem with SimpleHTTPServer
+    // https://github.com/backspaces/asx/issues/11
+    if (app.endsWith('/')) app = app.slice(0, -1)
     let [appDir, appName] = app.split('/')
     if (appName === undefined) {
-      console.log('Warning: test format is "dir/name", dir is "scripts" or "src"')
+      console.log('Note: app path is "dir/name", dir is "scripts" or "src"')
       console.log('..Using "scripts" as default')
       appName = appDir
       appDir = 'scripts'

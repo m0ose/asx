@@ -8,10 +8,10 @@ import SpriteSheet from './SpriteSheet.js'
 import Animator from './Animator.js'
 import util from './util.js'
 
-// import * as THREE from '../dist/three.min.js'
-// import OrbitControls from '../dist/threelibs/OrbitControls.js'
-// import Stats from '../dist/stats.min.js'
-// import dat from '../dist/dat.gui.min.js'
+// import * as THREE from '../libs/three.min.js'
+// import OrbitControls from '../libs/threelibs/OrbitControls.js'
+// import Stats from '../libs/stats.min.js'
+// import dat from '../libs/dat.gui.min.js'
 
 // util.toWindow({three: THREE}) // REMIND
 
@@ -60,12 +60,20 @@ class Model {
     this.initThree()
     this.initThreeHelpers()
 
-    // Initialize the model by calling `startup` and `reset`.
-    // If `startup` returns a promise, or generator/iterator, manage it.
-    // Arrow functions used to maintain `this`, lexical scope.
+    // Create animator to handle draw/step.
+    this.anim = new Animator(this)
+
+    // Initialize model calling `startup`, `reset` .. which calls `setup`.
     this.modelReady = false
-    const setupFcn = () => { this.reset(); this.modelReady = true }
-    util.runAsyncFcn(() => this.startup(), setupFcn)
+    this.startup().then(() => {
+      // this.reset(); this.setup(); this.modelReady = true
+      this.reset(); this.modelReady = true
+    })
+  }
+  // Call fcn(this) when any async
+  whenReady (fcn) {
+    // util.waitPromise(() => this.modelReady).then(fcn())
+    util.waitOn(() => this.modelReady, () => fcn(this))
   }
   createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
     const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z]
@@ -74,11 +82,10 @@ class Model {
   }
   // (Re)initialize the model. REMIND: not quite right
   reset (restart = false) {
-    if (this.anim) this.stop()
+    this.anim.reset()
     this.setWorld()
     // this.three.unitQuad = util.createQuad(this.world.patchSize / 2, 0)
     this.three.unitQuad = util.createQuad(0.5, 0)
-    this.anim = new Animator(this)
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true
     this.patches = new Patches(this, PatchProto, 'patches')
     this.initPatchesMesh(this.patches.pixels.ctx.canvas)
@@ -288,9 +295,8 @@ class Model {
   // A user's model is made by subclassing Model and over-riding these
   // three abstract methods. `super` need not be called.
 
-  // Initialize model resources (images, files) here.
-  // Return a promise or a generator/iterator or null/undefined.
-  startup () {} // called by constructor.
+  // Async function to initialize model resources (images, files).
+  async startup () {} // called by constructor.
   // Initialize your model variables and defaults here.
   setup () {} // called by constructor (after startup) or by reset()
   // Update/step your model here
@@ -298,7 +304,11 @@ class Model {
 
   // Start/stop the animation. Return model for chaining.
   start () {
-    util.waitOn(() => this.modelReady, () => this.anim.start())
+    util.waitOn(() => this.modelReady, () => {
+      this.anim.start()
+    })
+    // util.waitPromise(() => this.modelReady)
+    // .then(() => { this.anim.start() })
     return this
   }
   stop () { this.anim.stop() }

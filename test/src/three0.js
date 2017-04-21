@@ -1,10 +1,10 @@
 // A naive implementation of turtles, one mesh per turtle, slow.
 import util from '../../src/util.js'
 
-// import * as THREE from '../dist/three.js'
-// import OrbitControls from '../dist/threelibs/OrbitControls.js'
-// import Stats from '../dist/stats.min.js'
-// import dat from '../dist/dat.gui.min.js'
+// import * as THREE from '../libs/three.js'
+// import OrbitControls from '../libs/threelibs/OrbitControls.js'
+// import Stats from '../libs/stats.min.js'
+// import dat from '../libs/dat.gui.min.js'
 
 const UI = {
   KTurtles: 10

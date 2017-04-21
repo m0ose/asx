@@ -87,10 +87,17 @@ const model = new FireModel(div, {
   maxX: 125,
   minY: -125,
   maxY: 125
-}).start()
-
-// debugging
-const world = model.world
-const patches = model.patches
-util.toWindow({ model, world, patches, p: patches.oneOf() })
-// util.addToDom(patches.pixels.ctx.canvas)
+})
+model.whenReady(() => {
+  model.start()
+  const world = model.world
+  const patches = model.patches
+  util.toWindow({ model, world, patches, p: patches.oneOf() })
+  // util.addToDom(patches.pixels.ctx.canvas)
+})
+// }).start().whenReady().then(() => {
+//   const world = model.world
+//   const patches = model.patches
+//   util.toWindow({ model, world, patches, p: patches.oneOf() })
+//   // util.addToDom(patches.pixels.ctx.canvas)
+// })

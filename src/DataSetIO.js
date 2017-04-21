@@ -3,10 +3,10 @@ import DataSet from './DataSet.js'
 import util from './util.js'
 
 /* global LZMA, pako */
-// import LZMA from '../dist/lzma.js'
-// import pako from '../dist/pako.min.js'
+// import LZMA from '../libs/lzma.js'
+// import pako from '../libs/pako.min.js'
 
-const lzma = new LZMA() // new LZMA('../dist/lzma_worker.js')
+const lzma = new LZMA() // new LZMA('../libs/lzma_worker.js')
 // const lzma = new LZMA()
 
 const DataSetIO = {

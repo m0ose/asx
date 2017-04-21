@@ -3,8 +3,8 @@
 const fs = require('fs')
 
 const fromPath = 'node_modules/three/examples/js/'
-const toPath = 'dist/threelibs/'
-const THREEPath = 'dist/three.min.js'
+const toPath = 'libs/threelibs/'
+const THREEPath = 'libs/three.min.js'
 
 // Each name is a lib/name (w/o.js) pair in THREE's examples/js hierarchy
 const threeLibNames = process.env.npm_package_threelibs.split(/ +/)

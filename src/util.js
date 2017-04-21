@@ -124,8 +124,8 @@ const util = {
         str = obj.constructor.toString()
       } else {
         const okeys = Object.keys(obj)
-        str = okeys.length > 0 ? // eslint-disable-line
-          `[${okeys.join(', ')}]` : `[${obj.constructor.name}]`
+        str = okeys.length > 0
+          ? `[${okeys.join(', ')}]` : `[${obj.constructor.name}]`
       }
       console.log(`[${count++}]: ${str}`)
       obj = Object.getPrototypeOf(obj)
