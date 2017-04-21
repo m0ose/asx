@@ -30,8 +30,10 @@ const [size, max, min] = [2, 100, -100]
 const opts =
   {patchSize: size, minX: 2 * min, maxX: 2 * max, minY: min, maxY: max}
 const model = new PatchModel(document.body, opts).start()
-console.log('patches:', model.patches.length)
+model.whenReady(() => {
+  console.log('patches:', model.patches.length)
 
-// debugging
-const {world, patches, turtles, links} = model
-util.toWindow({ model, world, patches, turtles, links })
+  // debugging
+  const {world, patches, turtles, links} = model
+  util.toWindow({ model, world, patches, turtles, links })
+})

@@ -45,10 +45,12 @@ class LinksModel extends Model {
 // const opts =
 //   {patchSize: size, minX: 2 * min, maxX: 2 * max, minY: min, maxY: max}
 const model = new LinksModel(document.body).start()
-console.log('patches:', model.patches.length)
-console.log('turtles:', model.turtles.length)
-console.log('links:', model.links.length)
+model.whenReady(() => {
+  console.log('patches:', model.patches.length)
+  console.log('turtles:', model.turtles.length)
+  console.log('links:', model.links.length)
 
-// debugging
-const {world, patches, turtles, links} = model
-util.toWindow({ world, patches, turtles, links, model })
+  // debugging
+  const {world, patches, turtles, links} = model
+  util.toWindow({ world, patches, turtles, links, model })
+})
