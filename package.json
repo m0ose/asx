@@ -53,7 +53,6 @@
     "watch-models": "sane 'npm run build-models' './models/src/'",
     "watch-src": "sane 'npm run build-dist' './src/'",
     "watch": "npm run watch-test & npm run watch-models & npm run watch-src",
-    "git-tag0": "git tag -a 'v2.0.0' # uses version: above",
     "git-tag": "git tag -a `node bin/pkgkey.js version` # uses version: above",
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
