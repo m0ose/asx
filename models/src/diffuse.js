@@ -5,9 +5,7 @@ import DataSet from '../../src/DataSet.js'
 import Model from '../../src/Model.js'
 import util from '../../src/util.js'
 
-const modules = { ColorMap, DataSet, Model, util }
-util.toWindow(modules)
-console.log(Object.keys(modules).join(', '))
+util.toWindow({ ColorMap, DataSet, Model, util })
 
 class PatchModel extends Model {
   setup () {
@@ -25,7 +23,6 @@ class PatchModel extends Model {
     this.patches.diffuse('ran', 0.05, this.cmap)
   }
 }
-// const [div, size, max, min] = ['model', 4, 50, -50]
 const [size, max, min] = [2, 100, -100]
 const opts =
   {patchSize: size, minX: 2 * min, maxX: 2 * max, minY: min, maxY: max}
@@ -35,5 +32,5 @@ model.whenReady(() => {
 
   // debugging
   const {world, patches, turtles, links} = model
-  util.toWindow({ model, world, patches, turtles, links })
+  util.toWindow({ world, patches, turtles, links, model })
 })

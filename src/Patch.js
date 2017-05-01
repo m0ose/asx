@@ -14,6 +14,7 @@ const patchVariables = { // Core variables for patches. Not 'own' variables.
   id: null,             // unique id, promoted by agentset's add() method
   defaults: null,       // pointer to defaults/proto object
   agentSet: null,       // my agentset/breed
+  model: null,          // my model
   world: null,          // my agent/agentset's world
   patches: null,        // my patches/baseSet, set by ctor
 
@@ -35,6 +36,7 @@ class PatchProto {
     Object.assign(this, patchVariables)
     this.defaults = this
     this.agentSet = agentSet
+    this.model = agentSet.model
     this.world = agentSet.world
     this.patches = agentSet.baseSet
   }
@@ -101,10 +103,10 @@ class PatchProto {
       // this.model.turtles.forEach((turtle) => {
       //   turtle.patch.turtles.push(this)
       // })
-      for (const patch in this.patches)
+      for (const patch of this.patches)
         patch.turtles = []
-      for (const turtle in this.model.turtles)
-        turtle.patch.turtles.push(this)
+      for (const turtle of this.model.turtles)
+        turtle.patch.turtles.push(turtle)
     }
     return this.turtles
   }
@@ -139,6 +141,14 @@ class PatchProto {
   // Breed get/set mathods and getter/setter versions.
   setBreed (breed) { breed.setBreed(this) }
   get breed () { return this.agentSet }
+
+  sprout (num = 1, breed = this.model.turtles, init = util.noop) {
+    breed.create(num, (turtle) => {
+      turtle.setXY(this.x, this.y)
+      init(turtle)
+    })
+  }
+
 }
 
 export default PatchProto

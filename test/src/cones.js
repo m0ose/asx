@@ -4,9 +4,7 @@ import Color from '../../src/Color.js'
 import ColorMap from '../../src/ColorMap.js'
 import Model from '../../src/Model.js'
 
-const modules = { ColorMap, Color, Model, util }
-util.toWindow(modules)
-console.log(Object.keys(modules).join(', '))
+util.toWindow({ ColorMap, Color, Model, util })
 
 class ConeModel extends Model {
   setup () {
@@ -57,9 +55,10 @@ const [size, max, min] = [4, 50, -50]
 const opts = {patchSize: size, minX: min, maxX: max, minY: min, maxY: max}
 const model = new ConeModel(document.body, opts).start()
 // const model = new ConeModel('model').start()
-
+model.whenReady(() => {
+  const world = model.world
+  const patches = model.patches
+  util.toWindow({ model, world, patches, p: patches.oneOf() })
+  // if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)
+})
 // debugging
-const world = model.world
-const patches = model.patches
-util.toWindow({ model, world, patches, p: patches.oneOf() })
-// if (size !== 1) util.addToDom(patches.pixels.ctx.canvas)

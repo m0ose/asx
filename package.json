@@ -10,19 +10,22 @@
     "type": "git",
     "url": "git://github.com/backspaces/asx.git"
   },
-  "keywords": ["netlogo", "3D", "three.js"],
+  "keywords": [
+    "netlogo",
+    "3D",
+    "three.js"
+  ],
   "attic": {
     "threelibs": "controls/OrbitControls controls/FlyControls controls/FirstPersonControls",
     "build-three": "node bin/build3modules.js; babel --plugins transform-es2015-modules-systemjs libs/threelibs -d libs/threelibs",
     "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
-    "versions": "node -v; npm -v; babel -V",
     "start": "node bin/server.js",
-    "now": {
-      "alias": "https://asx.now.sh"
-    },
-    "express": "^4.14.0",
+    "versions": "node -v; npm -v; babel -V",
     "build-src": "npm run build-test && npm run build-models && npm run build-dist",
     "build-bundle": "rollup -c"
+  },
+  "now": {
+    "alias": "https://asx.now.sh"
   },
   "libs": [
     "node_modules/lzma/src/lzma.js",
@@ -42,6 +45,8 @@
     "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
     "mkdirs": "mkdir -p `node bin/pkgkey.js mkdirs`",
     "zip": "rm asx.zip; zip -r asx.zip dist libs src test models",
+    "start": "node node_modules/serve/bin/serve.js -p 3000",
+    "now": "now && now alias # deploy to https://asx.now.sh/",
     "build": "npm run clean && npm run build-test && npm run build-models && npm run build-dist && npm run build-docs && npm run build-deps",
     "build-deps": "cp `node bin/pkgkey.js libs` libs",
     "build-docs": "docco -o docs/ src/*.js",
@@ -70,6 +75,7 @@
   "devDependencies": {
     "docco": "^0.7.0",
     "rollup": "^0.41.6",
-    "sane": "^1.6.0"
+    "sane": "^1.6.0",
+    "serve": "^5.1.4"
   }
 }

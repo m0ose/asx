@@ -6,6 +6,8 @@ import ColorMap from '../../src/ColorMap.js'
 import Model from '../../src/Model.js'
 import util from '../../src/util.js'
 
+util.toWindow({ ColorMap, Model, util })
+
 class LinksModel extends Model {
   setup () {
     this.turtles.own('speed')

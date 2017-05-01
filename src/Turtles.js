@@ -46,16 +46,16 @@ class Turtles extends AgentSet {
     const patches = this.model.patches.patchRect(turtle.patch, dx, dy, true)
     const aSet = this.inPatches(patches)
     if (!meToo) util.removeItem(aSet, turtle) // don't use aSet.remove: breeds
-    return this.inPatches(patches)
+    return aSet // this.inPatches(patches)
   }
   // Return the members of this agentset that are within radius distance
   // from me, using a patch rect.
   inRadius (turtle, radius, meToo = false) {
-    const aSet = this.inPatchRect(turtle.patch, radius, radius, true)
+    const aSet = this.inPatchRect(turtle, radius, radius, true)
     return aSet.inRadius(turtle, radius, meToo)
   }
   inCone (turtle, radius, coneAngle, x0, y0, meToo = false) {
-    const aSet = this.inPatchRect(turtle.patch, radius, radius, true)
+    const aSet = this.inPatchRect(turtle, radius, radius, true)
     return aSet.inCone(turtle, radius, coneAngle, turtle.theta, x0, y0, meToo)
   }
 

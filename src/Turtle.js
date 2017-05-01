@@ -16,6 +16,7 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
   id: null,         // unique id, promoted by agentset's add() method
   defaults: null,   // pointer to defaults/proto object
   agentSet: null,   // my agentset/breed
+  model: null,      // my model
   world: null,      // my agent/agentset's world
   turtles: null,    // my baseSet
 
@@ -42,6 +43,7 @@ class TurtleProto {
     Object.assign(this, turtleVariables)
     this.defaults = this
     this.agentSet = agentSet
+    this.model = agentSet.model
     this.world = agentSet.world
     this.turtles = agentSet.baseSet
 
@@ -74,9 +76,9 @@ class TurtleProto {
     return this.links
   }
   // Getter for the patchs and the patch I'm on. Return null if off-world.
-  get patch () { return this.turtles.model.patches.patch(this.x, this.y) }
+  get patch () { return this.model.patches.patch(this.x, this.y) }
   // REMIND: promote to default variable(s) if performance issue
-  get patches () { return this.turtles.model.patches }
+  get patches () { return this.model.patches }
 
   // Breed get/set mathods.
   setBreed (breed) { breed.setBreed(this) }
@@ -89,7 +91,7 @@ class TurtleProto {
   // Create my shape via src: sprite, fcn, string, or image/canvas
   setSprite (src, color = 'red', strokeColor = 'black') {
     if (src.sheet) { this.sprite = src; return } // src is a sprite
-    const ss = this.turtles.model.spriteSheet
+    const ss = this.model.renderer.spriteSheet
     this.sprite = util.isImageable(src)
       ? ss.addImage(src)
       : ss.addDrawing(src, color, strokeColor)
@@ -147,9 +149,10 @@ class TurtleProto {
 
   // 6 methods in both Patch & Turtle modules
   // Distance from me to x, y. REMIND: No off-world test done
-  distanceXY (x, y) { util.distance(this.x, this.y, x, y) }
+  distanceXY (x, y) { return util.distance(this.x, this.y, x, y) }
   // Return distance from me to object having an x,y pair (turtle, patch, ...)
-  distance (agent) { this.distanceXY(agent.x, agent.y) }
+  // distance (agent) { this.distanceXY(agent.x, agent.y) }
+  distance (agent) { return util.distance(this.x, this.y, agent.x, agent.y) }
   // Return angle towards agent/x,y
   // Use util.heading to convert to heading
   towards (agent) { return this.towardsXY(agent.x, agent.y) }

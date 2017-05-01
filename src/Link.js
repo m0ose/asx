@@ -14,6 +14,7 @@ const linkVariables = { // Core variables for patches. Not 'own' variables.
   id: null,             // unique id, promoted by agentset's add() method
   defaults: null,       // pointer to defaults/proto object
   agentSet: null,       // my agentset/breed
+  model: null,      // my model
   world: null,          // my agent/agentset's world
   links: null,          // my baseSet
 
@@ -32,6 +33,7 @@ class LinkProto {
     Object.assign(this, linkVariables)
     this.defaults = this
     this.agentSet = agentSet
+    this.model = agentSet.model
     this.world = agentSet.world
     this.links = agentSet.baseSet
   }

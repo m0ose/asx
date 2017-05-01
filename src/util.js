@@ -31,8 +31,10 @@ const util = {
   // Use instead of `throw message` for better debugging
   error: (message) => { throw new Error(message) },
 
-  // Return identity fcn, returning its argument unchanged. Used in callbacks
+  // Identity fcn, returning its argument unchanged. Used in callbacks
   identity: (o) => o,
+  // No-op function, does nothing. Used for default callback.
+  noop: () => {},
   // Return function returning an object's property.  Property in fcn closure.
   propFcn: (prop) => (o) => o[prop],
 
@@ -151,8 +153,9 @@ const util = {
   },
 
   // Merge from's key/val pairs into to the global window namespace
-  toWindow (fromObj) {
-    Object.assign(window, fromObj)
+  toWindow (obj) {
+    Object.assign(window, obj)
+    console.log('toWindow:', Object.keys(obj).join(', '))
   },
 
 // ### HTML, CSS, DOM
@@ -443,9 +446,16 @@ const util = {
   },
   // Randomize array in-place. Use clone() first if new array needed
   // The array is returned for chaining; same as input array.
-  // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
-  // for better approach, thanks Nick!
-  shuffle (array) { array.sort((a, b) => Math.random() < 0.5); return array },
+  // See [Durstenfeld / Fisher-Yates-Knuth shuffle](https://goo.gl/mfbdPh)
+  shuffle (array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      const temp = array[i]
+      array[i] = array[j]
+      array[j] = temp
+    }
+    return array
+  },
   // Returns new array (of this type) of unique elements in this *sorted* array.
   // Sort or clone & sort if needed.
   uniq (array, f = this.identity) {

@@ -135,6 +135,9 @@ class AgentSet extends Array {
   clone (begin = 0, end = this.length) {
     return this.slice(begin, end) // Wow, returns an agentset rather than Array!
   }
+  // Randomize the agentset in place. Use clone first if new agentset needed.
+  // Return "this" for chaining.
+  shuffle () { return util.shuffle(this) }
   // Return this agentset sorted by the reporter in ascending/descending order.
   // If reporter is a string, convert to a fcn returning that property.
   // Use clone if you don't want to mutate this array.
@@ -174,7 +177,7 @@ class AgentSet extends Array {
   nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
     if (n > this.length) util.error('nOf: n larger than agentset')
     if (n === this.length) return this
-    const result = new AgentSet(0) // []
+    const result = new AgentSet(0)
     while (result.length < n) {
       const o = this.oneOf()
       if (!(o in result)) result.push(o)
@@ -204,7 +207,7 @@ class AgentSet extends Array {
   // dx & dy are (float) half width/height of rect
   inRect (o, dx, dy = dx, meToo = false) {
     const agents = new AgentSet(0)
-    const minX = o.x - dx // ok if max/min off-world, presume o & a are in-world
+    const minX = o.x - dx // ok if max/min off-world, o, a are in-world
     const maxX = o.x + dx
     const minY = o.y - dy
     const maxY = o.y + dy

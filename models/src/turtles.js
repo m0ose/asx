@@ -6,9 +6,7 @@ import ColorMap from '../../src/ColorMap.js'
 import Model from '../../src/Model.js'
 import util from '../../src/util.js'
 
-const modules = { ColorMap, Model, util }
-util.toWindow(modules)
-console.log(Object.keys(modules).join(', '))
+util.toWindow({ ColorMap, Model, util })
 
 const numTurtles = 10000
 
