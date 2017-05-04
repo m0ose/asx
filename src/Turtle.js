@@ -61,7 +61,7 @@ class TurtleProto {
   // proc is called on the new turtle after inserting in its agentSet.
   hatch (num = 1, agentSet = this.agentSet, init = () => {}) {
     return agentSet.create(num, (turtle) => {
-      turtle.setXY(this.x, this.y)
+      turtle.setxy(this.x, this.y)
       // turtle.color = this.color // REMIND: sprite vs color
       // hatched turtle inherits parents' ownVariables
       for (const key of agentSet.ownVariables)
@@ -107,7 +107,7 @@ class TurtleProto {
   //   return util.between(x, minXcor, maxXcor) && util.between(y, minYcor, maxYcor)
   // }
   // Set x, y position. If z given, override default z.
-  setXY (x, y, z = null) {
+  setxy (x, y, z = null) {
     const p0 = this.patch
     if (z) this.z = z
     if (this.world.isOnWorld(x, y)) {
@@ -125,18 +125,18 @@ class TurtleProto {
     }
     const p = this.patch
     if (p.turtles != null && p !== p0) {
-      util.removeItem(p.turtles, this)
+      util.removeItem(p0.turtles, this)
       p.turtles.push(this)
     }
   }
   // Place the turtle at the given patch/turtle location
-  moveTo (agent) { this.setXY(agent.x, agent.y) }
+  moveTo (agent) { this.setxy(agent.x, agent.y) }
   // Move forward (along theta) d units (patch coords),
   forward (d) {
-    this.setXY(this.x + d * Math.cos(this.theta), this.y + d * Math.sin(this.theta))
+    this.setxy(this.x + d * Math.cos(this.theta), this.y + d * Math.sin(this.theta))
   }
   // Change current direction by rad radians which can be + (left) or - (right).
-  rotate (rad) { this.theta = util.mod(this.theta + rad, 0, Math.PI * 2) }
+  rotate (rad) { this.theta = util.mod(this.theta + rad, Math.PI * 2) }
   right (rad) { this.rotate(-rad) }
   left (rad) { this.rotate(rad) }
 

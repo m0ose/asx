@@ -13,6 +13,7 @@ class AgentSet extends Array {
   constructor (model, AgentProto, name, baseSet = null) {
     // Because es6 JavaScript Array itself calls the Array ctor
     // (ex: slice() returning a new array), skip if not AgentSet ctor.
+    if (model == null) model = 0 // model is null or undefined
     if (typeof model === 'number') {
       super(model) // model is a number, return AgentSet array of that size
     } else {
@@ -55,7 +56,7 @@ class AgentSet extends Array {
     this.push(o)
     return o
   }
-  clear () { while (this.any()) this.last.die() } // die() is an agent method
+  clear () { while (this.any()) this.last().die() } // die() is an agent method
   // Remove an agent from the agentset, returning the agentset for chaining.
   remove (o) {
     // Remove me from my baseSet
@@ -118,10 +119,17 @@ class AgentSet extends Array {
   last () { return this[ this.length - 1 ] }
   // Return true if reporter true for all of this set's objects
   all (reporter) { return this.every(reporter) }
-  // Return property values for key from this array's objects
-  props (key) { return this.map((a) => a[key]) }
-  // Return agents with reporter(agent) true
+  // Convert an AgentSet to an Array
+  toArray () { Object.setPrototypeOf(this, Array.prototype); return this }
+  // Return Array of property values for key from this array's objects
+  props (key) { return this.map((a) => a[key]).toArray() }
+  // Return agentset with reporter(agent) true
   with (reporter) { return this.filter(reporter) }
+  // Call fcn(agent) for each agent in AgentSet. Return the AgentSet for chaining.
+  // Note: 5x+ faster than this.forEach(fcn) !!
+  ask (fcn) { for (let i = 0; i < this.length; i++) fcn(this[i]); return this }
+  // Convience fcn for NetLogo's ask-with. Returns the with filtered AgentSet.
+  askWith (askFcn, withFcn) { return this.with(withFcn).ask(askFcn) }
   // Return count of agents with reporter(agent) true
   count (reporter) {
     return this.reduce((prev, p) => prev + reporter(p) ? 1 : 0, 0)
@@ -177,7 +185,7 @@ class AgentSet extends Array {
   nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
     if (n > this.length) util.error('nOf: n larger than agentset')
     if (n === this.length) return this
-    const result = new AgentSet(0)
+    const result = new AgentSet()
     while (result.length < n) {
       const o = this.oneOf()
       if (!(o in result)) result.push(o)
@@ -206,7 +214,7 @@ class AgentSet extends Array {
   // Return all agents within rectangle from given agent o.
   // dx & dy are (float) half width/height of rect
   inRect (o, dx, dy = dx, meToo = false) {
-    const agents = new AgentSet(0)
+    const agents = new AgentSet()
     const minX = o.x - dx // ok if max/min off-world, o, a are in-world
     const maxX = o.x + dx
     const minY = o.y - dy
@@ -221,7 +229,7 @@ class AgentSet extends Array {
 
   // Return all agents in agentset within d distance from given object.
   inRadius (o, radius, meToo = false) {
-    const agents = new AgentSet(0)
+    const agents = new AgentSet()
     // const {x, y} = o
     const d2 = radius * radius
     const sqDistance = util.sqDistance // Local function 2-3x faster, inlined?
@@ -235,7 +243,7 @@ class AgentSet extends Array {
   // As above, but also limited to the angle `coneAngle` around
   // a `direction` from object `o`.
   inCone (o, radius, coneAngle, direction, x0, y0, meToo = false) {
-    const agents = new AgentSet(0)
+    const agents = new AgentSet()
     // const {x, y} = o
     for (const a of this) {
       if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y))

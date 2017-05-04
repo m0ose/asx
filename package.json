@@ -20,7 +20,6 @@
     "build-three": "node bin/build3modules.js; babel --plugins transform-es2015-modules-systemjs libs/threelibs -d libs/threelibs",
     "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
     "start": "node bin/server.js",
-    "versions": "node -v; npm -v; babel -V",
     "build-src": "npm run build-test && npm run build-models && npm run build-dist",
     "build-bundle": "rollup -c"
   },
@@ -64,8 +63,7 @@
     "git-commit": "git commit -v && git push origin master --follow-tags",
     "make-page": "git merge master && npm run build && git add --all && git add -f docs test/scripts models/scripts dist libs && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
-    "foo": "ls `node bin/pkgkey.js dirs`",
-    "bar": "rollup --format cjs src/AS.js > /tmp/ASnode.js"
+    "foo": "ls `node bin/pkgkey.js mkdirs`"
   },
   "dependencies": {
     "lzma": "^2.3.0",

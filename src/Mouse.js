@@ -45,7 +45,7 @@ class Mouse {
   mouseMove (e) { this.generalHandler(e, this.down, true) }
   generalHandler (event, down, moved) {
     Object.assign(this, {down, moved, event})
-    this.setXY(event)
+    this.setxy(event)
     if (this.toggleMove && !moved)
       if (down)
         this.div.addEventListener('mousemove', this.moveHandler)
@@ -55,7 +55,7 @@ class Mouse {
   }
 
   // set x, y to be event location in patch coordinates.
-  setXY (e) {
+  setxy (e) {
     const [pixX, pixY] = util.getEventXY(this.div, e)
     ;[this.x, this.y] = this.model.patches.pixelXYToPatchXY(pixX, pixY)
   }

@@ -69,7 +69,7 @@ class Turtles extends AgentSet {
     const dTheta = 2 * Math.PI / list.length
     const [x0, y0] = center
     util.forEach(list, (turtle, i) => {
-      turtle.setXY(x0, y0)
+      turtle.setxy(x0, y0)
       turtle.theta = startAngle + (direction * dTheta * i)
       turtle.forward(radius)
     })

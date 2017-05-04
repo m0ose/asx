@@ -144,7 +144,7 @@ class PatchProto {
 
   sprout (num = 1, breed = this.model.turtles, init = util.noop) {
     breed.create(num, (turtle) => {
-      turtle.setXY(this.x, this.y)
+      turtle.setxy(this.x, this.y)
       init(turtle)
     })
   }
