@@ -20,6 +20,8 @@
     "build-three": "node bin/build3modules.js; babel --plugins transform-es2015-modules-systemjs libs/threelibs -d libs/threelibs",
     "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
     "start": "node bin/server.js",
+    "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
+    "gh-pages0": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
     "build-src": "npm run build-test && npm run build-models && npm run build-dist",
     "build-bundle": "rollup -c"
   },
@@ -64,9 +66,7 @@
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
     "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
-    "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
-    "gh-pages0": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
-    "gh-pages": "npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
+    "gh-pages": "npm run build-docs && git add -f docs && git commit -m 'gh-pages' && push origin master",
     "foo": "docco"
   },
   "dependencies": {
