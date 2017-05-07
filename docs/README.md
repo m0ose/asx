@@ -49,6 +49,7 @@ Our directory layout is:
 bin: workflow scripts
 dist: AS bundle & AS/ es6 modules distribution
 doc: docco src documentation
+docs: gh-page
 libs: dependencies
 models: sample models
 src: es6 modules for AS
@@ -72,7 +73,7 @@ The current sample models are: diffuse, fire, links, turtles
 
 Developer Documentation is created by [docco](https://jashkenas.github.io/docco/) and is [available here](http://backspaces.github.io/asx/doc/Model.html) Use **Jump To** menu, top right, to navigate between modules.
 
-#### License
+### License
 
 Copyright Owen Densmore, RedfishGroup LLC, 2012-2017<br>
 AgentScript may be freely distributed under the GPLv3 license:
