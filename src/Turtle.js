@@ -28,7 +28,8 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
 
   // patch: null,   // the patch I'm on .. uses getter below
   // links: null,   // the links having me as an end point .. lazy promoted below
-  wrap: false,      // Clamp or Wrap turtles to world if wander off world.
+  atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
+                    // 'bounce', or a function, see handleEdge() method
   sprite: null
 
   // spriteFcn: 'default',
@@ -101,12 +102,8 @@ class TurtleProto {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
 
-  // Return true if x, y within patch boundaries
-  // isOnWorld (x, y) {
-  //   const {minXcor, maxXcor, minYcor, maxYcor} = this.world
-  //   return util.between(x, minXcor, maxXcor) && util.between(y, minYcor, maxYcor)
-  // }
   // Set x, y position. If z given, override default z.
+  // Call handleEdge(x, y) if x, y off-world.
   setxy (x, y, z = null) {
     const p0 = this.patch
     if (z) this.z = z
@@ -114,19 +111,43 @@ class TurtleProto {
       this.x = x
       this.y = y
     } else {
-      const {minXcor, maxXcor, minYcor, maxYcor} = this.world
-      if (this.wrap) {
-        this.x = util.wrap(x, minXcor, maxXcor)
-        this.y = util.wrap(y, minYcor, maxYcor)
-      } else {
-        this.x = util.clamp(x, minXcor, maxXcor)
-        this.y = util.clamp(y, minYcor, maxYcor)
-      }
+      this.handleEdge(x, y)
+      // const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+      // if (this.wrap) {
+      //   this.x = util.wrap(x, minXcor, maxXcor)
+      //   this.y = util.wrap(y, minYcor, maxYcor)
+      // } else {
+      //   this.x = util.clamp(x, minXcor, maxXcor)
+      //   this.y = util.clamp(y, minYcor, maxYcor)
+      // }
     }
     const p = this.patch
     if (p.turtles != null && p !== p0) {
       util.removeItem(p0.turtles, this)
       p.turtles.push(this)
+    }
+  }
+  // Handle turtle if x,y off-world
+  handleEdge (x, y) {
+    if (util.isString(this.atEdge)) {
+      const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+      if (this.atEdge === 'wrap') {
+        this.x = util.wrap(x, minXcor, maxXcor)
+        this.y = util.wrap(y, minYcor, maxYcor)
+      } else if (this.atEdge === 'clamp' || this.atEdge === 'bounce') {
+        this.x = util.clamp(x, minXcor, maxXcor)
+        this.y = util.clamp(y, minYcor, maxYcor)
+        if (this.atEdge === 'bounce') {
+          if (this.x === minXcor || this.x === maxXcor)
+            this.theta = Math.PI - this.theta
+          else
+            this.theta = -this.theta
+        }
+      } else {
+        util.error(`turtle.handleEdge: bad atEdge: ${this.atEdge}`)
+      }
+    } else {
+      this.atEdge(x, y)
     }
   }
   // Place the turtle at the given patch/turtle location

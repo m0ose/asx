@@ -38,7 +38,7 @@
     "node_modules/three/examples/js/libs/stats.min.js",
     "node_modules/three/examples/js/libs/dat.gui.min.js"
   ],
-  "mkdirs": "docs dist libs test/scripts models/scripts",
+  "mkdirs": "doc dist libs test/scripts models/scripts",
   "scripts": {
     "postinstall": "npm run build",
     "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
@@ -46,9 +46,9 @@
     "zip": "rm asx.zip; zip -r asx.zip dist libs src test models",
     "start": "node node_modules/serve/bin/serve.js -p 3000",
     "now": "now && now alias # deploy to https://asx.now.sh/",
-    "build": "npm run clean && npm run build-test && npm run build-models && npm run build-dist && npm run build-docs && npm run build-deps",
+    "build": "npm run clean && npm run build-test && npm run build-models && npm run build-dist && npm run build-doc && npm run build-deps",
     "build-deps": "cp `node bin/pkgkey.js libs` libs",
-    "build-docs": "docco -o docs/ src/*.js",
+    "build-doc": "docco -o doc/ src/*.js",
     "build-test": "bin/buildscripts.sh test/src",
     "build-models": "bin/buildscripts.sh models/src",
     "build-dist": "npm run build-bundle && cp -Rp src dist/modules",
@@ -61,14 +61,14 @@
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
-    "make-page": "git merge master && npm run build && git add --all && git add -f docs test/scripts models/scripts dist libs && git commit -m 'master merge'",
+    "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
     "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
-    "foo": "ls `node bin/pkgkey.js mkdirs`"
+    "foo": "docco"
   },
   "dependencies": {
     "lzma": "^2.3.0",
     "pako": "^1.0.0",
-    "three": "*"
+    "three": "latest"
   },
   "devDependencies": {
     "docco": "^0.7.0",

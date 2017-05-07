@@ -13,7 +13,7 @@ const numTurtles = 10000
 class TurtlesModel extends Model {
   setup () {
     this.turtles.own('speed')
-    this.turtles.setDefault('wrap', true)
+    this.turtles.setDefault('atEdge', 'wrap')
     this.turtles.setDefault('z', 0.1)
     // this.turtles.setDefault('size', 1)
     // this.turtles.setDefault('speed', 0.1)

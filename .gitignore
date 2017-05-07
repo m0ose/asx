@@ -3,7 +3,7 @@
 # Derived files
 dist/
 libs/
-docs/
+doc/
 test/scripts/
 models/scripts/
 asx.zip

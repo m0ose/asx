@@ -11,7 +11,7 @@ util.toWindow({ ColorMap, Model, util })
 class LinksModel extends Model {
   setup () {
     this.turtles.own('speed')
-    this.turtles.setDefault('wrap', true)
+    this.turtles.setDefault('atEdge', 'bounce')
     this.turtles.setDefault('z', 0.1)
     // this.links.setDefault('color', )
     // this.turtles.setDefault('size', 1)
