@@ -1,6 +1,6 @@
 // Import the lib/ mmodules
-import DataSet from '../../src/DataSet.js'
-import util from '../../src/util.js'
+import DataSet from '../../dist/AS/DataSet.js'
+import util from '../../dist/AS/util.js'
 
 util.toWindow({ DataSet, util, pps: util.pps })
 

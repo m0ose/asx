@@ -1,4 +1,4 @@
-import util from '../../src/util.js'
+import util from '../../dist/AS/util.js'
 window.pps = util.pps
 
 class Agent {

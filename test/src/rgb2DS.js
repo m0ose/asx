@@ -1,7 +1,7 @@
-import RGBDataSet from '../../src/RGBDataSet.js'
-import util from '../../src/util.js'
-import ColorMap from '../../src/ColorMap.js'
-import Model from '../../src/Model.js'
+import RGBDataSet from '../../dist/AS/RGBDataSet.js'
+import util from '../../dist/AS/util.js'
+import ColorMap from '../../dist/AS/ColorMap.js'
+import Model from '../../dist/AS/Model.js'
 
 function main () {
   testRGB()

@@ -1,7 +1,7 @@
 // See https://goo.gl/bLWqUj for conversation on breeds.
-import ColorMap from '../../src/ColorMap.js'
-import Model from '../../src/Model.js'
-import util from '../../src/util.js'
+import ColorMap from '../../dist/AS/ColorMap.js'
+import Model from '../../dist/AS/Model.js'
+import util from '../../dist/AS/util.js'
 
 const modules = { ColorMap, Model, util }
 util.toWindow(modules)

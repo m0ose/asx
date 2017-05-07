@@ -1,7 +1,7 @@
 // Import the lib/ mmodules via relative paths
-import ColorMap from '../../src/ColorMap.js'
-import Model from '../../src/Model.js'
-import util from '../../src/util.js'
+import ColorMap from '../../dist/AS/ColorMap.js'
+import Model from '../../dist/AS/Model.js'
+import util from '../../dist/AS/util.js'
 
 util.toWindow({ ColorMap, Model, util })
 

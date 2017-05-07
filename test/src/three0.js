@@ -1,5 +1,5 @@
 // A naive implementation of turtles, one mesh per turtle, slow.
-import util from '../../src/util.js'
+import util from '../../dist/AS/util.js'
 
 // import * as THREE from '../libs/three.js'
 // import OrbitControls from '../libs/threelibs/OrbitControls.js'

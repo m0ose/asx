@@ -1,10 +1,10 @@
 // Import the lib/ mmodules via relative paths
-import util from '../../src/util.js'
-import DataSet from '../../src/DataSet.js'
-import DataSetIO from '../../src/DataSetIO.js'
-import RGBDataSet from '../../src/RGBDataSet.js'
-import RGBADataSet from '../../src/RGBADataSet.js'
-import AscDataSet from '../../src/AscDataSet.js'
+import util from '../../dist/AS/util.js'
+import DataSet from '../../dist/AS/DataSet.js'
+import DataSetIO from '../../dist/AS/DataSetIO.js'
+import RGBDataSet from '../../dist/AS/RGBDataSet.js'
+import RGBADataSet from '../../dist/AS/RGBADataSet.js'
+import AscDataSet from '../../dist/AS/AscDataSet.js'
 
 const modules = {
   DataSet, DataSetIO, AscDataSet, RGBDataSet, RGBADataSet, util

@@ -1,6 +1,6 @@
 // Import the lib/ mmodules via relative paths
-import util from '../../src/util.js'
-import Model from '../../src/Model.js'
+import util from '../../dist/AS/util.js'
+import Model from '../../dist/AS/Model.js'
 
 const modules = { Model, util }
 util.toWindow(modules)

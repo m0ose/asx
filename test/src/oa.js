@@ -1,10 +1,10 @@
 // Import the lib/ mmodules via relative paths
-import OofA from '../../src/OofA.js'
-import DataSet from '../../src/DataSet.js'
-import AgentSet from '../../src/AgentSet.js'
-import Color from '../../src/Color.js'
-import ColorMap from '../../src/ColorMap.js'
-import util from '../../src/util.js'
+import OofA from '../../dist/AS/OofA.js'
+import DataSet from '../../dist/AS/DataSet.js'
+import AgentSet from '../../dist/AS/AgentSet.js'
+import Color from '../../dist/AS/Color.js'
+import ColorMap from '../../dist/AS/ColorMap.js'
+import util from '../../dist/AS/util.js'
 
 const modules =
   { DataSet, util, OofA, AgentSet, Color, ColorMap, pps: util.pps }

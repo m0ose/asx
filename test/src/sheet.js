@@ -1,5 +1,5 @@
-import SpriteSheet from '../../src/SpriteSheet.js'
-import util from '../../src/util.js'
+import SpriteSheet from '../../dist/AS/SpriteSheet.js'
+import util from '../../dist/AS/util.js'
 
 document.body.style.backgroundColor = 'lightgrey'
 const ss = new SpriteSheet(64, 16)

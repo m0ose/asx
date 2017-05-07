@@ -1,7 +1,7 @@
 // Import the lib/ mmodules via relative paths
 const ColorMap = AS.ColorMap
 const DataSet = AS.DataSet
-// import Mouse from '../../src/Mouse.js'
+// import Mouse from '../../dist/AS/Mouse.js'
 const Model = AS.Model
 const util = AS.util
 

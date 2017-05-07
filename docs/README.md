@@ -1,10 +1,6 @@
 ## AgentScript-next Repository
 
-This is a repository for the next version of [AgentScript 1.0](http://agentscript.org), an es6 module based project.
-
-### Documentation
-
-Developer Documentation is created by [docco](https://jashkenas.github.io/docco/) and is [available here](http://backspaces.github.io/asx/doc/Model.html) Use **Jump To** menu, top right, to navigate between modules.
+This is a repository for the next version of the CoffeeScript [AgentScript 1.0](http://agentscript.org) Agent Based Modeling framework, converted into an es6 module based project.
 
 ### Developer Information
 
@@ -17,12 +13,11 @@ To clone a fresh repo, for PRs or your own local verson:
 
 All workflow is npm run scripts.  See package.json's scripts, or simply run `npm run` for a list.
 
-The repo has no "derived" files, i.e. won't run by just cloning. To complete the repo, use `npm install` which refreshes npm dependencies and does a clean build of the repo.
+The repo has no "derived" files, other than gh-page, see below, i.e. won't run by just cloning. To complete the repo, use `npm install` which refreshes npm dependencies and does a clean build of the repo.
 
 ### Github Pages
 
-A [gh-pages branch](http://backspaces.github.io/asx/) is used for the site. It contains the complete master repo, including the derived files. A new page is made from master by:
-* npm run gh-pages
+A [gh-pages branch](http://backspaces.github.io/asx/) is used for the site. It contains the master repo, including the derived files. It uses [the docs/ simplification](https://help.github.com/articles/user-organization-and-project-pages/#project-pages) for gh-page creation. A new page is built each commit automatically.
 
 This can be used to run example models and access documentation:
 * [http://backspaces.github.io/asx/models?diffuse](http://backspaces.github.io/asx/models?diffuse)
@@ -30,7 +25,7 @@ This can be used to run example models and access documentation:
 
 It can also be used as a CDN for all the es6 Modules:
 
-* `import Model from` '[http://backspaces.github.io/asx/src/Model.js](http://backspaces.github.io/asx/src/Model.js)'
+* `import Model from` '[http://backspaces.github.io/asx/dist/AS/Model.js](http://backspaces.github.io/asx/dist/AS/Model.js)'
 
 ..as well as these modules bundled into a traditional IIFE, see **Modules and Bundles** below.
 * `<script src="`[http://backspaces.github.io/asx/dist/AS.js](http://backspaces.github.io/asx/dist/AS.js)`"></script>`
@@ -45,14 +40,14 @@ The conversion of the [fire](http://backspaces.github.io/asx/models?fire) model 
 
 ### Modules and Bundles
 
-ASX src/ is entirely es6 Modules based, and the dist/ dir includes both a [Rollup](https://rollupjs.org/) generated legacy [IIFE](http://adripofjavascript.com/blog/drips/an-introduction-to-iffes-immediately-invoked-function-expressions.html) global, window.AS, for script users, and the module source for direct native module implementations (Edge, FFox Nightly, iOS Safari and Safari Technology Preview), see the [CanIUse](http://caniuse.com/#search=modules) page for current browser support.
+ASX is entirely es6 Modules based, and the dist/ dir includes both a [Rollup](https://rollupjs.org/) generated legacy [IIFE](http://adripofjavascript.com/blog/drips/an-introduction-to-iffes-immediately-invoked-function-expressions.html) global, window.AS, for script users, and the AS/ dir of the modules for direct native module implementations (Canary, Edge, FFox Nightly, iOS Safari and Safari Technology Preview), see the [CanIUse](http://caniuse.com/#search=modules) page for current browser support.
 
 ### Files
 
 Our directory layout is:
 ```
 bin: workflow scripts
-dist: AS bundle & es6 modules distribution
+dist: AS bundle & AS/ es6 modules distribution
 doc: docco src documentation
 libs: dependencies
 models: sample models
@@ -72,6 +67,10 @@ The default directory is scripts/ for now, but will convert to es6 modules, src/
 * [http://backspaces.github.io/asx/models?fire](http://backspaces.github.io/asx/models?fire)
 
 The current sample models are: diffuse, fire, links, turtles
+
+### Documentation
+
+Developer Documentation is created by [docco](https://jashkenas.github.io/docco/) and is [available here](http://backspaces.github.io/asx/doc/Model.html) Use **Jump To** menu, top right, to navigate between modules.
 
 #### License
 

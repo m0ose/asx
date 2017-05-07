@@ -43,7 +43,7 @@
   ],
   "mkdirs": "doc docs dist libs test/scripts models/scripts",
   "docsfiles": "README.md doc dist libs models",
-  "docstheme": "theme: jekyll-theme-midnight",
+  "docstheme": "theme: jekyll-theme-hacker",
   "scripts": {
     "postinstall": "npm run build",
     "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
@@ -57,7 +57,7 @@
     "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
     "build-test": "bin/buildscripts.sh test/src",
     "build-models": "bin/buildscripts.sh models/src",
-    "build-dist": "npm run build-bundle && cp -Rp src dist/modules",
+    "build-dist": "npm run build-bundle && cp -Rp src dist/AS",
     "build-bundle": "rollup --format iife --name AS src/AS.js > dist/AS.js",
     "watch-test": "sane 'npm run build-test' './test/src/'",
     "watch-models": "sane 'npm run build-models' './models/src/'",

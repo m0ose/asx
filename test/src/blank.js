@@ -1,16 +1,16 @@
-import util from '../../src/util.js'
-import AgentSet from '../../src/AgentSet.js'
-import Animator from '../../src/Animator.js'
-import Color from '../../src/Color.js'
-import ColorMap from '../../src/ColorMap.js'
-import DataSet from '../../src/DataSet.js'
-import DataSetIO from '../../src/DataSetIO.js'
-import Model from '../../src/Model.js'
-import Mouse from '../../src/Mouse.js'
-import OofA from '../../src/OofA.js'
-import Patch from '../../src/Patch.js'
-import Patches from '../../src/Patches.js'
-import RGBDataSet from '../../src/RGBDataSet.js'
+import util from '../../dist/AS/util.js'
+import AgentSet from '../../dist/AS/AgentSet.js'
+import Animator from '../../dist/AS/Animator.js'
+import Color from '../../dist/AS/Color.js'
+import ColorMap from '../../dist/AS/ColorMap.js'
+import DataSet from '../../dist/AS/DataSet.js'
+import DataSetIO from '../../dist/AS/DataSetIO.js'
+import Model from '../../dist/AS/Model.js'
+import Mouse from '../../dist/AS/Mouse.js'
+import OofA from '../../dist/AS/OofA.js'
+import Patch from '../../dist/AS/Patch.js'
+import Patches from '../../dist/AS/Patches.js'
+import RGBDataSet from '../../dist/AS/RGBDataSet.js'
 console.log('this', this)
 const modules = {
   AgentSet, Animator, Color, ColorMap, DataSet, DataSetIO, Mouse, Model, OofA, Patch, Patches, RGBDataSet, util
@@ -18,6 +18,6 @@ const modules = {
 util.toWindow(modules)
 
 // works, but only as modules. scripts yields as = AS.as, sigh.
-// import as from '../../src/AS.js'
+// import as from '../../dist/AS/AS.js'
 // console.log(as)
 // modules.util.toWindow(as)
