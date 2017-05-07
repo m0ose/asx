@@ -4,6 +4,7 @@
 dist/
 libs/
 doc/
+docs/
 test/scripts/
 models/scripts/
 asx.zip

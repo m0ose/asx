@@ -38,7 +38,9 @@
     "node_modules/three/examples/js/libs/stats.min.js",
     "node_modules/three/examples/js/libs/dat.gui.min.js"
   ],
-  "mkdirs": "doc dist libs test/scripts models/scripts",
+  "mkdirs": "doc docs dist libs test/scripts models/scripts",
+  "docsfiles": "README.md doc dist libs models",
+  "docstheme": "theme: jekyll-theme-hacker",
   "scripts": {
     "postinstall": "npm run build",
     "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
@@ -61,8 +63,10 @@
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
+    "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
     "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
-    "gh-pages": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
+    "gh-pages0": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
+    "gh-pages": "npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
     "foo": "docco"
   },
   "dependencies": {
