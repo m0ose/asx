@@ -43,7 +43,7 @@
   ],
   "mkdirs": "doc docs dist libs test/scripts models/scripts",
   "docsfiles": "README.md doc dist libs models",
-  "docstheme": "theme: jekyll-theme-hacker",
+  "docstheme": "theme: jekyll-theme-midnight",
   "scripts": {
     "postinstall": "npm run build",
     "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
