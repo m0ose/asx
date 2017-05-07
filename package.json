@@ -66,8 +66,8 @@
     "git-tag": "git tag -a `node bin/pkgkey.js version` # uses version: above",
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
-    "git-commit": "git commit -v && git push origin master --follow-tags",
-    "foo": "npm run clean && npm run build-test && npm run build-models && npm run build-dist"
+    "git-commit": "git commit -v && git push origin master # --follow-tags",
+    "foo": "docco"
   },
   "dependencies": {
     "lzma": "^2.3.0",
