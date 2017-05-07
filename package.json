@@ -20,6 +20,7 @@
     "build-three": "node bin/build3modules.js; babel --plugins transform-es2015-modules-systemjs libs/threelibs -d libs/threelibs",
     "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
     "start": "node bin/server.js",
+    "gh-pages": "npm run build-docs && git add -f docs && git commit -m 'gh-pages' && git push origin master",
     "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
     "gh-pages0": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
     "build-src": "npm run build-test && npm run build-models && npm run build-dist",
@@ -50,9 +51,10 @@
     "zip": "rm asx.zip; zip -r asx.zip dist libs src test models",
     "start": "node node_modules/serve/bin/serve.js -p 3000",
     "now": "now && now alias # deploy to https://asx.now.sh/",
-    "build": "npm run clean && npm run build-test && npm run build-models && npm run build-dist && npm run build-doc && npm run build-deps",
+    "build": "npm run clean && npm run build-test && npm run build-models && npm run build-dist && npm run build-doc && npm run build-deps && npm run build-docs",
     "build-deps": "cp `node bin/pkgkey.js libs` libs",
     "build-doc": "docco -o doc/ src/*.js",
+    "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
     "build-test": "bin/buildscripts.sh test/src",
     "build-models": "bin/buildscripts.sh models/src",
     "build-dist": "npm run build-bundle && cp -Rp src dist/modules",
@@ -65,8 +67,6 @@
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master --follow-tags",
-    "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
-    "gh-pages": "npm run build-docs && git add -f docs && git commit -m 'gh-pages' && push origin master",
     "foo": "docco"
   },
   "dependencies": {
