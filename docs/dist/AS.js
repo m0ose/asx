@@ -3608,7 +3608,6 @@ class RGBDataSet extends DataSet {
 }
 
 /* eslint-disable */
-// import DataSetIO       from './DataSetIO.js'
 /* eslint-enable */
 
 var AS = {
@@ -3618,7 +3617,6 @@ var AS = {
   Color,
   ColorMap,
   DataSet,
-  // DataSetIO,
   Link: LinkProto,
   Links,
   Model,

@@ -9,7 +9,7 @@ To clone a fresh repo, for PRs or your own local verson:
 * git clone https://github.com/backspaces/asx # create skeleton repo
 * cd asx # go to new repo
 * npm install # install all dev dependencies & runs `npm run build`
-* open `http://<path to asx>/test` and check console for messages
+* open `http://<path to asx>/models` to run a model. Check console for messages
 
 All workflow is npm run scripts.  See package.json's scripts, or simply run `npm run` for a list.
 
@@ -34,7 +34,7 @@ It can also be used as a CDN for all the es6 Modules:
 
 ASX has been converted from layers of 2D canvases to a single WebGL canvas, currently managed by [Three.js](https://threejs.org/). This is a breaking change, primarily changing subclassing of class Model.
 
-The 'div' used by Model's constructor defaults to `document.body`, the whole page. In addition, there is a Three parameters object in the constructor, defaulting to that used by the test.html suite.
+The 'div' used by Model's constructor defaults to `document.body`, the whole page. In addition, there is a Three parameters object in the constructor, defaulting to that used by the models/ suite.
 
 The conversion of the [fire](http://backspaces.github.io/asx/models?fire) model is an example of the minor changes needed in converting to Three.js.
 
@@ -53,10 +53,9 @@ docs: gh-page
 libs: dependencies
 models: sample models
 src: es6 modules for AS
-test: tests of AS modules
 ```
 
-Within models and test directories are src/ (es6 modules) and scripts/ (legacy) and an index.html which runs the src/scripts files as a query string/REST. Both index.html files have a default.
+Within models/ are src/ (es6 modules) and scripts/ (legacy) and an index.html which runs the src/scripts files as a query string/REST. Both index.html files have a default.
 
 There are currently two ways to run a sample model: es6 modules (src/) or legacy scripts (scripts/), the latter runs only in browsers supporting modules (see above):
 

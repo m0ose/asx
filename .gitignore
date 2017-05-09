@@ -1,10 +1,11 @@
 # Local ignores, also see ~/.gitignore
 
-# Derived files other than docs/ (gh-page)
+# Derived files other than docs/ (gh-page). Also test, not part of dist.
 dist/
 libs/
 doc/
-test/scripts/
+test/
+# test/scripts/
 models/scripts/
 asx.zip
 
