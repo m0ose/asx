@@ -1,6 +1,5 @@
 import util from './util.js'
 import AgentSet from './AgentSet.js'
-// import SpriteSheet from './SpriteSheet.js'
 import ColorMap from './ColorMap.js'
 
 // Turtles are the world other agentsets live on. They create a coord system

@@ -1,7 +1,5 @@
 import util from './util.js'
 import Color from './Color.js'
-// import ColorMap from './ColorMap.js'
-// import SpriteSheet from './SpriteSheet'
 
 // Flyweight object creation, see Patch/Patches.
 
@@ -27,7 +25,7 @@ const linkVariables = { // Core variables for patches. Not 'own' variables.
   // [Drawing Lines is Hard!](https://mattdesl.svbtle.com/drawing-lines-is-hard)
   width: 1
 }
-class LinkProto {
+class Link {
   // Initialize a Link given its Links AgentSet.
   constructor (agentSet) {
     Object.assign(this, linkVariables)
@@ -59,4 +57,4 @@ class LinkProto {
   get breed () { return this.agentSet }
 }
 
-export default LinkProto
+export default Link

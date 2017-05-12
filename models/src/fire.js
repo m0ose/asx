@@ -1,12 +1,10 @@
-// Import the lib/ mmodules via page relative paths
-import util from '../../dist/AS/util.js'
-import Color from '../../dist/AS/Color.js'
-import ColorMap from '../../dist/AS/ColorMap.js'
-import Model from '../../dist/AS/Model.js'
+// import Color from '../../dist/AS/Color.js'
+// import ColorMap from '../../dist/AS/ColorMap.js'
+// import Model from '../../dist/AS/Model.js'
+// import util from '../../dist/AS/util.js'
+import {Color, ColorMap, Model, util} from '../../dist/AS.modules.js'
 
-const modules = { Color, ColorMap, Model, util }
-util.toWindow(modules)
-console.log(Object.keys(modules).join(', '))
+util.toWindow({ Color, ColorMap, Model, util })
 
 class FireModel extends Model {
   setup () {

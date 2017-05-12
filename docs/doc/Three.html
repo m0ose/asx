@@ -150,10 +150,12 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>import * as THREE from ‘../libs/three.min.js’
+              <p>import <em> as THREE from ‘../libs/three.module.js’
+import </em> as THREE from ‘../libs/src/three/Three.js’
 import OrbitControls from ‘../libs/threelibs/OrbitControls.js’
-import Stats from ‘../libs/stats.min.js’
-import dat from ‘../libs/dat.gui.min.js’</p>
+import Stats from ‘../libs/src/stats.js/Stats.js’
+import dat from ‘../libs/dat.gui.min.js’
+import GUI from ‘../libs/src/dat.gui/dat/gui/GUI.js’</p>
 
             </div>
             
@@ -314,22 +316,8 @@ this.spriteSheet.setTexture(THREE.CanvasTexture)</p>
       helpers.axes = <span class="hljs-keyword">new</span> THREE.AxisHelper(<span class="hljs-number">1.5</span> * width / <span class="hljs-number">2</span>)
       scene.add(helpers.axes)
     }
-    <span class="hljs-keyword">if</span> (useGrid) {</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-9">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>
-              <p>helpers.grid = new THREE.GridHelper(width, width / patchSize)</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      helpers.grid = <span class="hljs-keyword">new</span> THREE.GridHelper(<span class="hljs-number">1.25</span> * width, <span class="hljs-number">10</span>)
+    <span class="hljs-keyword">if</span> (useGrid) {
+      helpers.grid = <span class="hljs-keyword">new</span> THREE.GridHelper(<span class="hljs-number">1.25</span> * width, <span class="hljs-number">10</span>)
       helpers.grid.rotation.x = THREE.Math.degToRad(<span class="hljs-number">90</span>)
       scene.add(helpers.grid)
     }
@@ -342,11 +330,11 @@ this.spriteSheet.setTexture(THREE.CanvasTexture)</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>helpers.controls = new OrbitControls(camera, renderer.domElement)</p>
 
@@ -355,8 +343,22 @@ this.spriteSheet.setTexture(THREE.CanvasTexture)</p>
             <div class="content"><div class='highlight'><pre>      helpers.controls = <span class="hljs-keyword">new</span> THREE.OrbitControls(camera, renderer.domElement)
     }
     <span class="hljs-keyword">if</span> (useGUI) {
-      helpers.gui = <span class="hljs-keyword">new</span> dat.GUI()
-    }
+      helpers.gui = <span class="hljs-keyword">new</span> dat.GUI()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>helpers.gui = new GUI()</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
 
     <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>, helpers)
   }

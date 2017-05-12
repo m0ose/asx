@@ -1,7 +1,4 @@
 import util from './util.js'
-// import Color from './Color.js'
-// import ColorMap from './ColorMap.js'
-// import SpriteSheet from './SpriteSheet'
 
 // Flyweight object creation, see Patch/Patches.
 
@@ -38,7 +35,7 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
   // labelOffset: [0, 0],  // text pixel offset from the turtle center
   // labelColor: Color.newTypedColor(0, 0, 0) // the label color
 }
-class TurtleProto {
+class Turtle {
   // Initialize a Turtle given its Turtles AgentSet.
   constructor (agentSet) {
     Object.assign(this, turtleVariables)
@@ -212,4 +209,4 @@ class TurtleProto {
 
 }
 
-export default TurtleProto
+export default Turtle

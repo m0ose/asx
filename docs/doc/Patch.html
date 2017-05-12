@@ -211,14 +211,14 @@ are “promoted” to instance variables if used.</p>
               </div>
               <p>Flyweight object creation:
 Objects within AgentSets use “prototypal inheritance” via Object.create().
-Here, the PatchProto class is given to Patches for use creating Proto objects
-(new PatchProto(agentSet)), but only once per model/breed.
+Here, the Patch class is given to Patches for use creating Proto objects
+(new Patch(agentSet)), but only once per model/breed.
 The flyweight Patch objects are created via Object.create(protoObject),
-This lets the new PatchProto(agentset) obhect be “defaults”.</p>
+This lets the new Patch(agentset) obhect be “defaults”.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PatchProto</span> </span>{</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Patch</span> </span>{</pre></div></div>
             
         </li>
         
@@ -515,7 +515,7 @@ Return patch dx, dy from my position.</p>
 
 }
 
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> PatchProto</pre></div></div>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Patch</pre></div></div>
             
         </li>
         

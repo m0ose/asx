@@ -18,7 +18,8 @@ import Turtles         from './Turtles.js'
 import util            from './util.js'
 /* eslint-enable */
 
-export default {
+// export default {
+export {
   AgentSet,
   Animator,
   AscDataSet,

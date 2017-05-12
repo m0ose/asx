@@ -139,7 +139,8 @@
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span>
-<span class="hljs-keyword">import</span> AgentSet <span class="hljs-keyword">from</span> <span class="hljs-string">'./AgentSet.js'</span></pre></div></div>
+<span class="hljs-keyword">import</span> AgentSet <span class="hljs-keyword">from</span> <span class="hljs-string">'./AgentSet.js'</span>
+<span class="hljs-keyword">import</span> ColorMap <span class="hljs-keyword">from</span> <span class="hljs-string">'./ColorMap.js'</span></pre></div></div>
             
         </li>
         
@@ -149,21 +150,6 @@
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
-              </div>
-              <p>import SpriteSheet from ‘./SpriteSheet.js’</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> ColorMap <span class="hljs-keyword">from</span> <span class="hljs-string">'./ColorMap.js'</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-3">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <p>Turtles are the world other agentsets live on. They create a coord system
 from Model’s world values: size, minX, maxX, minY, maxY</p>
@@ -176,11 +162,11 @@ from Model’s world values: size, minX, maxX, minY, maxY</p>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-3">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
               <p>AgentSet sets these variables:
 model, name, baseSet, world: model.world &amp; agentProto: new AgentProto</p>
@@ -192,11 +178,11 @@ model, name, baseSet, world: model.world &amp; agentProto: new AgentProto</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-4">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
               <p>Skip if an basic Array ctor or a breedSet. See AgentSet comments.</p>
 
@@ -207,11 +193,11 @@ model, name, baseSet, world: model.world &amp; agentProto: new AgentProto</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>this.world = model.world
 this.labels = [] // sparse array for labels
@@ -235,11 +221,11 @@ this.colorMap = ColorMap.Basic16</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>clear () {
   while (this.any()) this.last.die() // die a turtle method
@@ -250,11 +236,11 @@ this.colorMap = ColorMap.Basic16</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Return an array of this breed within the array of patchs</p>
 
@@ -270,11 +256,11 @@ this.colorMap = ColorMap.Basic16</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>Return an array of turtles/breeds within the patchRect, dx/y integers
 Note: will return turtle too. Also slightly inaccurate due to being
@@ -287,11 +273,11 @@ patch based, not turtle based.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>meToo: true for patches, could have several turtles on patch</p>
 
@@ -306,11 +292,11 @@ patch based, not turtle based.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Return the members of this agentset that are within radius distance
 from me, using a patch rect.</p>
@@ -329,11 +315,11 @@ from me, using a patch rect.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Circle Layout: position the turtles in the list in an equally
 spaced circle of the given radius, with the initial turtle

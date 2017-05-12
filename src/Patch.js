@@ -26,11 +26,11 @@ const patchVariables = { // Core variables for patches. Not 'own' variables.
 
 // Flyweight object creation:
 // Objects within AgentSets use "prototypal inheritance" via Object.create().
-// Here, the PatchProto class is given to Patches for use creating Proto objects
-// (new PatchProto(agentSet)), but only once per model/breed.
+// Here, the Patch class is given to Patches for use creating Proto objects
+// (new Patch(agentSet)), but only once per model/breed.
 // The flyweight Patch objects are created via Object.create(protoObject),
-// This lets the new PatchProto(agentset) obhect be "defaults".
-class PatchProto {
+// This lets the new Patch(agentset) obhect be "defaults".
+class Patch {
   // Initialize a Patch given its Patches AgentSet.
   constructor (agentSet) {
     Object.assign(this, patchVariables)
@@ -151,4 +151,4 @@ class PatchProto {
 
 }
 
-export default PatchProto
+export default Patch

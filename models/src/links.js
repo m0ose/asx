@@ -1,10 +1,7 @@
-// Import the lib/ mmodules via relative paths
-import ColorMap from '../../dist/AS/ColorMap.js'
-// import Color from '../../dist/AS/Color.js'
-// import DataSet from '../../dist/AS/DataSet.js'
-// import Mouse from '../../dist/AS/Mouse.js'
-import Model from '../../dist/AS/Model.js'
-import util from '../../dist/AS/util.js'
+// import ColorMap from '../../dist/AS/ColorMap.js'
+// import Model from '../../dist/AS/Model.js'
+// import util from '../../dist/AS/util.js'
+import {ColorMap, Model, util} from '../../dist/AS.modules.js'
 
 util.toWindow({ ColorMap, Model, util })
 

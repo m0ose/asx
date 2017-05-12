@@ -1,10 +1,12 @@
 import SpriteSheet from './SpriteSheet.js'
 import util from './util.js'
 
-// import * as THREE from '../libs/three.min.js'
+// import * as THREE from '../libs/three.module.js'
+// import * as THREE from '../libs/src/three/Three.js'
 // import OrbitControls from '../libs/threelibs/OrbitControls.js'
-// import Stats from '../libs/stats.min.js'
+// import Stats from '../libs/src/stats.js/Stats.js'
 // import dat from '../libs/dat.gui.min.js'
+// import GUI from '../libs/src/dat.gui/dat/gui/GUI.js'
 
 // util.toWindow({three: THREE}) // REMIND
 
@@ -91,7 +93,6 @@ class Three {
       scene.add(helpers.axes)
     }
     if (useGrid) {
-      // helpers.grid = new THREE.GridHelper(width, width / patchSize)
       helpers.grid = new THREE.GridHelper(1.25 * width, 10)
       helpers.grid.rotation.x = THREE.Math.degToRad(90)
       scene.add(helpers.grid)
@@ -106,6 +107,7 @@ class Three {
     }
     if (useGUI) {
       helpers.gui = new dat.GUI()
+      // helpers.gui = new GUI()
     }
 
     Object.assign(this, helpers)

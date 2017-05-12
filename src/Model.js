@@ -1,20 +1,12 @@
 import Patches from './Patches.js'
-import PatchProto from './Patch.js'
+import Patch from './Patch.js'
 import Turtles from './Turtles.js'
-import TurtleProto from './Turtle.js'
+import Turtle from './Turtle.js'
 import Links from './Links.js'
-import LinkProto from './Link.js'
-// import SpriteSheet from './SpriteSheet.js'
+import Link from './Link.js'
 import Animator from './Animator.js'
 import Three from './Three.js'
 import util from './util.js'
-
-// import * as THREE from '../libs/three.min.js'
-// import OrbitControls from '../libs/threelibs/OrbitControls.js'
-// import Stats from '../libs/stats.min.js'
-// import dat from '../libs/dat.gui.min.js'
-
-// util.toWindow({three: THREE}) // REMIND
 
 // Class Model is the primary interface for modelers, integrating
 // all the parts of a model. It also contains NetLogo's `observer` methods.
@@ -107,11 +99,11 @@ class Model {
     // this.three.unitQuad = util.createQuad(this.world.patchSize / 2, 0)
     // this.three.unitQuad = util.createQuad(0.5, 0)
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true
-    this.patches = new Patches(this, PatchProto, 'patches')
+    this.patches = new Patches(this, Patch, 'patches')
     this.renderer.initPatchesMesh(this.patches.pixels.ctx.canvas)
-    this.turtles = new Turtles(this, TurtleProto, 'turtles')
+    this.turtles = new Turtles(this, Turtle, 'turtles')
     this.renderer.initTurtlesMesh()
-    this.links = new Links(this, LinkProto, 'links')
+    this.links = new Links(this, Link, 'links')
     this.renderer.initLinksMesh()
     // REMIND: temp
     // this.div.appendChild(this.patches.pixels.ctx.canvas)
@@ -177,17 +169,17 @@ class Model {
   // Breeds: create subarrays of Patches, Agentss, Links
   patchBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Patches(this, PatchProto, breedName, this.patches)
+      this[breedName] = new Patches(this, Patch, breedName, this.patches)
     }
   }
   turtleBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Turtles(this, TurtleProto, breedName, this.turtles)
+      this[breedName] = new Turtles(this, Turtle, breedName, this.turtles)
     }
   }
   linkBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Links(this, LinkProto, breedName, this.links)
+      this[breedName] = new Links(this, Link, breedName, this.links)
     }
   }
 }

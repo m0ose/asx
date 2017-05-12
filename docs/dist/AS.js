@@ -1,4 +1,4 @@
-var AS = (function () {
+(function (exports) {
 'use strict';
 
 // A set of useful misc utils which will eventually move to individual files.
@@ -2090,9 +2090,6 @@ const ColorMap = {
   }
 };
 
-// import ColorMap from './ColorMap.js'
-// import SpriteSheet from './SpriteSheet'
-
 // Flyweight object creation, see Patch/Patches.
 
 // Class Link instances form a link between two turtles, forming a graph.
@@ -2117,7 +2114,7 @@ const linkVariables = { // Core variables for patches. Not 'own' variables.
   // [Drawing Lines is Hard!](https://mattdesl.svbtle.com/drawing-lines-is-hard)
   width: 1
 };
-class LinkProto {
+class Link {
   // Initialize a Link given its Links AgentSet.
   constructor (agentSet) {
     Object.assign(this, linkVariables);
@@ -2148,10 +2145,6 @@ class LinkProto {
   setBreed (breed) { breed.setBreed(this); }
   get breed () { return this.agentSet }
 }
-
-// import util from './util.js'
-// import SpriteSheet from './SpriteSheet.js'
-// import ColorMap from './ColorMap.js'
 
 // Links are a collection of all the Link objects between turtles.
 class Links extends AgentSet {
@@ -2517,11 +2510,11 @@ const patchVariables = { // Core variables for patches. Not 'own' variables.
 
 // Flyweight object creation:
 // Objects within AgentSets use "prototypal inheritance" via Object.create().
-// Here, the PatchProto class is given to Patches for use creating Proto objects
-// (new PatchProto(agentSet)), but only once per model/breed.
+// Here, the Patch class is given to Patches for use creating Proto objects
+// (new Patch(agentSet)), but only once per model/breed.
 // The flyweight Patch objects are created via Object.create(protoObject),
-// This lets the new PatchProto(agentset) obhect be "defaults".
-class PatchProto {
+// This lets the new Patch(agentset) obhect be "defaults".
+class Patch {
   // Initialize a Patch given its Patches AgentSet.
   constructor (agentSet) {
     Object.assign(this, patchVariables);
@@ -2642,7 +2635,6 @@ class PatchProto {
 
 }
 
-// import SpriteSheet from './SpriteSheet.js'
 // Turtles are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Turtles extends AgentSet {
@@ -2717,10 +2709,6 @@ class Turtles extends AgentSet {
 
 }
 
-// import Color from './Color.js'
-// import ColorMap from './ColorMap.js'
-// import SpriteSheet from './SpriteSheet'
-
 // Flyweight object creation, see Patch/Patches.
 
 // Class Turtle instances represent the dynamic, behavioral element of modeling.
@@ -2756,7 +2744,7 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
   // labelOffset: [0, 0],  // text pixel offset from the turtle center
   // labelColor: Color.newTypedColor(0, 0, 0) // the label color
 };
-class TurtleProto {
+class Turtle {
   // Initialize a Turtle given its Turtles AgentSet.
   constructor (agentSet) {
     Object.assign(this, turtleVariables);
@@ -3138,10 +3126,12 @@ const paths = {
   triangle (ctx) { this.poly(ctx, [[1, 0], [-1, -0.8], [-1, 0.8]]); }
 };
 
-// import * as THREE from '../libs/three.min.js'
+// import * as THREE from '../libs/three.module.js'
+// import * as THREE from '../libs/src/three/Three.js'
 // import OrbitControls from '../libs/threelibs/OrbitControls.js'
-// import Stats from '../libs/stats.min.js'
+// import Stats from '../libs/src/stats.js/Stats.js'
 // import dat from '../libs/dat.gui.min.js'
+// import GUI from '../libs/src/dat.gui/dat/gui/GUI.js'
 
 // util.toWindow({three: THREE}) // REMIND
 
@@ -3228,7 +3218,6 @@ class Three {
       scene.add(helpers.axes);
     }
     if (useGrid) {
-      // helpers.grid = new THREE.GridHelper(width, width / patchSize)
       helpers.grid = new THREE.GridHelper(1.25 * width, 10);
       helpers.grid.rotation.x = THREE.Math.degToRad(90);
       scene.add(helpers.grid);
@@ -3243,6 +3232,7 @@ class Three {
     }
     if (useGUI) {
       helpers.gui = new dat.GUI();
+      // helpers.gui = new GUI()
     }
 
     Object.assign(this, helpers);
@@ -3374,14 +3364,6 @@ class Three {
   }
 }
 
-// import SpriteSheet from './SpriteSheet.js'
-// import * as THREE from '../libs/three.min.js'
-// import OrbitControls from '../libs/threelibs/OrbitControls.js'
-// import Stats from '../libs/stats.min.js'
-// import dat from '../libs/dat.gui.min.js'
-
-// util.toWindow({three: THREE}) // REMIND
-
 // Class Model is the primary interface for modelers, integrating
 // all the parts of a model. It also contains NetLogo's `observer` methods.
 class Model {
@@ -3473,11 +3455,11 @@ class Model {
     // this.three.unitQuad = util.createQuad(this.world.patchSize / 2, 0)
     // this.three.unitQuad = util.createQuad(0.5, 0)
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true;
-    this.patches = new Patches(this, PatchProto, 'patches');
+    this.patches = new Patches(this, Patch, 'patches');
     this.renderer.initPatchesMesh(this.patches.pixels.ctx.canvas);
-    this.turtles = new Turtles(this, TurtleProto, 'turtles');
+    this.turtles = new Turtles(this, Turtle, 'turtles');
     this.renderer.initTurtlesMesh();
-    this.links = new Links(this, LinkProto, 'links');
+    this.links = new Links(this, Link, 'links');
     this.renderer.initLinksMesh();
     // REMIND: temp
     // this.div.appendChild(this.patches.pixels.ctx.canvas)
@@ -3543,17 +3525,17 @@ class Model {
   // Breeds: create subarrays of Patches, Agentss, Links
   patchBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Patches(this, PatchProto, breedName, this.patches);
+      this[breedName] = new Patches(this, Patch, breedName, this.patches);
     }
   }
   turtleBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Turtles(this, TurtleProto, breedName, this.turtles);
+      this[breedName] = new Turtles(this, Turtle, breedName, this.turtles);
     }
   }
   linkBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Links(this, LinkProto, breedName, this.links);
+      this[breedName] = new Links(this, Link, breedName, this.links);
     }
   }
 }
@@ -3608,28 +3590,23 @@ class RGBDataSet extends DataSet {
 }
 
 /* eslint-disable */
-/* eslint-enable */
 
-var AS = {
-  AgentSet,
-  Animator,
-  AscDataSet,
-  Color,
-  ColorMap,
-  DataSet,
-  Link: LinkProto,
-  Links,
-  Model,
-  Patch: PatchProto,
-  Patches,
-  RGBADataSet,
-  RGBDataSet,
-  SpriteSheet,
-  Turtle: TurtleProto,
-  Turtles,
-  util
-};
+exports.AgentSet = AgentSet;
+exports.Animator = Animator;
+exports.AscDataSet = AscDataSet;
+exports.Color = Color;
+exports.ColorMap = ColorMap;
+exports.DataSet = DataSet;
+exports.Link = Link;
+exports.Links = Links;
+exports.Model = Model;
+exports.Patch = Patch;
+exports.Patches = Patches;
+exports.RGBADataSet = RGBADataSet;
+exports.RGBDataSet = RGBDataSet;
+exports.SpriteSheet = SpriteSheet;
+exports.Turtle = Turtle;
+exports.Turtles = Turtles;
+exports.util = util;
 
-return AS;
-
-}());
+}((this.AS = this.AS || {})));

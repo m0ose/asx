@@ -15,17 +15,18 @@ files=`ls *.js`
 for file in $files; do
   echo '    ' $file
   sed '
-    /^import/{
-      s:^import *::
-      s: from.*::
-      s:\(^.*$\):\1 \1:
-      s: : = AS.:
-      s:^:const :
+    /^import .*AS.modules.js/{
+      s:^import :const :
+      s: from .*$: = AS:
     }
   ' < $file > ../scripts/$file
   # sed '
-  #   /^import/{
-  #     s:src:lib:
+  #   /^import .*[^.]..\//{
+  #     s:^import *::
+  #     s: from.*::
+  #     s:\(^.*$\):\1 \1:
+  #     s: : = AS.:
+  #     s:^:const :
   #   }
-  # ' < $file > ../apps/$file
+  # ' < $file > ../scripts/$file
 done

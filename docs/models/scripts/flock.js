@@ -1,7 +1,7 @@
-// Import the lib/ mmodules via relative paths
-const ColorMap = AS.ColorMap
-const Model = AS.Model
-const util = AS.util
+// import ColorMap from '../../dist/AS/ColorMap.js'
+// import Model from '../../dist/AS/Model.js'
+// import util from '../../dist/AS/util.js'
+const {ColorMap, Model, util} = AS
 
 util.toWindow({ ColorMap, Model, util })
 

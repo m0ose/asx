@@ -1,6 +1,6 @@
 {
   "name": "asx",
-  "version": "v0.1.0",
+  "version": "v0.2.0",
   "description": "AgentScript, 2nd Edition",
   "homepage": "http://backspaces.github.io/asx/",
   "main": "src/app.js",
@@ -25,6 +25,7 @@
     "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
     "gh-pages0": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
     "build-src": "npm run build-test && npm run build-models && npm run build-dist",
+    "build-bundle": "rollup  --format iife --name AS src/AS.js > dist/AS.js",
     "build-bundle": "rollup -c"
   },
   "now": {
@@ -32,11 +33,17 @@
   },
   "libs": [
     "node_modules/three/build/three.min.js",
+    "node_modules/three/build/three.module.js",
     "node_modules/three/examples/js/controls/OrbitControls.js",
     "node_modules/three/examples/js/controls/FlyControls.js",
     "node_modules/three/examples/js/controls/FirstPersonControls.js",
     "node_modules/stats.js/build/stats.min.js",
     "node_modules/dat.gui/build/dat.gui.min.js"
+  ],
+  "libssrc": [
+    "node_modules/stats.js/src",
+    "node_modules/dat.gui/src",
+    "node_modules/three/src"
   ],
   "themenames": [
     "Use one of these for 'docstheme' below",
@@ -54,24 +61,30 @@
     "jekyll-theme-tactile",
     "jekyll-theme-time-machine"
   ],
-  "docsfiles": "README.md doc dist libs models",
+  "docsfiles": [
+    "README.md",
+    "doc",
+    "dist",
+    "libs",
+    "models"
+  ],
   "docstheme": "theme: jekyll-theme-hacker",
   "mkdirs": "doc docs dist libs models/scripts",
   "scripts": {
     "postinstall": "npm run build",
     "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
-    "mkdirs": "mkdir -p `node bin/pkgkey.js mkdirs`",
+    "mkdirs": "mkdir -p `node bin/pkgkey.js mkdirs` libs/src",
     "zip": "rm asx.zip; zip -r asx.zip dist libs src models",
     "start": "node node_modules/serve/bin/serve.js -p 3000",
     "now": "now && now alias # deploy to https://asx.now.sh/",
-    "build": "npm run clean && npm run build-models && npm run build-dist && npm run build-doc && npm run build-deps && npm run build-docs",
-    "build-deps": "cp `node bin/pkgkey.js libs` libs",
+    "build": "npm run clean && npm run build-libs && npm run build-models && npm run build-dist && npm run build-min && npm run build-doc && npm run build-docs",
+    "build-libs": "cp `node bin/pkgkey.js libs` libs && npm run build-libs-src",
+    "build-libs-src": "bin/cplibsrc.sh `node bin/pkgkey.js libssrc`",
     "build-doc": "docco -o doc/ src/*.js",
     "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
     "build-test": "rm -rf test/scripts && bin/buildscripts.sh test/src",
     "build-models": "bin/buildscripts.sh models/src",
-    "build-dist": "npm run build-bundle && cp -Rp src dist/AS",
-    "build-bundle": "rollup --format iife --name AS src/AS.js > dist/AS.js",
+    "build-dist": "rollup -c",
     "build-min": "babili dist/AS.js > dist/AS.min.js",
     "watch-test": "sane 'npm run build-test' './test/src/'",
     "watch-models": "sane 'npm run build-models' './models/src/'",
@@ -79,9 +92,9 @@
     "watch": "npm run watch-test & npm run watch-models & npm run watch-src",
     "git-tag": "git tag -a `node bin/pkgkey.js version` # uses version: above",
     "git-diff": "git diff --cached",
-    "git-prep": "npm run build && npm run build-min && git add --all && git status",
+    "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master # --follow-tags",
-    "foo": "babili -h"
+    "foo": "bin/cplibsrc.sh `node bin/pkgkey.js libssrc`"
   },
   "dependencies": {
     "dat.gui": "dataarts/dat.gui",

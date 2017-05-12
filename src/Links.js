@@ -1,7 +1,4 @@
-// import util from './util.js'
 import AgentSet from './AgentSet.js'
-// import SpriteSheet from './SpriteSheet.js'
-// import ColorMap from './ColorMap.js'
 
 // Links are a collection of all the Link objects between turtles.
 class Links extends AgentSet {

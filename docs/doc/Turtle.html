@@ -149,9 +149,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>import Color from ‘./Color.js’
-import ColorMap from ‘./ColorMap.js’
-import SpriteSheet from ‘./SpriteSheet’</p>
+              <p>Flyweight object creation, see Patch/Patches.</p>
 
             </div>
             
@@ -164,7 +162,9 @@ import SpriteSheet from ‘./SpriteSheet’</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Flyweight object creation, see Patch/Patches.</p>
+              <p>Class Turtle instances represent the dynamic, behavioral element of modeling.
+Each turtle knows the patch it is on, and interacts with that and other
+patches, as well as other turtles.</p>
 
             </div>
             
@@ -176,21 +176,6 @@ import SpriteSheet from ‘./SpriteSheet’</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
-              </div>
-              <p>Class Turtle instances represent the dynamic, behavioral element of modeling.
-Each turtle knows the patch it is on, and interacts with that and other
-patches, as well as other turtles.</p>
-
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-5">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>The core default variables needed by a Turtle.
 Use turtles.setDefault(name, val) to change
@@ -215,11 +200,11 @@ Modelers add additional “own variables” as needed.</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>patch: null,   // the patch I’m on .. uses getter below
 links: null,   // the links having me as an end point .. lazy promoted below</p>
@@ -231,11 +216,11 @@ links: null,   // the links having me as an end point .. lazy promoted below</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>‘bounce’, or a function, see handleEdge() method</p>
 
@@ -246,11 +231,11 @@ links: null,   // the links having me as an end point .. lazy promoted below</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>spriteFcn: ‘default’,
 spriteColor: Color.newTypedColor(255, 0, 0),</p>
@@ -260,11 +245,11 @@ spriteColor: Color.newTypedColor(255, 0, 0),</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>labelOffset: [0, 0],  // text pixel offset from the turtle center
 labelColor: Color.newTypedColor(0, 0, 0) // the label color</p>
@@ -272,16 +257,16 @@ labelColor: Color.newTypedColor(0, 0, 0) // the label color</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>}
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TurtleProto</span> </span>{</pre></div></div>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Turtle</span> </span>{</pre></div></div>
             
         </li>
         
         
-        <li id="section-10">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Initialize a Turtle given its Turtles AgentSet.</p>
 
@@ -298,11 +283,11 @@ labelColor: Color.newTypedColor(0, 0, 0) // the label color</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>this.sprite = this.turtles.model.spriteSheet.addDrawing(‘default’)
 this.sprite = this.turtles.spriteSheet.add(‘default’, ‘red’)</p>
@@ -321,11 +306,11 @@ this.sprite = this.turtles.spriteSheet.add(‘default’, ‘red’)</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Factory: create num new turtles at this turtle’s location. The optional init
 proc is called on the new turtle after inserting in its agentSet.</p>
@@ -339,11 +324,11 @@ proc is called on the new turtle after inserting in its agentSet.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>turtle.color = this.color // REMIND: sprite vs color
 hatched turtle inherits parents’ ownVariables</p>
@@ -359,11 +344,11 @@ hatched turtle inherits parents’ ownVariables</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Getter for links for this turtle. REMIND: use new AgentSet(0)?
 Uses lazy evaluation to promote links to instance variables.</p>
@@ -378,11 +363,11 @@ Uses lazy evaluation to promote links to instance variables.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Getter for the patchs and the patch I’m on. Return null if off-world.</p>
 
@@ -393,11 +378,11 @@ Uses lazy evaluation to promote links to instance variables.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>REMIND: promote to default variable(s) if performance issue</p>
 
@@ -408,11 +393,11 @@ Uses lazy evaluation to promote links to instance variables.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Breed get/set mathods.</p>
 
@@ -424,11 +409,11 @@ Uses lazy evaluation to promote links to instance variables.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Heading vs Euclidean Angles</p>
 
@@ -440,11 +425,11 @@ Uses lazy evaluation to promote links to instance variables.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Create my shape via src: sprite, fcn, string, or image/canvas</p>
 
@@ -461,11 +446,11 @@ Uses lazy evaluation to promote links to instance variables.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>setSize (size) { this.size = size * this.world.patchSize }
 setDrawSprite (fcn, color, color2) {
@@ -477,11 +462,11 @@ setDrawSprite (fcn, color, color2) {
         </li>
         
         
-        <li id="section-21">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Set x, y position. If z given, override default z.
 Call handleEdge(x, y) if x, y off-world.</p>
@@ -500,11 +485,11 @@ Call handleEdge(x, y) if x, y off-world.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>const {minXcor, maxXcor, minYcor, maxYcor} = this.world
 if (this.wrap) {
@@ -528,11 +513,11 @@ if (this.wrap) {
         </li>
         
         
-        <li id="section-23">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Handle turtle if x,y off-world</p>
 
@@ -564,11 +549,11 @@ if (this.wrap) {
         </li>
         
         
-        <li id="section-24">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Place the turtle at the given patch/turtle location</p>
 
@@ -579,11 +564,11 @@ if (this.wrap) {
         </li>
         
         
-        <li id="section-25">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Move forward (along theta) d units (patch coords),</p>
 
@@ -596,11 +581,11 @@ if (this.wrap) {
         </li>
         
         
-        <li id="section-26">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Change current direction by rad radians which can be + (left) or - (right).</p>
 
@@ -613,11 +598,11 @@ if (this.wrap) {
         </li>
         
         
-        <li id="section-27">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Set my direction towards turtle/patch or x,y.
 “direction” is euclidean radians.</p>
@@ -632,11 +617,11 @@ if (this.wrap) {
         </li>
         
         
-        <li id="section-28">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>6 methods in both Patch &amp; Turtle modules
 Distance from me to x, y. REMIND: No off-world test done</p>
@@ -648,11 +633,11 @@ Distance from me to x, y. REMIND: No off-world test done</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Return distance from me to object having an x,y pair (turtle, patch, …)
 distance (agent) { this.distanceXY(agent.x, agent.y) }</p>
@@ -664,11 +649,11 @@ distance (agent) { this.distanceXY(agent.x, agent.y) }</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Return angle towards agent/x,y
 Use util.heading to convert to heading</p>
@@ -681,11 +666,11 @@ Use util.heading to convert to heading</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Return patch w/ given parameters. Return undefined if off-world.
 Return patch dx, dy from my position.</p>
@@ -697,11 +682,11 @@ Return patch dx, dy from my position.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Note: angle is absolute, w/o regard to existing angle of turtle.
 Use Left/Right versions below</p>
@@ -722,11 +707,11 @@ Use Left/Right versions below</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Return turtles/breeds within radius from me</p>
 
@@ -739,11 +724,11 @@ Use Left/Right versions below</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Return turtles/breeds within cone from me</p>
 
@@ -756,11 +741,11 @@ Use Left/Right versions below</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Link methods. Note: this.links returns all links linked to me.
 See links getter above.</p>
@@ -770,11 +755,11 @@ See links getter above.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Return other end of link from me. Link must include me!</p>
 
@@ -785,11 +770,11 @@ See links getter above.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Return all turtles linked to me</p>
 
@@ -799,7 +784,7 @@ See links getter above.</p>
 
 }
 
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> TurtleProto</pre></div></div>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Turtle</pre></div></div>
             
         </li>
         
