@@ -11,16 +11,17 @@ import util from './util.js'
 // util.toWindow({three: THREE}) // REMIND
 
 class Three {
-  static defaultOptions () {
+  static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {
     return {
-      Renderer: Three,      // include me in options so Model can instanciate me
-      orthoView: false,     // 'Perspective', 'Orthographic'
-      clearColor: 0x000000, // clear to black
-      useAxes: true,        // show x,y,z axes
-      useGrid: true,        // show x,y plane
-      useStats: true,       // show fps widget
-      useControls: true,    // activate navigation. REMIND: name of control?
-      useGUI: true          // activate dat.gui UI
+    // include me in options so Model can instanciate me!
+      Renderer: Three,
+      orthoView: false,             // 'Perspective', 'Orthographic'
+      clearColor: 0x000000,         // clear to black
+      useAxes: useThreeHelpers,     // show x,y,z axes
+      useGrid: useThreeHelpers,     // show x,y plane
+      useControls: useThreeHelpers, // activate navigation. REMIND: name of control?
+      useStats: useUIHelpers,       // show fps widget
+      useGUI: useUIHelpers          // activate dat.gui UI
     }
   }
 
@@ -33,7 +34,7 @@ class Three {
     Object.assign(this, Three.defaultOptions) // install defaults
     Object.assign(this, options) // override defaults
     if (this.Renderer !== Three)
-      util.error('Three ctor: Renderer not Three', this.renderer)
+      throw Error('Three ctor: Renderer not Three', this.renderer)
 
     // Initialize Three.js
     this.initThree()
@@ -97,17 +98,21 @@ class Three {
       helpers.grid.rotation.x = THREE.Math.degToRad(90)
       scene.add(helpers.grid)
     }
-    if (useStats) {
-      helpers.stats = new Stats()
-      document.body.appendChild(helpers.stats.dom)
-    }
     if (useControls) {
       // helpers.controls = new OrbitControls(camera, renderer.domElement)
       helpers.controls = new THREE.OrbitControls(camera, renderer.domElement)
     }
+    if (useStats) {
+      helpers.stats = new Stats()
+      document.body.appendChild(helpers.stats.dom)
+      // This does not work:
+      // helpers.stats.dom.style.position = 'absolute'
+      // this.model.div.appendChild(helpers.stats.dom)
+    }
     if (useGUI) {
       helpers.gui = new dat.GUI()
-      // helpers.gui = new GUI()
+      // auto adds to body, this not needed:
+      // document.body.appendChild(helpers.gui.domElement)
     }
 
     Object.assign(this, helpers)

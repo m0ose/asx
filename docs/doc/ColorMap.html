@@ -912,6 +912,8 @@ See <a href="https://goo.gl/tolSnS">Mozilla Color Docs</a> for <em>lots</em> mor
     <span class="hljs-keyword">return</span> map
   },
   get Gray () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'Gray'</span>, <span class="hljs-keyword">this</span>.grayColorMap()) },
+  get LightGray () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'LightGray'</span>, <span class="hljs-keyword">this</span>.grayColorMap(<span class="hljs-number">200</span>)) },
+  get DarkGray () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'DarkGray'</span>, <span class="hljs-keyword">this</span>.grayColorMap(<span class="hljs-number">0</span>, <span class="hljs-number">100</span>)) },
   get Jet () {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.LazyMap(<span class="hljs-string">'Jet'</span>, <span class="hljs-keyword">this</span>.gradientColorMap(<span class="hljs-number">256</span>, <span class="hljs-keyword">this</span>.jetColors))
   },

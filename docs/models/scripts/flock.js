@@ -22,7 +22,7 @@ class FlockModel extends Model {
     this.turtles.setDefault('speed', 0.25)
 
     const cmap = ColorMap.grayColorMap(0, 100)
-    for (const p of this.patches) p.setColor(cmap.randomColor())
+    this.patches.ask(p => { p.setColor(cmap.randomColor()) })
 
     this.refreshPatches = false
     this.setMaxTurn(3.0)
@@ -31,24 +31,13 @@ class FlockModel extends Model {
     // this.anim.setRate(30)
     this.population = 1000 // 300 // 1e4 this.patches.length
 
-    // Remind: Fewer turtles than patches.
-    // for (const p of this.patches.nOf(this.population))
-    //   p.sprout(1)
     util.repeat(this.population, () => {
       this.patches.oneOf().sprout()
     })
-
-    // this.turtles.create(numTurtles, (t) => {
-    //   t.size = util.randomFloat2(0.2, 0.5) // + Math.random()
-    //   t.speed = util.randomFloat2(0.01, 0.05) // 0.5 + Math.random()
-    // })
   }
+
   step () {
-    // util.forEach(this.turtles, (t) => {
-    //   t.theta += util.randomCentered(0.1)
-    //   t.forward(t.speed)
-    // })
-    for (const t of this.turtles) this.flock(t)
+    this.turtles.ask((t) => { this.flock(t) })
   }
   flock (a) { // a is turtle
     // flockmates = this.turtles.inRadius(a, this.vision).other(a)

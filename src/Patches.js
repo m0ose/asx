@@ -172,10 +172,14 @@ class Patches extends AgentSet {
   // Import/export DataSet to/from patch variable `patchVar`.
   // `useNearest`: true for fast rounding to nearest; false for bi-linear.
   importDataSet (dataSet, patchVar, useNearest = false) {
+    if (this.isBreedSet()) // REMIND: error
+      this.baseSet.importDataSet(dataSet, patchVar, useNearest)
     const {numX, numY} = this.world
     const dataset = dataSet.resample(numX, numY, useNearest)
-    for (const patch of this)
-      patch[patchVar] = dataset.data[patch.id]
+    // REMIND: Needs test.
+    this.ask(p => { p[patchVar] = dataset.data[p.id] })
+    // for (const patch of this)
+    //   patch[patchVar] = dataset.data[patch.id]
   }
   exportDataSet (patchVar, Type = Array) {
     const {numX, numY} = this.world

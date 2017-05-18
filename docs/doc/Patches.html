@@ -593,11 +593,41 @@ installDrawing (img, ctx = this.model.contexts.drawing) {
             </div>
             
             <div class="content"><div class='highlight'><pre>  importDataSet (dataSet, patchVar, useNearest = <span class="hljs-literal">false</span>) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.isBreedSet()) <span class="hljs-comment">// REMIND: error</span>
+      <span class="hljs-keyword">this</span>.baseSet.importDataSet(dataSet, patchVar, useNearest)
     <span class="hljs-keyword">const</span> {numX, numY} = <span class="hljs-keyword">this</span>.world
-    <span class="hljs-keyword">const</span> dataset = dataSet.resample(numX, numY, useNearest)
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> patch <span class="hljs-keyword">of</span> <span class="hljs-keyword">this</span>)
-      patch[patchVar] = dataset.data[patch.id]
-  }
+    <span class="hljs-keyword">const</span> dataset = dataSet.resample(numX, numY, useNearest)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>REMIND: Needs test.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.ask(<span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> { p[patchVar] = dataset.data[p.id] })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>for (const patch of this)
+  patch[patchVar] = dataset.data[patch.id]</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  }
   exportDataSet (patchVar, Type = <span class="hljs-built_in">Array</span>) {
     <span class="hljs-keyword">const</span> {numX, numY} = <span class="hljs-keyword">this</span>.world
     <span class="hljs-keyword">let</span> data = util.arrayProps(<span class="hljs-keyword">this</span>, patchVar)
@@ -608,11 +638,11 @@ installDrawing (img, ctx = this.model.contexts.drawing) {
         </li>
         
         
-        <li id="section-24">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Return true if x,y floats are within patch world.
 isOnWorld (x, y) {
@@ -631,11 +661,11 @@ Return the patch id/index given valid integer x,y in patch coords</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Return the patch x,y patch coords given a valid patches id/index</p>
 
@@ -649,11 +679,11 @@ Return the patch id/index given valid integer x,y in patch coords</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Convert to/from pixel coords &amp; patch coords</p>
 
@@ -671,11 +701,11 @@ Return the patch id/index given valid integer x,y in patch coords</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Utils for NetLogo patch location methods.
 All return <code>undefined</code> if not onworld.
@@ -687,11 +717,11 @@ and is considered an OK practice.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Return patch at x,y float values according to topology.
 Return undefined if off-world</p>
@@ -710,11 +740,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Return the patch at x,y where both are valid integer patch coordinates.</p>
 
@@ -725,11 +755,11 @@ Return undefined if off-world</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Return patches within the patch rect, default is square &amp; meToo
 inRect (patch, dx, dy = dx, meToo = true) {
@@ -754,11 +784,11 @@ Patches in circle radius (integer) from patch</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Patches in cone from p in direction <code>angle</code>, with <code>coneAngle</code> and <code>radius</code></p>
 
@@ -778,11 +808,11 @@ Patches in circle radius (integer) from patch</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Return patch at distance and angle from obj’s (patch or turtle)
 x, y (floats). If off world, return undefined.
@@ -806,11 +836,11 @@ To use heading: patchAtAngleAndDistance(obj, util.angle(heading), distance)</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Diffuse the value of patch variable <code>p.v</code> by distributing <code>rate</code> percent
 of each patch’s value of <code>v</code> to its neighbors.
@@ -830,11 +860,11 @@ If the patch has less than 4/8 neighbors, return the extra to the patch.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Note: for-of loops removed: chrome can’t optimize them
 test/apps/patches.js 22fps -&gt; 60fps
@@ -847,11 +877,11 @@ zero temp variable if not yet set</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>for (const p of this) p._diffuseNext = 0</p>
 
@@ -862,11 +892,11 @@ zero temp variable if not yet set</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>pass 1: calculate contribution of all patches to themselves and neighbors
 for (const p of this) {</p>
@@ -884,11 +914,11 @@ for (const p of this) {</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>for (const n of neighbors) n._diffuseNext += dvn</p>
 
@@ -900,11 +930,11 @@ for (const p of this) {</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>pass 2: set new value for all patches, zero temp,
 modify color if colorMap given

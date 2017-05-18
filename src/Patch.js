@@ -103,10 +103,13 @@ class Patch {
       // this.model.turtles.forEach((turtle) => {
       //   turtle.patch.turtles.push(this)
       // })
-      for (const patch of this.patches)
-        patch.turtles = []
-      for (const turtle of this.model.turtles)
-        turtle.patch.turtles.push(turtle)
+      this.patches.ask(p => { p.turtles = [] })
+      this.model.turtles.ask(t => { t.patch.turtles.push(t) })
+
+      // for (const patch of this.patches)
+      //   patch.turtles = []
+      // for (const turtle of this.model.turtles)
+      //   turtle.patch.turtles.push(turtle)
     }
     return this.turtles
   }
@@ -117,9 +120,9 @@ class Patch {
 
   // 6 methods in both Patch & Turtle modules
   // Distance from me to x, y. REMIND: No off-world test done
-  distanceXY (x, y) { util.distance(this.x, this.y, x, y) }
+  distanceXY (x, y) { return util.distance(this.x, this.y, x, y) }
   // Return distance from me to object having an x,y pair (turtle, patch, ...)
-  distance (agent) { this.distanceXY(agent.x, agent.y) }
+  distance (agent) { return this.distanceXY(agent.x, agent.y) }
   // Return angle towards agent/x,y
   // Use util.heading to convert to heading
   towards (agent) { return this.towardsXY(agent.x, agent.y) }

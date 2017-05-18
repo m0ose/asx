@@ -321,7 +321,7 @@ from me, using a patch rect.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>Circle Layout: position the turtles in the list in an equally
+              <p>Circle Layout: position the turtles in this breed in an equally
 spaced circle of the given radius, with the initial turtle
 at the given start angle (default to pi/2 or “up”) and in the
 +1 or -1 direction (counter clockwise or clockwise)
@@ -329,11 +329,10 @@ defaulting to -1 (clockwise).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  layoutCircle (
-    list, radius, center = [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>], startAngle = <span class="hljs-built_in">Math</span>.PI / <span class="hljs-number">2</span>, direction = <span class="hljs-number">-1</span>) {
-    <span class="hljs-keyword">const</span> dTheta = <span class="hljs-number">2</span> * <span class="hljs-built_in">Math</span>.PI / list.length
+            <div class="content"><div class='highlight'><pre>  layoutCircle (radius, center = [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>], startAngle = <span class="hljs-built_in">Math</span>.PI / <span class="hljs-number">2</span>, direction = <span class="hljs-number">-1</span>) {
+    <span class="hljs-keyword">const</span> dTheta = <span class="hljs-number">2</span> * <span class="hljs-built_in">Math</span>.PI / <span class="hljs-keyword">this</span>.length
     <span class="hljs-keyword">const</span> [x0, y0] = center
-    util.forEach(list, (turtle, i) =&gt; {
+    <span class="hljs-keyword">this</span>.ask(<span class="hljs-function">(<span class="hljs-params">turtle, i</span>) =&gt;</span> {
       turtle.setxy(x0, y0)
       turtle.theta = startAngle + (direction * dTheta * i)
       turtle.forward(radius)

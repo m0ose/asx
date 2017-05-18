@@ -1,6 +1,7 @@
 <html>
 <head>
   <title>asx</title>
+  <!-- Use local AS.js for dev, use github page for deploy -->
   <script src="../dist/AS.js"></script>
   <!-- <script src="http://backspaces.github.io/asx/dist/AS.js"></script> -->
 
@@ -34,8 +35,8 @@
       case 'src': AS.util.setScript(loc, {type: 'module'}); break
       default: throw `Oops: ${appDir} not valid dir`
     }
-
   </script>
-  <div id='modeldiv'> </div>
+  <div id='textdiv'></div>
+  <div id='modeldiv'></div>
 </body>
 </html>

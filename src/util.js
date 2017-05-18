@@ -29,7 +29,7 @@ const util = {
 
   // Throw an error with string.
   // Use instead of `throw message` for better debugging
-  error: (message) => { throw new Error(message) },
+  // error: (message) => { throw new Error(message) },
 
   // Identity fcn, returning its argument unchanged. Used in callbacks
   identity: (o) => o,

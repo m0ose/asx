@@ -18,14 +18,14 @@ class FireModel extends Model {
     this.done = false
 
     this.density = 60 // percent
-    for (const p of this.patches) {
+    this.patches.ask(p => {
       if (p.x === this.world.minX)
         this.ignight(p)
       else if (util.randomInt(100) < this.density)
         p.color = this.treeColor
       else
         p.color = this.dirtColor
-    }
+    })
 
     this.burnedTrees = 0
     this.initialTrees =
@@ -34,44 +34,42 @@ class FireModel extends Model {
 
   step () {
     if (this.done) return
+
     if (this.fires.length + this.embers.length === 0) {
       console.log('Done:', this.anim.toString())
       const percentBurned = this.burnedTrees / this.initialTrees * 100
       console.log('Percent burned', percentBurned.toFixed(2))
-      // this.stop()
       this.done = true
       return // keep three control running
     }
 
-    for (const p of this.fires) {
-      for (const n of p.neighbors4)
-        if (this.isTree(n))
-          this.ignight(n)
-      this.embers.setBreed(p)
-    }
+    this.fires.ask(p => {
+      p.neighbors4.ask((n) => {
+        if (this.isTree(n)) this.ignight(n)
+      })
+      p.setBreed(this.embers)
+    })
     this.fadeEmbers()
-
-    if (this.anim.ticks % 100 === 0)
-      console.log(this.anim.toString())
   }
 
   isTree (p) { return p.color.equals(this.treeColor) }
 
   ignight (p) {
     p.color = this.fireColor
-    this.fires.setBreed(p)
+    // this.fires.setBreed(p)
+    p.setBreed(this.fires)
     this.burnedTrees++
   }
 
   fadeEmbers () {
-    for (const p of this.embers) {
+    this.embers.ask(p => {
       const c = p.color
       const ix = this.fireColorMap.indexOf(c)
       if (ix === this.fireColorMap.length - 1)
-        this.patches.setBreed(p) // sorta like die, removes from breed.
+        p.setBreed(this.patches) // sorta like die, removes from breed.
       else
         p.color = this.fireColorMap[ix + 1]
-    }
+    })
   }
 }
 

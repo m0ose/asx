@@ -58,16 +58,15 @@ class Turtles extends AgentSet {
     return aSet.inCone(turtle, radius, coneAngle, turtle.theta, x0, y0, meToo)
   }
 
-  // Circle Layout: position the turtles in the list in an equally
+  // Circle Layout: position the turtles in this breed in an equally
   // spaced circle of the given radius, with the initial turtle
   // at the given start angle (default to pi/2 or "up") and in the
   // +1 or -1 direction (counter clockwise or clockwise)
   // defaulting to -1 (clockwise).
-  layoutCircle (
-    list, radius, center = [0, 0], startAngle = Math.PI / 2, direction = -1) {
-    const dTheta = 2 * Math.PI / list.length
+  layoutCircle (radius, center = [0, 0], startAngle = Math.PI / 2, direction = -1) {
+    const dTheta = 2 * Math.PI / this.length
     const [x0, y0] = center
-    util.forEach(list, (turtle, i) => {
+    this.ask((turtle, i) => {
       turtle.setxy(x0, y0)
       turtle.theta = startAngle + (direction * dTheta * i)
       turtle.forward(radius)

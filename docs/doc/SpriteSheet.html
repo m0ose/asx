@@ -284,7 +284,7 @@ getUVsObj (sprite) { // REMIND
   checkPowerOf2 () {
     <span class="hljs-keyword">const</span> {width, height} = <span class="hljs-keyword">this</span>
     <span class="hljs-keyword">if</span> (!(util.isPowerOf2(width) &amp;&amp; util.isPowerOf2(height)))
-      util.error(<span class="hljs-string">`SpriteSheet non power of 2: <span class="hljs-subst">${width}</span>x<span class="hljs-subst">${height}</span>`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`SpriteSheet non power of 2: <span class="hljs-subst">${width}</span>x<span class="hljs-subst">${height}</span>`</span>)
   }</pre></div></div>
             
         </li>
@@ -409,7 +409,7 @@ top/left canvas coordinates.</p>
             
             <div class="content"><div class='highlight'><pre>  createImage (drawFcn, fillColor, strokeColor = <span class="hljs-string">'black'</span>, useHelpers = <span class="hljs-literal">true</span>) {
     <span class="hljs-keyword">const</span> ctx = util.createCtx(<span class="hljs-keyword">this</span>.spriteSize, <span class="hljs-keyword">this</span>.spriteSize)
-    ctx.fillStyle = fillColor
+    ctx.fillStyle = fillColor.css || fillColor
     ctx.strokeStyle = strokeColor
     <span class="hljs-keyword">if</span> (useHelpers) {
       ctx.scale(<span class="hljs-keyword">this</span>.spriteSize / <span class="hljs-number">2</span>, <span class="hljs-keyword">this</span>.spriteSize / <span class="hljs-number">2</span>)

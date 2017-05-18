@@ -173,17 +173,18 @@ all the parts of a model. It also contains NetLogo’s <code>observer</code> met
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Static class methods for default settings.</p>
+              <p>Static class methods for default settings.
+Default is centered, patchSize = 13, min/max = 16</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> defaultWorld () {
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">static</span> defaultOptions (size = <span class="hljs-number">13</span>, max = <span class="hljs-number">16</span>) {
     <span class="hljs-keyword">return</span> {
-      <span class="hljs-attr">patchSize</span>: <span class="hljs-number">13</span>,
-      <span class="hljs-attr">minX</span>: <span class="hljs-number">-16</span>,
-      <span class="hljs-attr">maxX</span>: <span class="hljs-number">16</span>,
-      <span class="hljs-attr">minY</span>: <span class="hljs-number">-16</span>,
-      <span class="hljs-attr">maxY</span>: <span class="hljs-number">16</span></pre></div></div>
+      <span class="hljs-attr">patchSize</span>: size,
+      <span class="hljs-attr">minX</span>: -max,
+      <span class="hljs-attr">maxX</span>: max,
+      <span class="hljs-attr">minY</span>: -max,
+      <span class="hljs-attr">maxY</span>: max</pre></div></div>
             
         </li>
         
@@ -240,7 +241,7 @@ useLinks: true,</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span> (div = document.body,
-               worldOptions = {},
+               modelOptions = {},
                rendererOptions = Three.defaultOptions()) {</pre></div></div>
             
         </li>
@@ -284,8 +285,8 @@ useLinks: true,</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.world = Model.defaultWorld()
-    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>.world, worldOptions)
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.world = Model.defaultOptions()
+    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>.world, modelOptions)
     <span class="hljs-keyword">this</span>.setWorld()</pre></div></div>
             
         </li>
@@ -407,7 +408,7 @@ this.initThreeHelpers()</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>Add additional world variables derived from constructor’s <code>worldOptions</code>.</p>
+              <p>Add additional world variables derived from constructor’s <code>modelOptions</code>.</p>
 
             </div>
             
@@ -626,8 +627,8 @@ three abstract methods. <code>super</code> need not be called.</p>
               <p>Change the world parameters. Requires a reset.
 Resets Patches, Turtles, Links &amp; reinitializes canvases.
 If restart argument is true (default), will restart after resetting.
-resizeWorld (worldOptions, restart = true) {
-  Object.assign(this.world, worldOptions)
+resizeWorld (modelOptions, restart = true) {
+  Object.assign(this.world, modelOptions)
   this.setWorld(this.world)
   this.reset(restart)
 }</p>

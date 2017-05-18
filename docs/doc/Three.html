@@ -174,18 +174,8 @@ import GUI from ‘../libs/src/dat.gui/dat/gui/GUI.js’</p>
             
             <div class="content"><div class='highlight'><pre>
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Three</span> </span>{
-  <span class="hljs-keyword">static</span> defaultOptions () {
-    <span class="hljs-keyword">return</span> {
-      <span class="hljs-attr">Renderer</span>: Three,      <span class="hljs-comment">// include me in options so Model can instanciate me</span>
-      orthoView: <span class="hljs-literal">false</span>,     <span class="hljs-comment">// 'Perspective', 'Orthographic'</span>
-      clearColor: <span class="hljs-number">0x000000</span>, <span class="hljs-comment">// clear to black</span>
-      useAxes: <span class="hljs-literal">true</span>,        <span class="hljs-comment">// show x,y,z axes</span>
-      useGrid: <span class="hljs-literal">true</span>,        <span class="hljs-comment">// show x,y plane</span>
-      useStats: <span class="hljs-literal">true</span>,       <span class="hljs-comment">// show fps widget</span>
-      useControls: <span class="hljs-literal">true</span>,    <span class="hljs-comment">// activate navigation. REMIND: name of control?</span>
-      useGUI: <span class="hljs-literal">true</span>          <span class="hljs-comment">// activate dat.gui UI</span>
-    }
-  }</pre></div></div>
+  <span class="hljs-keyword">static</span> defaultOptions (useThreeHelpers = <span class="hljs-literal">true</span>, useUIHelpers = <span class="hljs-literal">true</span>) {
+    <span class="hljs-keyword">return</span> {</pre></div></div>
             
         </li>
         
@@ -195,6 +185,30 @@ import GUI from ‘../libs/src/dat.gui/dat/gui/GUI.js’</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>include me in options so Model can instanciate me!</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      Renderer: Three,
+      <span class="hljs-attr">orthoView</span>: <span class="hljs-literal">false</span>,             <span class="hljs-comment">// 'Perspective', 'Orthographic'</span>
+      clearColor: <span class="hljs-number">0x000000</span>,         <span class="hljs-comment">// clear to black</span>
+      useAxes: useThreeHelpers,     <span class="hljs-comment">// show x,y,z axes</span>
+      useGrid: useThreeHelpers,     <span class="hljs-comment">// show x,y plane</span>
+      useControls: useThreeHelpers, <span class="hljs-comment">// activate navigation. REMIND: name of control?</span>
+      useStats: useUIHelpers,       <span class="hljs-comment">// show fps widget</span>
+      useGUI: useUIHelpers          <span class="hljs-comment">// activate dat.gui UI</span>
+    }
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>The Model constructor takes a DOM div and overrides for defaults</p>
 
@@ -207,11 +221,11 @@ import GUI from ‘../libs/src/dat.gui/dat/gui/GUI.js’</p>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Initialize options</p>
 
@@ -220,16 +234,16 @@ import GUI from ‘../libs/src/dat.gui/dat/gui/GUI.js’</p>
             <div class="content"><div class='highlight'><pre>    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>, Three.defaultOptions) <span class="hljs-comment">// install defaults</span>
     <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>, options) <span class="hljs-comment">// override defaults</span>
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.Renderer !== Three)
-      util.error(<span class="hljs-string">'Three ctor: Renderer not Three'</span>, <span class="hljs-keyword">this</span>.renderer)</pre></div></div>
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'Three ctor: Renderer not Three'</span>, <span class="hljs-keyword">this</span>.renderer)</pre></div></div>
             
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Initialize Three.js</p>
 
@@ -244,11 +258,11 @@ import GUI from ‘../libs/src/dat.gui/dat/gui/GUI.js’</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
   const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z]
@@ -268,11 +282,11 @@ Init Three.js core: scene, camera, renderer</p>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>this.spriteSheet.texture = new THREE.CanvasTexture(this.spriteSheet.ctx)
 this.spriteSheet.setTexture(THREE.CanvasTexture)</p>
@@ -321,29 +335,7 @@ this.spriteSheet.setTexture(THREE.CanvasTexture)</p>
       helpers.grid.rotation.x = THREE.Math.degToRad(<span class="hljs-number">90</span>)
       scene.add(helpers.grid)
     }
-    <span class="hljs-keyword">if</span> (useStats) {
-      helpers.stats = <span class="hljs-keyword">new</span> Stats()
-      <span class="hljs-built_in">document</span>.body.appendChild(helpers.stats.dom)
-    }
     <span class="hljs-keyword">if</span> (useControls) {</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-9">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>
-              <p>helpers.controls = new OrbitControls(camera, renderer.domElement)</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      helpers.controls = <span class="hljs-keyword">new</span> THREE.OrbitControls(camera, renderer.domElement)
-    }
-    <span class="hljs-keyword">if</span> (useGUI) {
-      helpers.gui = <span class="hljs-keyword">new</span> dat.GUI()</pre></div></div>
             
         </li>
         
@@ -354,7 +346,46 @@ this.spriteSheet.setTexture(THREE.CanvasTexture)</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>helpers.gui = new GUI()</p>
+              <p>helpers.controls = new OrbitControls(camera, renderer.domElement)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      helpers.controls = <span class="hljs-keyword">new</span> THREE.OrbitControls(camera, renderer.domElement)
+    }
+    <span class="hljs-keyword">if</span> (useStats) {
+      helpers.stats = <span class="hljs-keyword">new</span> Stats()
+      <span class="hljs-built_in">document</span>.body.appendChild(helpers.stats.dom)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>This does not work:
+helpers.stats.dom.style.position = ‘absolute’
+this.model.div.appendChild(helpers.stats.dom)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
+    <span class="hljs-keyword">if</span> (useGUI) {
+      helpers.gui = <span class="hljs-keyword">new</span> dat.GUI()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>auto adds to body, this not needed:
+document.body.appendChild(helpers.gui.domElement)</p>
 
             </div>
             
@@ -376,11 +407,11 @@ this.spriteSheet.setTexture(THREE.CanvasTexture)</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p><a href="https://goo.gl/HkTuHO">CanvasTexture args:</a>
 canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p>
@@ -392,11 +423,11 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
         </li>
         
         
-        <li id="section-12">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>texture.generateMipmaps = false</p>
 
@@ -408,11 +439,11 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
         </li>
         
         
-        <li id="section-13">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>texture.premultiplyAlpha = false</p>
 
@@ -427,11 +458,11 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
         </li>
         
         
-        <li id="section-14">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>, side: THREE.DoubleSide//, wireframe: true</p>
 
@@ -443,11 +474,11 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
         </li>
         
         
-        <li id="section-15">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>mesh.rotation.x = -Math.PI / 2</p>
 
@@ -484,11 +515,11 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
         </li>
         
         
-        <li id="section-16">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>const turtles = this.turtles</p>
 
@@ -504,11 +535,11 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
         </li>
         
         
-        <li id="section-17">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>const positions = []</p>
 
@@ -542,11 +573,11 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
         </li>
         
         
-        <li id="section-18">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>positionAttrib.setArray(new Float32Array(positions))</p>
 

@@ -12,13 +12,14 @@ import util from './util.js'
 // all the parts of a model. It also contains NetLogo's `observer` methods.
 class Model {
   // Static class methods for default settings.
-  static defaultWorld () {
+  // Default is centered, patchSize = 13, min/max = 16
+  static defaultOptions (size = 13, max = 16) {
     return {
-      patchSize: 13,
-      minX: -16,
-      maxX: 16,
-      minY: -16,
-      maxY: 16
+      patchSize: size,
+      minX: -max,
+      maxX: max,
+      minY: -max,
+      maxY: max
       // usePatches: true, // REMIND: Use these. Add Drawing? Labels?
       // useTurtles: true,
       // useLinks: true,
@@ -38,15 +39,15 @@ class Model {
 
   // The Model constructor takes a DOM div and overrides for defaults
   constructor (div = document.body,
-               worldOptions = {},
+               modelOptions = {},
                rendererOptions = Three.defaultOptions()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div
     // this.spriteSheet = new SpriteSheet()
 
     // Create this model's `world` object
-    this.world = Model.defaultWorld()
-    Object.assign(this.world, worldOptions)
+    this.world = Model.defaultOptions()
+    Object.assign(this.world, modelOptions)
     this.setWorld()
 
     // Initialize renderer
@@ -71,7 +72,7 @@ class Model {
     // util.waitPromise(() => this.modelReady).then(fcn())
     util.waitOn(() => this.modelReady, () => fcn(this))
   }
-  // Add additional world variables derived from constructor's `worldOptions`.
+  // Add additional world variables derived from constructor's `modelOptions`.
   setWorld () {
     const world = this.world
     // REMIND: change to xPatches, yPatches?
@@ -139,8 +140,8 @@ class Model {
   // Change the world parameters. Requires a reset.
   // Resets Patches, Turtles, Links & reinitializes canvases.
   // If restart argument is true (default), will restart after resetting.
-  // resizeWorld (worldOptions, restart = true) {
-  //   Object.assign(this.world, worldOptions)
+  // resizeWorld (modelOptions, restart = true) {
+  //   Object.assign(this.world, modelOptions)
   //   this.setWorld(this.world)
   //   this.reset(restart)
   // }

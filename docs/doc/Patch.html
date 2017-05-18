@@ -404,17 +404,8 @@ this.model.turtles.forEach((turtle) =&gt; {
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> patch <span class="hljs-keyword">of</span> <span class="hljs-keyword">this</span>.patches)
-        patch.turtles = []
-      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> turtle <span class="hljs-keyword">of</span> <span class="hljs-keyword">this</span>.model.turtles)
-        turtle.patch.turtles.push(turtle)
-    }
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.turtles
-  }
-  breedsHere (breed) {
-    <span class="hljs-keyword">const</span> turtles = <span class="hljs-keyword">this</span>.turtlesHere()
-    <span class="hljs-keyword">return</span> turtles.filter(<span class="hljs-function">(<span class="hljs-params">turtle</span>) =&gt;</span> turtle.agentSet === breed)
-  }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">this</span>.patches.ask(<span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> { p.turtles = [] })
+      <span class="hljs-keyword">this</span>.model.turtles.ask(<span class="hljs-function"><span class="hljs-params">t</span> =&gt;</span> { t.patch.turtles.push(t) })</pre></div></div>
             
         </li>
         
@@ -425,12 +416,20 @@ this.model.turtles.forEach((turtle) =&gt; {
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>6 methods in both Patch &amp; Turtle modules
-Distance from me to x, y. REMIND: No off-world test done</p>
+              <p>for (const patch of this.patches)
+  patch.turtles = []
+for (const turtle of this.model.turtles)
+  turtle.patch.turtles.push(turtle)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  distanceXY (x, y) { util.distance(<span class="hljs-keyword">this</span>.x, <span class="hljs-keyword">this</span>.y, x, y) }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    }
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.turtles
+  }
+  breedsHere (breed) {
+    <span class="hljs-keyword">const</span> turtles = <span class="hljs-keyword">this</span>.turtlesHere()
+    <span class="hljs-keyword">return</span> turtles.filter(<span class="hljs-function">(<span class="hljs-params">turtle</span>) =&gt;</span> turtle.agentSet === breed)
+  }</pre></div></div>
             
         </li>
         
@@ -441,11 +440,12 @@ Distance from me to x, y. REMIND: No off-world test done</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>Return distance from me to object having an x,y pair (turtle, patch, …)</p>
+              <p>6 methods in both Patch &amp; Turtle modules
+Distance from me to x, y. REMIND: No off-world test done</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  distance (agent) { <span class="hljs-keyword">this</span>.distanceXY(agent.x, agent.y) }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  distanceXY (x, y) { <span class="hljs-keyword">return</span> util.distance(<span class="hljs-keyword">this</span>.x, <span class="hljs-keyword">this</span>.y, x, y) }</pre></div></div>
             
         </li>
         
@@ -455,6 +455,21 @@ Distance from me to x, y. REMIND: No off-world test done</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Return distance from me to object having an x,y pair (turtle, patch, …)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  distance (agent) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.distanceXY(agent.x, agent.y) }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Return angle towards agent/x,y
 Use util.heading to convert to heading</p>
@@ -467,11 +482,11 @@ Use util.heading to convert to heading</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Return patch w/ given parameters. Return undefined if off-world.
 Return patch dx, dy from my position.</p>
@@ -493,11 +508,11 @@ Return patch dx, dy from my position.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Breed get/set mathods and getter/setter versions.</p>
 

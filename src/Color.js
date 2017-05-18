@@ -60,7 +60,7 @@ const Color = {
   // This is equivalent util.aIntRamp(0,255,16), i.e. 16 values per rgb channel.
   hexShortString (r, g, b) {
     if ((r > 15) || (g > 15) || (b > 15)) {
-      util.error(`hexShortString: one of ${[r, g, b]} > 15`)
+      throw Error(`hexShortString: one of ${[r, g, b]} > 15`)
     }
     return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
   },
@@ -131,7 +131,7 @@ const Color = {
     else if (typeof any === 'string') tc.setCss(any)
     else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any)
     else if (util.isFloatArray(any)) tc.setWebgl(any)
-    else util.error('toTypedColor: invalid argument', any)
+    else throw Error('toTypedColor: invalid argument', any)
     return tc
   },
   // Return a random rgb typedColor, a=255

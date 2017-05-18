@@ -15,7 +15,7 @@ files=`ls *.js`
 for file in $files; do
   echo '    ' $file
   sed '
-    /^import .*AS.modules.js/{
+    /^import .*dist\/AS\./{
       s:^import :const :
       s: from .*$: = AS:
     }

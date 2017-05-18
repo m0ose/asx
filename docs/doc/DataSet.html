@@ -219,7 +219,7 @@ Checks data is right size, throws an error if not.</p>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span> (width, height, data) {
     <span class="hljs-keyword">if</span> (data.length !== width * height)
-      util.error(<span class="hljs-string">`new DataSet length: <span class="hljs-subst">${data.length}</span> !== <span class="hljs-subst">${width}</span> * <span class="hljs-subst">${height}</span>`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`new DataSet length: <span class="hljs-subst">${data.length}</span> !== <span class="hljs-subst">${width}</span> * <span class="hljs-subst">${height}</span>`</span>)
     <span class="hljs-keyword">else</span>
       [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data] = [width, height, data]
   }</pre></div></div>
@@ -260,7 +260,7 @@ Checks data is right size, throws an error if not.</p>
             
             <div class="content"><div class='highlight'><pre>  checkXY (x, y) {
     <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.inBounds(x, y))
-      util.error(<span class="hljs-string">`DataSet.checkXY: x,y out of range: <span class="hljs-subst">${x}</span>, <span class="hljs-subst">${y}</span>`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`DataSet.checkXY: x,y out of range: <span class="hljs-subst">${x}</span>, <span class="hljs-subst">${y}</span>`</span>)
   }</pre></div></div>
             
         </li>
@@ -584,7 +584,7 @@ Returned dataset is of same array type as this.</p>
             
             <div class="content"><div class='highlight'><pre>  subset (x, y, width, height) {
     <span class="hljs-keyword">if</span> ((x + width) &gt; <span class="hljs-keyword">this</span>.width || (y + height) &gt; <span class="hljs-keyword">this</span>.height)
-      util.error(<span class="hljs-string">'DataSet.subSet: params out of range'</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'DataSet.subSet: params out of range'</span>)
     <span class="hljs-keyword">const</span> ds = <span class="hljs-keyword">this</span>.emptyDataSet(width, height)
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; width; i++)
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> j = <span class="hljs-number">0</span>; j &lt; height; j++)
@@ -625,7 +625,7 @@ Returned dataset is of same array type as this.</p>
             <div class="content"><div class='highlight'><pre>  col (x) {
     <span class="hljs-keyword">const</span> [w, h, data] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data]
     <span class="hljs-keyword">if</span> (x &gt;= w)
-      util.error(<span class="hljs-string">`col: x out of range width: <span class="hljs-subst">${w}</span> x: <span class="hljs-subst">${x}</span>`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`col: x out of range width: <span class="hljs-subst">${w}</span> x: <span class="hljs-subst">${x}</span>`</span>)
     <span class="hljs-keyword">const</span> colData = <span class="hljs-keyword">this</span>.emptyArray(h)
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; h; i++)
       colData[i] = data[x + i * w]
@@ -648,7 +648,7 @@ Returned dataset is of same array type as this.</p>
             <div class="content"><div class='highlight'><pre>  row (y) {
     <span class="hljs-keyword">const</span> [w, h] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height]
     <span class="hljs-keyword">if</span> (y &gt;= h)
-      util.error(<span class="hljs-string">`row: y out of range height: <span class="hljs-subst">${h}</span> x: <span class="hljs-subst">${y}</span>`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`row: y out of range height: <span class="hljs-subst">${h}</span> x: <span class="hljs-subst">${y}</span>`</span>)
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data.slice(y * w, (y + <span class="hljs-number">1</span>) * w)
   }</pre></div></div>
             
@@ -689,7 +689,7 @@ New DataSet is of same type as this.</p>
     <span class="hljs-keyword">const</span> [w, h] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height]
     <span class="hljs-keyword">const</span> [w1, h1] = [ds.width, ds.height]
     <span class="hljs-keyword">if</span> (h !== h1)
-      util.error(<span class="hljs-string">`concatEast: heights not equal <span class="hljs-subst">${h}</span>, <span class="hljs-subst">${h1}</span>`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`concatEast: heights not equal <span class="hljs-subst">${h}</span>, <span class="hljs-subst">${h1}</span>`</span>)
     <span class="hljs-keyword">const</span> ds1 = <span class="hljs-keyword">this</span>.emptyDataSet((w + w1), h)
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> x = <span class="hljs-number">0</span>; x &lt; h; x++) <span class="hljs-comment">// copy this into new dataset</span>
       <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> y = <span class="hljs-number">0</span>; y &lt; w; y++)
@@ -718,7 +718,7 @@ New DataSet is of same type as this.</p>
             <div class="content"><div class='highlight'><pre>  concatSouth (dataset) {
     <span class="hljs-keyword">const</span> [w, h, data] = [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data]
     <span class="hljs-keyword">if</span> (w !== dataset.width)
-      util.error(<span class="hljs-string">`concatSouth: widths not equal <span class="hljs-subst">${w}</span>, <span class="hljs-subst">${dataset.width}</span>`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`concatSouth: widths not equal <span class="hljs-subst">${w}</span>, <span class="hljs-subst">${dataset.width}</span>`</span>)
     <span class="hljs-keyword">const</span> data1 = util.concatArrays(data, dataset.data)
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> DataSet(w, h + dataset.height, data1)
   }</pre></div></div>

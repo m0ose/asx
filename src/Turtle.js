@@ -141,10 +141,10 @@ class Turtle {
             this.theta = -this.theta
         }
       } else {
-        util.error(`turtle.handleEdge: bad atEdge: ${this.atEdge}`)
+        throw Error(`turtle.handleEdge: bad atEdge: ${this.atEdge}`)
       }
     } else {
-      this.atEdge(x, y)
+      this.atEdge(this)
     }
   }
   // Place the turtle at the given patch/turtle location

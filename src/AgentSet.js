@@ -127,9 +127,7 @@ class AgentSet extends Array {
   with (reporter) { return this.filter(reporter) }
   // Call fcn(agent) for each agent in AgentSet. Return the AgentSet for chaining.
   // Note: 5x+ faster than this.forEach(fcn) !!
-  ask (fcn) { for (let i = 0; i < this.length; i++) fcn(this[i]); return this }
-  // Convience fcn for NetLogo's ask-with. Returns the with filtered AgentSet.
-  askWith (askFcn, withFcn) { return this.with(withFcn).ask(askFcn) }
+  ask (fcn) { for (let i = 0; i < this.length; i++) fcn(this[i], i); return this }
   // Return count of agents with reporter(agent) true
   count (reporter) {
     return this.reduce((prev, p) => prev + reporter(p) ? 1 : 0, 0)
@@ -162,7 +160,7 @@ class AgentSet extends Array {
   // Return the first agent having the min/max of given value of f(agent).
   // If reporter is a string, convert to a fcn returning that property
   minOrMaxOf (min, reporter) {
-    if (this.empty()) util.error('min/max OneOf: empty array')
+    if (this.empty()) throw Error('min/max OneOf: empty array')
     if (typeof reporter === 'string') reporter = util.propFcn(reporter)
     let o = null
     let val = min ? Infinity : -Infinity
@@ -183,7 +181,7 @@ class AgentSet extends Array {
   // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
   // for better approach for large n.
   nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
-    if (n > this.length) util.error('nOf: n larger than agentset')
+    if (n > this.length) throw Error('nOf: n larger than agentset')
     if (n === this.length) return this
     const result = new AgentSet()
     while (result.length < n) {
@@ -198,7 +196,7 @@ class AgentSet extends Array {
   // If reporter is a string, convert to a fcn returning that property
   // NOTE: we do not manage ties, see NetLogo docs.
   minOrMaxNOf (min, n, reporter) {
-    if (n > this.length) util.error('min/max nOf: n larger than agentset')
+    if (n > this.length) throw Error('min/max nOf: n larger than agentset')
     const as = this.clone().sortBy(reporter)
     return min ? as.clone(0, n) : as.clone(as.length - n)
   }
@@ -219,24 +217,24 @@ class AgentSet extends Array {
     const maxX = o.x + dx
     const minY = o.y - dy
     const maxY = o.y + dy
-    for (const a of this) {
+    this.ask(a => {
       if (minX <= a.x && a.x <= maxX && minY <= a.y && a.y <= maxY) {
         if (meToo || o !== a) agents.push(a)
       }
-    }
+    })
     return agents
   }
 
   // Return all agents in agentset within d distance from given object.
   inRadius (o, radius, meToo = false) {
     const agents = new AgentSet()
-    // const {x, y} = o
+    // const {x, y} = o // perf?
     const d2 = radius * radius
     const sqDistance = util.sqDistance // Local function 2-3x faster, inlined?
-    for (const a of this) {
+    this.ask(a => {
       if (sqDistance(o.x, o.y, a.x, a.y) <= d2)
         if (meToo || o !== a) agents.push(a)
-    }
+    })
     return agents
   }
 
@@ -244,22 +242,12 @@ class AgentSet extends Array {
   // a `direction` from object `o`.
   inCone (o, radius, coneAngle, direction, x0, y0, meToo = false) {
     const agents = new AgentSet()
-    // const {x, y} = o
-    for (const a of this) {
+    this.ask(a => {
       if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y))
         if (meToo || o !== a) agents.push(a)
-    }
+    })
     return agents
   }
-    // x = o.x; y = o.y
-    // if @model.patches.isTorus
-    //   w = @model.patches.numX; h = @model.patches.numY
-    //   @asSet (a for a in @ when \
-    //     u.inTorusCone(radius, angle, heading, x, y, a.x, a.y, w, h))
-    // else
-    //   @asSet (a for a in @ when \
-    //     u.inCone(radius, angle, heading, x, y, a.x, a.y))
-
 }
 
 export default AgentSet

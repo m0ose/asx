@@ -55,7 +55,7 @@ class SpriteSheet {
   checkPowerOf2 () {
     const {width, height} = this
     if (!(util.isPowerOf2(width) && util.isPowerOf2(height)))
-      util.error(`SpriteSheet non power of 2: ${width}x${height}`)
+      throw Error(`SpriteSheet non power of 2: ${width}x${height}`)
   }
 
   // REMIND: figure out how to have img be a path string & return its sprite
@@ -118,7 +118,7 @@ class SpriteSheet {
   // top/left canvas coordinates.
   createImage (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
     const ctx = util.createCtx(this.spriteSize, this.spriteSize)
-    ctx.fillStyle = fillColor
+    ctx.fillStyle = fillColor.css || fillColor
     ctx.strokeStyle = strokeColor
     if (useHelpers) {
       ctx.scale(this.spriteSize / 2, this.spriteSize / 2)

@@ -266,7 +266,7 @@ to <code>r*17</code>, <code>g*17</code>, <code>b*17</code>, resulting in the 16 
             
             <div class="content"><div class='highlight'><pre>  hexShortString (r, g, b) {
     <span class="hljs-keyword">if</span> ((r &gt; <span class="hljs-number">15</span>) || (g &gt; <span class="hljs-number">15</span>) || (b &gt; <span class="hljs-number">15</span>)) {
-      util.error(<span class="hljs-string">`hexShortString: one of <span class="hljs-subst">${[r, g, b]}</span> &gt; 15`</span>)
+      <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`hexShortString: one of <span class="hljs-subst">${[r, g, b]}</span> &gt; 15`</span>)
     }
     <span class="hljs-keyword">return</span> <span class="hljs-string">`#<span class="hljs-subst">${r.toString(<span class="hljs-number">16</span>)}</span><span class="hljs-subst">${g.toString(<span class="hljs-number">16</span>)}</span><span class="hljs-subst">${b.toString(<span class="hljs-number">16</span>)}</span>`</span>
   },</pre></div></div>
@@ -443,7 +443,7 @@ JavaScript Arrays: <span class="hljs-string">`toTypedColor([255,0,0])`</span>
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> any === <span class="hljs-string">'string'</span>) tc.setCss(any)
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(any) || util.isUintArray(any)) tc.setColor(...any)
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (util.isFloatArray(any)) tc.setWebgl(any)
-    <span class="hljs-keyword">else</span> util.error(<span class="hljs-string">'toTypedColor: invalid argument'</span>, any)
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'toTypedColor: invalid argument'</span>, any)
     <span class="hljs-keyword">return</span> tc
   },</pre></div></div>
             

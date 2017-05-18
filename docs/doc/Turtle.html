@@ -539,10 +539,10 @@ if (this.wrap) {
             <span class="hljs-keyword">this</span>.theta = -<span class="hljs-keyword">this</span>.theta
         }
       } <span class="hljs-keyword">else</span> {
-        util.error(<span class="hljs-string">`turtle.handleEdge: bad atEdge: <span class="hljs-subst">${<span class="hljs-keyword">this</span>.atEdge}</span>`</span>)
+        <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`turtle.handleEdge: bad atEdge: <span class="hljs-subst">${<span class="hljs-keyword">this</span>.atEdge}</span>`</span>)
       }
     } <span class="hljs-keyword">else</span> {
-      <span class="hljs-keyword">this</span>.atEdge(x, y)
+      <span class="hljs-keyword">this</span>.atEdge(<span class="hljs-keyword">this</span>)
     }
   }</pre></div></div>
             

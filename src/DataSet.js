@@ -21,7 +21,7 @@ class DataSet {
   // Checks data is right size, throws an error if not.
   constructor (width, height, data) {
     if (data.length !== width * height)
-      util.error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
+      throw Error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
     else
       [this.width, this.height, this.data] = [width, height, data]
   }
@@ -38,7 +38,7 @@ class DataSet {
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
     if (!this.inBounds(x, y))
-      util.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
+      throw Error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
   }
   // true if x,y in dataset bounds
   inBounds (x, y) {
@@ -144,7 +144,7 @@ class DataSet {
   // Returned dataset is of same array type as this.
   subset (x, y, width, height) {
     if ((x + width) > this.width || (y + height) > this.height)
-      util.error('DataSet.subSet: params out of range')
+      throw Error('DataSet.subSet: params out of range')
     const ds = this.emptyDataSet(width, height)
     for (let i = 0; i < width; i++)
       for (let j = 0; j < height; j++)
@@ -161,7 +161,7 @@ class DataSet {
   col (x) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (x >= w)
-      util.error(`col: x out of range width: ${w} x: ${x}`)
+      throw Error(`col: x out of range width: ${w} x: ${x}`)
     const colData = this.emptyArray(h)
     for (let i = 0; i < h; i++)
       colData[i] = data[x + i * w]
@@ -172,7 +172,7 @@ class DataSet {
   row (y) {
     const [w, h] = [this.width, this.height]
     if (y >= h)
-      util.error(`row: y out of range height: ${h} x: ${y}`)
+      throw Error(`row: y out of range height: ${h} x: ${y}`)
     return this.data.slice(y * w, (y + 1) * w)
   }
 
@@ -190,7 +190,7 @@ class DataSet {
     const [w, h] = [this.width, this.height]
     const [w1, h1] = [ds.width, ds.height]
     if (h !== h1)
-      util.error(`concatEast: heights not equal ${h}, ${h1}`)
+      throw Error(`concatEast: heights not equal ${h}, ${h1}`)
     const ds1 = this.emptyDataSet((w + w1), h)
     for (let x = 0; x < h; x++) // copy this into new dataset
       for (let y = 0; y < w; y++)
@@ -208,7 +208,7 @@ class DataSet {
   concatSouth (dataset) {
     const [w, h, data] = [this.width, this.height, this.data]
     if (w !== dataset.width)
-      util.error(`concatSouth: widths not equal ${w}, ${dataset.width}`)
+      throw Error(`concatSouth: widths not equal ${w}, ${dataset.width}`)
     const data1 = util.concatArrays(data, dataset.data)
     return new DataSet(w, h + dataset.height, data1)
   }

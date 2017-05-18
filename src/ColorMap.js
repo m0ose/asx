@@ -257,6 +257,8 @@ const ColorMap = {
     return map
   },
   get Gray () { return this.LazyMap('Gray', this.grayColorMap()) },
+  get LightGray () { return this.LazyMap('LightGray', this.grayColorMap(200)) },
+  get DarkGray () { return this.LazyMap('DarkGray', this.grayColorMap(0, 100)) },
   get Jet () {
     return this.LazyMap('Jet', this.gradientColorMap(256, this.jetColors))
   },

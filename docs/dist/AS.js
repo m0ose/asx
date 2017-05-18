@@ -32,7 +32,7 @@ const util = {
 
   // Throw an error with string.
   // Use instead of `throw message` for better debugging
-  error: (message) => { throw new Error(message) },
+  // error: (message) => { throw new Error(message) },
 
   // Identity fcn, returning its argument unchanged. Used in callbacks
   identity: (o) => o,
@@ -946,9 +946,7 @@ class AgentSet extends Array {
   with (reporter) { return this.filter(reporter) }
   // Call fcn(agent) for each agent in AgentSet. Return the AgentSet for chaining.
   // Note: 5x+ faster than this.forEach(fcn) !!
-  ask (fcn) { for (let i = 0; i < this.length; i++) fcn(this[i]); return this }
-  // Convience fcn for NetLogo's ask-with. Returns the with filtered AgentSet.
-  askWith (askFcn, withFcn) { return this.with(withFcn).ask(askFcn) }
+  ask (fcn) { for (let i = 0; i < this.length; i++) fcn(this[i], i); return this }
   // Return count of agents with reporter(agent) true
   count (reporter) {
     return this.reduce((prev, p) => prev + reporter(p) ? 1 : 0, 0)
@@ -981,7 +979,7 @@ class AgentSet extends Array {
   // Return the first agent having the min/max of given value of f(agent).
   // If reporter is a string, convert to a fcn returning that property
   minOrMaxOf (min, reporter) {
-    if (this.empty()) util.error('min/max OneOf: empty array');
+    if (this.empty()) throw Error('min/max OneOf: empty array')
     if (typeof reporter === 'string') reporter = util.propFcn(reporter);
     let o = null;
     let val = min ? Infinity : -Infinity;
@@ -1002,7 +1000,7 @@ class AgentSet extends Array {
   // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
   // for better approach for large n.
   nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
-    if (n > this.length) util.error('nOf: n larger than agentset');
+    if (n > this.length) throw Error('nOf: n larger than agentset')
     if (n === this.length) return this
     const result = new AgentSet();
     while (result.length < n) {
@@ -1017,7 +1015,7 @@ class AgentSet extends Array {
   // If reporter is a string, convert to a fcn returning that property
   // NOTE: we do not manage ties, see NetLogo docs.
   minOrMaxNOf (min, n, reporter) {
-    if (n > this.length) util.error('min/max nOf: n larger than agentset');
+    if (n > this.length) throw Error('min/max nOf: n larger than agentset')
     const as = this.clone().sortBy(reporter);
     return min ? as.clone(0, n) : as.clone(as.length - n)
   }
@@ -1038,24 +1036,24 @@ class AgentSet extends Array {
     const maxX = o.x + dx;
     const minY = o.y - dy;
     const maxY = o.y + dy;
-    for (const a of this) {
+    this.ask(a => {
       if (minX <= a.x && a.x <= maxX && minY <= a.y && a.y <= maxY) {
         if (meToo || o !== a) agents.push(a);
       }
-    }
+    });
     return agents
   }
 
   // Return all agents in agentset within d distance from given object.
   inRadius (o, radius, meToo = false) {
     const agents = new AgentSet();
-    // const {x, y} = o
+    // const {x, y} = o // perf?
     const d2 = radius * radius;
     const sqDistance = util.sqDistance; // Local function 2-3x faster, inlined?
-    for (const a of this) {
+    this.ask(a => {
       if (sqDistance(o.x, o.y, a.x, a.y) <= d2)
         if (meToo || o !== a) agents.push(a);
-    }
+    });
     return agents
   }
 
@@ -1063,22 +1061,12 @@ class AgentSet extends Array {
   // a `direction` from object `o`.
   inCone (o, radius, coneAngle, direction, x0, y0, meToo = false) {
     const agents = new AgentSet();
-    // const {x, y} = o
-    for (const a of this) {
+    this.ask(a => {
       if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y))
         if (meToo || o !== a) agents.push(a);
-    }
+    });
     return agents
   }
-    // x = o.x; y = o.y
-    // if @model.patches.isTorus
-    //   w = @model.patches.numX; h = @model.patches.numY
-    //   @asSet (a for a in @ when \
-    //     u.inTorusCone(radius, angle, heading, x, y, a.x, a.y, w, h))
-    // else
-    //   @asSet (a for a in @ when \
-    //     u.inCone(radius, angle, heading, x, y, a.x, a.y))
-
 }
 
 // The Animator runs the Model's step() and draw() methods.
@@ -1191,7 +1179,7 @@ class DataSet {
   // Checks data is right size, throws an error if not.
   constructor (width, height, data) {
     if (data.length !== width * height)
-      util.error(`new DataSet length: ${data.length} !== ${width} * ${height}`);
+      throw Error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
     else
       [this.width, this.height, this.data] = [width, height, data];
   }
@@ -1208,7 +1196,7 @@ class DataSet {
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
     if (!this.inBounds(x, y))
-      util.error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`);
+      throw Error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
   }
   // true if x,y in dataset bounds
   inBounds (x, y) {
@@ -1314,7 +1302,7 @@ class DataSet {
   // Returned dataset is of same array type as this.
   subset (x, y, width, height) {
     if ((x + width) > this.width || (y + height) > this.height)
-      util.error('DataSet.subSet: params out of range');
+      throw Error('DataSet.subSet: params out of range')
     const ds = this.emptyDataSet(width, height);
     for (let i = 0; i < width; i++)
       for (let j = 0; j < height; j++)
@@ -1331,7 +1319,7 @@ class DataSet {
   col (x) {
     const [w, h, data] = [this.width, this.height, this.data];
     if (x >= w)
-      util.error(`col: x out of range width: ${w} x: ${x}`);
+      throw Error(`col: x out of range width: ${w} x: ${x}`)
     const colData = this.emptyArray(h);
     for (let i = 0; i < h; i++)
       colData[i] = data[x + i * w];
@@ -1342,7 +1330,7 @@ class DataSet {
   row (y) {
     const [w, h] = [this.width, this.height];
     if (y >= h)
-      util.error(`row: y out of range height: ${h} x: ${y}`);
+      throw Error(`row: y out of range height: ${h} x: ${y}`)
     return this.data.slice(y * w, (y + 1) * w)
   }
 
@@ -1360,7 +1348,7 @@ class DataSet {
     const [w, h] = [this.width, this.height];
     const [w1, h1] = [ds.width, ds.height];
     if (h !== h1)
-      util.error(`concatEast: heights not equal ${h}, ${h1}`);
+      throw Error(`concatEast: heights not equal ${h}, ${h1}`)
     const ds1 = this.emptyDataSet((w + w1), h);
     for (let x = 0; x < h; x++) // copy this into new dataset
       for (let y = 0; y < w; y++)
@@ -1378,7 +1366,7 @@ class DataSet {
   concatSouth (dataset) {
     const [w, h, data] = [this.width, this.height, this.data];
     if (w !== dataset.width)
-      util.error(`concatSouth: widths not equal ${w}, ${dataset.width}`);
+      throw Error(`concatSouth: widths not equal ${w}, ${dataset.width}`)
     const data1 = util.concatArrays(data, dataset.data);
     return new DataSet(w, h + dataset.height, data1)
   }
@@ -1659,7 +1647,7 @@ const Color = {
   // This is equivalent util.aIntRamp(0,255,16), i.e. 16 values per rgb channel.
   hexShortString (r, g, b) {
     if ((r > 15) || (g > 15) || (b > 15)) {
-      util.error(`hexShortString: one of ${[r, g, b]} > 15`);
+      throw Error(`hexShortString: one of ${[r, g, b]} > 15`)
     }
     return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
   },
@@ -1730,7 +1718,7 @@ const Color = {
     else if (typeof any === 'string') tc.setCss(any);
     else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any);
     else if (util.isFloatArray(any)) tc.setWebgl(any);
-    else util.error('toTypedColor: invalid argument', any);
+    else throw Error('toTypedColor: invalid argument', any)
     return tc
   },
   // Return a random rgb typedColor, a=255
@@ -2080,6 +2068,8 @@ const ColorMap = {
     return map
   },
   get Gray () { return this.LazyMap('Gray', this.grayColorMap()) },
+  get LightGray () { return this.LazyMap('LightGray', this.grayColorMap(200)) },
+  get DarkGray () { return this.LazyMap('DarkGray', this.grayColorMap(0, 100)) },
   get Jet () {
     return this.LazyMap('Jet', this.gradientColorMap(256, this.jetColors))
   },
@@ -2342,10 +2332,14 @@ class Patches extends AgentSet {
   // Import/export DataSet to/from patch variable `patchVar`.
   // `useNearest`: true for fast rounding to nearest; false for bi-linear.
   importDataSet (dataSet, patchVar, useNearest = false) {
+    if (this.isBreedSet()) // REMIND: error
+      this.baseSet.importDataSet(dataSet, patchVar, useNearest);
     const {numX, numY} = this.world;
     const dataset = dataSet.resample(numX, numY, useNearest);
-    for (const patch of this)
-      patch[patchVar] = dataset.data[patch.id];
+    // REMIND: Needs test.
+    this.ask(p => { p[patchVar] = dataset.data[p.id]; });
+    // for (const patch of this)
+    //   patch[patchVar] = dataset.data[patch.id]
   }
   exportDataSet (patchVar, Type = Array) {
     const {numX, numY} = this.world;
@@ -2587,10 +2581,13 @@ class Patch {
       // this.model.turtles.forEach((turtle) => {
       //   turtle.patch.turtles.push(this)
       // })
-      for (const patch of this.patches)
-        patch.turtles = [];
-      for (const turtle of this.model.turtles)
-        turtle.patch.turtles.push(turtle);
+      this.patches.ask(p => { p.turtles = []; });
+      this.model.turtles.ask(t => { t.patch.turtles.push(t); });
+
+      // for (const patch of this.patches)
+      //   patch.turtles = []
+      // for (const turtle of this.model.turtles)
+      //   turtle.patch.turtles.push(turtle)
     }
     return this.turtles
   }
@@ -2601,9 +2598,9 @@ class Patch {
 
   // 6 methods in both Patch & Turtle modules
   // Distance from me to x, y. REMIND: No off-world test done
-  distanceXY (x, y) { util.distance(this.x, this.y, x, y); }
+  distanceXY (x, y) { return util.distance(this.x, this.y, x, y) }
   // Return distance from me to object having an x,y pair (turtle, patch, ...)
-  distance (agent) { this.distanceXY(agent.x, agent.y); }
+  distance (agent) { return this.distanceXY(agent.x, agent.y) }
   // Return angle towards agent/x,y
   // Use util.heading to convert to heading
   towards (agent) { return this.towardsXY(agent.x, agent.y) }
@@ -2691,16 +2688,15 @@ class Turtles extends AgentSet {
     return aSet.inCone(turtle, radius, coneAngle, turtle.theta, x0, y0, meToo)
   }
 
-  // Circle Layout: position the turtles in the list in an equally
+  // Circle Layout: position the turtles in this breed in an equally
   // spaced circle of the given radius, with the initial turtle
   // at the given start angle (default to pi/2 or "up") and in the
   // +1 or -1 direction (counter clockwise or clockwise)
   // defaulting to -1 (clockwise).
-  layoutCircle (
-    list, radius, center = [0, 0], startAngle = Math.PI / 2, direction = -1) {
-    const dTheta = 2 * Math.PI / list.length;
+  layoutCircle (radius, center = [0, 0], startAngle = Math.PI / 2, direction = -1) {
+    const dTheta = 2 * Math.PI / this.length;
     const [x0, y0] = center;
-    util.forEach(list, (turtle, i) => {
+    this.ask((turtle, i) => {
       turtle.setxy(x0, y0);
       turtle.theta = startAngle + (direction * dTheta * i);
       turtle.forward(radius);
@@ -2850,10 +2846,10 @@ class Turtle {
             this.theta = -this.theta;
         }
       } else {
-        util.error(`turtle.handleEdge: bad atEdge: ${this.atEdge}`);
+        throw Error(`turtle.handleEdge: bad atEdge: ${this.atEdge}`)
       }
     } else {
-      this.atEdge(x, y);
+      this.atEdge(this);
     }
   }
   // Place the turtle at the given patch/turtle location
@@ -2973,7 +2969,7 @@ class SpriteSheet {
   checkPowerOf2 () {
     const {width, height} = this;
     if (!(util.isPowerOf2(width) && util.isPowerOf2(height)))
-      util.error(`SpriteSheet non power of 2: ${width}x${height}`);
+      throw Error(`SpriteSheet non power of 2: ${width}x${height}`)
   }
 
   // REMIND: figure out how to have img be a path string & return its sprite
@@ -3036,7 +3032,7 @@ class SpriteSheet {
   // top/left canvas coordinates.
   createImage (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
     const ctx = util.createCtx(this.spriteSize, this.spriteSize);
-    ctx.fillStyle = fillColor;
+    ctx.fillStyle = fillColor.css || fillColor;
     ctx.strokeStyle = strokeColor;
     if (useHelpers) {
       ctx.scale(this.spriteSize / 2, this.spriteSize / 2);
@@ -3136,16 +3132,17 @@ const paths = {
 // util.toWindow({three: THREE}) // REMIND
 
 class Three {
-  static defaultOptions () {
+  static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {
     return {
-      Renderer: Three,      // include me in options so Model can instanciate me
-      orthoView: false,     // 'Perspective', 'Orthographic'
-      clearColor: 0x000000, // clear to black
-      useAxes: true,        // show x,y,z axes
-      useGrid: true,        // show x,y plane
-      useStats: true,       // show fps widget
-      useControls: true,    // activate navigation. REMIND: name of control?
-      useGUI: true          // activate dat.gui UI
+    // include me in options so Model can instanciate me!
+      Renderer: Three,
+      orthoView: false,             // 'Perspective', 'Orthographic'
+      clearColor: 0x000000,         // clear to black
+      useAxes: useThreeHelpers,     // show x,y,z axes
+      useGrid: useThreeHelpers,     // show x,y plane
+      useControls: useThreeHelpers, // activate navigation. REMIND: name of control?
+      useStats: useUIHelpers,       // show fps widget
+      useGUI: useUIHelpers          // activate dat.gui UI
     }
   }
 
@@ -3158,7 +3155,7 @@ class Three {
     Object.assign(this, Three.defaultOptions); // install defaults
     Object.assign(this, options); // override defaults
     if (this.Renderer !== Three)
-      util.error('Three ctor: Renderer not Three', this.renderer);
+      throw Error('Three ctor: Renderer not Three', this.renderer)
 
     // Initialize Three.js
     this.initThree();
@@ -3222,17 +3219,21 @@ class Three {
       helpers.grid.rotation.x = THREE.Math.degToRad(90);
       scene.add(helpers.grid);
     }
-    if (useStats) {
-      helpers.stats = new Stats();
-      document.body.appendChild(helpers.stats.dom);
-    }
     if (useControls) {
       // helpers.controls = new OrbitControls(camera, renderer.domElement)
       helpers.controls = new THREE.OrbitControls(camera, renderer.domElement);
     }
+    if (useStats) {
+      helpers.stats = new Stats();
+      document.body.appendChild(helpers.stats.dom);
+      // This does not work:
+      // helpers.stats.dom.style.position = 'absolute'
+      // this.model.div.appendChild(helpers.stats.dom)
+    }
     if (useGUI) {
       helpers.gui = new dat.GUI();
-      // helpers.gui = new GUI()
+      // auto adds to body, this not needed:
+      // document.body.appendChild(helpers.gui.domElement)
     }
 
     Object.assign(this, helpers);
@@ -3368,13 +3369,14 @@ class Three {
 // all the parts of a model. It also contains NetLogo's `observer` methods.
 class Model {
   // Static class methods for default settings.
-  static defaultWorld () {
+  // Default is centered, patchSize = 13, min/max = 16
+  static defaultOptions (size = 13, max = 16) {
     return {
-      patchSize: 13,
-      minX: -16,
-      maxX: 16,
-      minY: -16,
-      maxY: 16
+      patchSize: size,
+      minX: -max,
+      maxX: max,
+      minY: -max,
+      maxY: max
       // usePatches: true, // REMIND: Use these. Add Drawing? Labels?
       // useTurtles: true,
       // useLinks: true,
@@ -3394,15 +3396,15 @@ class Model {
 
   // The Model constructor takes a DOM div and overrides for defaults
   constructor (div = document.body,
-               worldOptions = {},
+               modelOptions = {},
                rendererOptions = Three.defaultOptions()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div;
     // this.spriteSheet = new SpriteSheet()
 
     // Create this model's `world` object
-    this.world = Model.defaultWorld();
-    Object.assign(this.world, worldOptions);
+    this.world = Model.defaultOptions();
+    Object.assign(this.world, modelOptions);
     this.setWorld();
 
     // Initialize renderer
@@ -3427,7 +3429,7 @@ class Model {
     // util.waitPromise(() => this.modelReady).then(fcn())
     util.waitOn(() => this.modelReady, () => fcn(this));
   }
-  // Add additional world variables derived from constructor's `worldOptions`.
+  // Add additional world variables derived from constructor's `modelOptions`.
   setWorld () {
     const world = this.world;
     // REMIND: change to xPatches, yPatches?
@@ -3495,8 +3497,8 @@ class Model {
   // Change the world parameters. Requires a reset.
   // Resets Patches, Turtles, Links & reinitializes canvases.
   // If restart argument is true (default), will restart after resetting.
-  // resizeWorld (worldOptions, restart = true) {
-  //   Object.assign(this.world, worldOptions)
+  // resizeWorld (modelOptions, restart = true) {
+  //   Object.assign(this.world, modelOptions)
   //   this.setWorld(this.world)
   //   this.reset(restart)
   // }
