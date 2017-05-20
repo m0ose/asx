@@ -25,7 +25,7 @@
     "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
     "gh-pages0": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
     "build-src": "npm run build-test && npm run build-models && npm run build-dist",
-    "build-bundle": "rollup  --format iife --name AS src/AS.js > dist/AS.js",
+    "build-min0": "babili dist/AS.js > dist/AS.min.js",
     "build-bundle": "rollup -c"
   },
   "now": {
@@ -85,7 +85,7 @@
     "build-test": "rm -rf test/scripts/* && bin/buildscripts.sh test/src",
     "build-models": "bin/buildscripts.sh models/src",
     "build-dist": "rollup -c",
-    "build-min": "babili dist/AS.js > dist/AS.min.js",
+    "build-min": "squash dist/AS.js > dist/AS.min.js",
     "watch-test": "sane 'npm run build-test' './test/src/'",
     "watch-models": "sane 'npm run build-models' './models/src/'",
     "watch-src": "sane 'npm run build-dist' './src/'",
@@ -94,7 +94,7 @@
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master # --follow-tags",
-    "foo": "bin/cplibsrc.sh `node bin/pkgkey.js libssrc`"
+    "foo": "butternut -h"
   },
   "dependencies": {
     "dat.gui": "dataarts/dat.gui",
@@ -102,7 +102,7 @@
     "three": "latest"
   },
   "devDependencies": {
-    "babili": "0.0.12",
+    "butternut": "^0.4.5",
     "docco": "^0.7.0",
     "rollup": "^0.41.6",
     "sane": "^1.6.0",

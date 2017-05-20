@@ -173,17 +173,7 @@ are “promoted” to instance variables if used.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> patchVariables = { <span class="hljs-comment">// Core variables for patches. Not 'own' variables.</span>
-  id: <span class="hljs-literal">null</span>,             <span class="hljs-comment">// unique id, promoted by agentset's add() method</span>
-  defaults: <span class="hljs-literal">null</span>,       <span class="hljs-comment">// pointer to defaults/proto object</span>
-  agentSet: <span class="hljs-literal">null</span>,       <span class="hljs-comment">// my agentset/breed</span>
-  model: <span class="hljs-literal">null</span>,          <span class="hljs-comment">// my model</span>
-  world: <span class="hljs-literal">null</span>,          <span class="hljs-comment">// my agent/agentset's world</span>
-  patches: <span class="hljs-literal">null</span>,        <span class="hljs-comment">// my patches/baseSet, set by ctor</span>
-
-  turtles: <span class="hljs-literal">null</span>,        <span class="hljs-comment">// the turtles on me. Laxy evalued, see turtlesHere below</span>
-  labelOffset: [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>],  <span class="hljs-comment">// text pixel offset from the patch center</span>
-  labelColor: Color.newTypedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>) <span class="hljs-comment">// the label color</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> patchVariables = { <span class="hljs-comment">// Core variables for patches. Not 'own' variables.</span></pre></div></div>
             
         </li>
         
@@ -194,11 +184,19 @@ are “promoted” to instance variables if used.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Getter variables: label, color, x, y, neighbors, neighbors4</p>
+              <p>id: null,             // unique id, promoted by agentset’s add() method
+defaults: null,       // pointer to defaults/proto object
+agentSet: null,       // my agentset/breed
+model: null,          // my model
+world: null,          // my agent/agentset’s world
+patches: null,        // my patches/baseSet, set by ctor</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>}</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+  turtles: <span class="hljs-literal">null</span>,        <span class="hljs-comment">// the turtles on me. Laxy evalued, see turtlesHere below</span>
+  labelOffset: [<span class="hljs-number">0</span>, <span class="hljs-number">0</span>],  <span class="hljs-comment">// text pixel offset from the patch center</span>
+  labelColor: Color.newColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>) <span class="hljs-comment">// the label color</span></pre></div></div>
             
         </li>
         
@@ -208,6 +206,21 @@ are “promoted” to instance variables if used.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Getter variables: label, color, x, y, neighbors, neighbors4</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Flyweight object creation:
 Objects within AgentSets use “prototypal inheritance” via Object.create().
@@ -223,33 +236,46 @@ This lets the new Patch(agentset) obhect be “defaults”.</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Initialize a Patch given its Patches AgentSet.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">constructor</span> (agentSet) {
-    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>, patchVariables)
-    <span class="hljs-keyword">this</span>.defaults = <span class="hljs-keyword">this</span>
-    <span class="hljs-keyword">this</span>.agentSet = agentSet
-    <span class="hljs-keyword">this</span>.model = agentSet.model
-    <span class="hljs-keyword">this</span>.world = agentSet.world
-    <span class="hljs-keyword">this</span>.patches = agentSet.baseSet
-  }</pre></div></div>
+    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>, patchVariables)</pre></div></div>
             
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>this.defaults = this
+this.agentSet = agentSet
+this.model = agentSet.model
+this.world = agentSet.world
+this.patches = agentSet.baseSet</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Getter for x,y derived from patch id, thus no setter.</p>
 
@@ -260,16 +286,21 @@ This lets the new Patch(agentset) obhect be “defaults”.</p>
   }
   get y () {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.world.maxY - <span class="hljs-built_in">Math</span>.floor(<span class="hljs-keyword">this</span>.id / <span class="hljs-keyword">this</span>.world.numX)
+  }
+  isOnEdge () {
+    <span class="hljs-keyword">const</span> {x, y, world} = <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">return</span> x === world.minX || x === world.maxX ||
+      y === world.minY || y === world.maxY
   }</pre></div></div>
             
         </li>
         
         
-        <li id="section-8">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Getter for neighbors of this patch.
 Uses lazy evaluation to promote neighbors to instance variables.
@@ -293,11 +324,11 @@ defineProperty required: can’t set this.neighbors when getter defined.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Similar for caching turtles here
 get turtles () {
@@ -310,11 +341,11 @@ get turtles () {
         </li>
         
         
-        <li id="section-10">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Manage colors by directly setting pixels in Patches pixels object.
 With getter/setters, slight performance hit.</p>
@@ -328,11 +359,11 @@ With getter/setters, slight performance hit.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Optimization: If shared color provided, sharedColor is modified and
 returned. Otherwise new color returned.</p>
@@ -345,7 +376,7 @@ returned. Otherwise new color returned.</p>
       sharedColor.pixel = pixel
       <span class="hljs-keyword">return</span> sharedColor
     }
-    <span class="hljs-keyword">return</span> Color.toTypedColor(pixel)
+    <span class="hljs-keyword">return</span> Color.toColor(pixel)
   }
   get color () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getColor() }
   set color (typedColor) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.setColor(typedColor) }</pre></div></div>
@@ -353,11 +384,11 @@ returned. Otherwise new color returned.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Set label. Erase label via setting to undefined.</p>
 
@@ -375,11 +406,11 @@ returned. Otherwise new color returned.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Promote this.turtles on first call to turtlesHere.</p>
 
@@ -391,11 +422,11 @@ returned. Otherwise new color returned.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>this.patches.forEach((patch) =&gt; { patch.turtles = [] })
 this.model.turtles.forEach((turtle) =&gt; {
@@ -410,11 +441,11 @@ this.model.turtles.forEach((turtle) =&gt; {
         </li>
         
         
-        <li id="section-15">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>for (const patch of this.patches)
   patch.turtles = []
@@ -434,11 +465,11 @@ for (const turtle of this.model.turtles)
         </li>
         
         
-        <li id="section-16">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>6 methods in both Patch &amp; Turtle modules
 Distance from me to x, y. REMIND: No off-world test done</p>
@@ -450,11 +481,11 @@ Distance from me to x, y. REMIND: No off-world test done</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Return distance from me to object having an x,y pair (turtle, patch, …)</p>
 
@@ -465,11 +496,11 @@ Distance from me to x, y. REMIND: No off-world test done</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Return angle towards agent/x,y
 Use util.heading to convert to heading</p>
@@ -482,11 +513,11 @@ Use util.heading to convert to heading</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Return patch w/ given parameters. Return undefined if off-world.
 Return patch dx, dy from my position.</p>
@@ -508,19 +539,20 @@ Return patch dx, dy from my position.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
-              <p>Breed get/set mathods and getter/setter versions.</p>
+              <p>Breed get/set mathods and getter/setter versions.
+setBreed (breed) { breed.setBreed(this) }
+get breed () { return this.agentSet }
+isBreed (name) { return this.agentSet.name === name }</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setBreed (breed) { breed.setBreed(<span class="hljs-keyword">this</span>) }
-  get breed () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet }
-
+            <div class="content"><div class='highlight'><pre>
   sprout (num = <span class="hljs-number">1</span>, breed = <span class="hljs-keyword">this</span>.model.turtles, init = util.noop) {
     breed.create(num, (turtle) =&gt; {
       turtle.setxy(<span class="hljs-keyword">this</span>.x, <span class="hljs-keyword">this</span>.y)

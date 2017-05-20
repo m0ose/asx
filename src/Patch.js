@@ -11,16 +11,16 @@ import Color from './Color.js'
 // The neighbors and neighbors4 variables are initially getters that
 // are "promoted" to instance variables if used.
 const patchVariables = { // Core variables for patches. Not 'own' variables.
-  id: null,             // unique id, promoted by agentset's add() method
-  defaults: null,       // pointer to defaults/proto object
-  agentSet: null,       // my agentset/breed
-  model: null,          // my model
-  world: null,          // my agent/agentset's world
-  patches: null,        // my patches/baseSet, set by ctor
+  // id: null,             // unique id, promoted by agentset's add() method
+  // defaults: null,       // pointer to defaults/proto object
+  // agentSet: null,       // my agentset/breed
+  // model: null,          // my model
+  // world: null,          // my agent/agentset's world
+  // patches: null,        // my patches/baseSet, set by ctor
 
   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
   labelOffset: [0, 0],  // text pixel offset from the patch center
-  labelColor: Color.newTypedColor(0, 0, 0) // the label color
+  labelColor: Color.newColor(0, 0, 0) // the label color
   // Getter variables: label, color, x, y, neighbors, neighbors4
 }
 
@@ -34,11 +34,11 @@ class Patch {
   // Initialize a Patch given its Patches AgentSet.
   constructor (agentSet) {
     Object.assign(this, patchVariables)
-    this.defaults = this
-    this.agentSet = agentSet
-    this.model = agentSet.model
-    this.world = agentSet.world
-    this.patches = agentSet.baseSet
+    // this.defaults = this
+    // this.agentSet = agentSet
+    // this.model = agentSet.model
+    // this.world = agentSet.world
+    // this.patches = agentSet.baseSet
   }
   // Getter for x,y derived from patch id, thus no setter.
   get x () {
@@ -47,6 +47,12 @@ class Patch {
   get y () {
     return this.world.maxY - Math.floor(this.id / this.world.numX)
   }
+  isOnEdge () {
+    const {x, y, world} = this
+    return x === world.minX || x === world.maxX ||
+      y === world.minY || y === world.maxY
+  }
+
   // Getter for neighbors of this patch.
   // Uses lazy evaluation to promote neighbors to instance variables.
   // To avoid promotion, use `patches.neighbors(this)`.
@@ -81,7 +87,7 @@ class Patch {
       sharedColor.pixel = pixel
       return sharedColor
     }
-    return Color.toTypedColor(pixel)
+    return Color.toColor(pixel)
   }
   get color () { return this.getColor() }
   set color (typedColor) { return this.setColor(typedColor) }
@@ -142,8 +148,9 @@ class Patch {
   }
 
   // Breed get/set mathods and getter/setter versions.
-  setBreed (breed) { breed.setBreed(this) }
-  get breed () { return this.agentSet }
+  // setBreed (breed) { breed.setBreed(this) }
+  // get breed () { return this.agentSet }
+  // isBreed (name) { return this.agentSet.name === name }
 
   sprout (num = 1, breed = this.model.turtles, init = util.noop) {
     breed.create(num, (turtle) => {

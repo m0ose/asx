@@ -96,7 +96,7 @@ const Color = {
   },
 
   // ### Typed Color
-  // A typedColor is a 4 element Uint8ClampedArray, with two properties:
+  // A Color is a 4 element Uint8ClampedArray, with two properties:
   //
   // * pixelArray: A single element Uint32Array view on the Uint8ClampedArray
   // * string: an optional, lazy evaluated, css color string.
@@ -104,51 +104,51 @@ const Color = {
   // This provides a universal color, good for canvas2d pixels, webgl & image
   // TypedArrays, and css/canvas2d strings.
 
-  // Create typedColor from r,g,b,a. Use `toTypedColor()` below for strings etc.
-  newTypedColor (r, g, b, a = 255) {
+  // Create Color from r,g,b,a. Use `toColor()` below for strings etc.
+  newColor (r, g, b, a = 255) {
     const u8array = new Uint8ClampedArray([r, g, b, a])
     u8array.pixelArray = new Uint32Array(u8array.buffer) // one element array
-    // Make this an instance of TypedColorProto
-    Object.setPrototypeOf(u8array, TypedColorProto)
+    // Make this an instance of ColorProto
+    Object.setPrototypeOf(u8array, ColorProto)
     return u8array
   },
-  isTypedColor (color) {
+  isColor (color) {
     return color.constructor === Uint8ClampedArray && color.pixelArray
   },
-  // Create a typedColor from a css string, pixel, JavaScript or Typed Array.
-  // Returns `any` if is typedColor already. Useful for
+  // Create a Color from a css string, pixel, JavaScript or Typed Array.
+  // Returns `any` if is Color already. Useful for
   // ```
-  // css: `toTypedColor('#ff0a00')`
-  // hsl: `toTypedColor('hsl(200,100%,50%)')`
-  // named colors: `toTypedColor('CadetBlue')`
-  // pixels: `toTypedColor(4294945280)`
-  // JavaScript Arrays: `toTypedColor([255,0,0])`
+  // css: `toColor('#ff0a00')`
+  // hsl: `toColor('hsl(200,100%,50%)')`
+  // named colors: `toColor('CadetBlue')`
+  // pixels: `toColor(4294945280)`
+  // JavaScript Arrays: `toColor([255,0,0])`
   // ```
-  toTypedColor (any) {
-    if (this.isTypedColor(any)) return any
-    const tc = this.newTypedColor(0, 0, 0, 0)
+  toColor (any) {
+    if (this.isColor(any)) return any
+    const tc = this.newColor(0, 0, 0, 0)
     if (util.isInteger(any)) tc.setPixel(any)
     else if (typeof any === 'string') tc.setCss(any)
     else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any)
     else if (util.isFloatArray(any)) tc.setWebgl(any)
-    else throw Error('toTypedColor: invalid argument', any)
+    else throw Error('toColor: invalid argument', any)
     return tc
   },
-  // Return a random rgb typedColor, a=255
+  // Return a random rgb Color, a=255
   randomTypedColor () {
     const r255 = () => util.randomInt(256) // random int in [0,255]
-    return this.newTypedColor(r255(), r255(), r255())
+    return this.newColor(r255(), r255(), r255())
   },
   // A static transparent color, set at end of file
   transparent: null
 }
 
-// Prototype for typedColor. Getters/setters for usability, may be slower.
-const TypedColorProto = {
+// Prototype for Color. Getters/setters for usability, may be slower.
+const ColorProto = {
   // Inherit from Uint8ClampedArray
   __proto__: Uint8ClampedArray.prototype,
 
-  // Set the typedColor to new rgba values.
+  // Set the Color to new rgba values.
   setColor (r, g, b, a = 255) {
     this.checkColorChange()
     this[0] = r; this[1] = g; this[2] = b; this[3] = a
@@ -157,7 +157,7 @@ const TypedColorProto = {
   set rgb (rgbaArray) { this.setColor(...rgbaArray) },
   get rgb () { return this },
 
-  // Set the typedColor to a new pixel value
+  // Set the Color to a new pixel value
   setPixel (pixel) {
     this.checkColorChange()
     this.pixelArray[0] = pixel
@@ -175,7 +175,7 @@ const TypedColorProto = {
   setCss (string) {
     return this.setColor(...Color.stringToUint8s(string))
   },
-  // Return the triString for this typedColor, cached in the @string value
+  // Return the triString for this Color, cached in the @string value
   getCss () {
     if (this.string == null) this.string = Color.triString(...this)
     return this.string
@@ -223,6 +223,6 @@ const TypedColorProto = {
   }
 }
 
-Color.transparent = Color.newTypedColor(0, 0, 0, 0)
+Color.transparent = Color.newColor(0, 0, 0, 0)
 
 export default Color

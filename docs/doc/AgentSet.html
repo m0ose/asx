@@ -289,6 +289,7 @@ BaseSets know their breeds and keep the ID global</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">this</span>.agentProto = <span class="hljs-keyword">new</span> AgentProto(<span class="hljs-keyword">this</span>)
+      <span class="hljs-keyword">this</span>.protoMixin()
     }
   }</pre></div></div>
             
@@ -301,6 +302,74 @@ BaseSets know their breeds and keep the ID global</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
+              <p>All agents have:
+vars: id, agentSet, model, world, breed (getter)
+  baseSet by name: turtles/patches/links
+methods: setBreed, getBreed, isBreed
+getter/setter: breed</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  protoMixin () {
+    <span class="hljs-keyword">const</span> agentProto = <span class="hljs-keyword">this</span>.agentProto
+    <span class="hljs-built_in">Object</span>.assign(agentProto, {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>defaults: agentProto,</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      agentSet: <span class="hljs-keyword">this</span>,
+      <span class="hljs-attr">model</span>: <span class="hljs-keyword">this</span>.model,
+      <span class="hljs-attr">world</span>: <span class="hljs-keyword">this</span>.world</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>this.turtles = agentSet.baseSet</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    })
+    agentProto[<span class="hljs-keyword">this</span>.baseSet.name] = <span class="hljs-keyword">this</span>.baseSet
+
+    <span class="hljs-keyword">const</span> AgentProto = <span class="hljs-built_in">Object</span>.getPrototypeOf(agentProto)
+    <span class="hljs-keyword">if</span> (AgentProto.setBreed) <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'proto already set: '</span>, AgentProto)
+    <span class="hljs-keyword">if</span> (!AgentProto.setBreed) {
+      <span class="hljs-built_in">Object</span>.assign(AgentProto, {
+        setBreed (breed) { breed.setBreed(<span class="hljs-keyword">this</span>) },
+        getBreed () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet },
+        isBreed (breed) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet === breed }
+      })
+      <span class="hljs-built_in">Object</span>.defineProperty(AgentProto, <span class="hljs-string">'breed'</span>, {
+        <span class="hljs-attr">get</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet }
+      })
+    }
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
               <p>Is this a baseSet or a derived “breed”</p>
 
             </div>
@@ -311,11 +380,24 @@ BaseSets know their breeds and keep the ID global</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>isBreed(agent) { return agent.agentSet}</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Abstract method used by subclasses to create and add their instances.
 create () {}
@@ -339,11 +421,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Remove an agent from the agentset, returning the agentset for chaining.</p>
 
@@ -354,11 +436,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Remove me from my baseSet</p>
 
@@ -369,11 +451,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Remove me from my set.</p>
 
@@ -386,11 +468,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Get/Set default values for this agentset’s agents.</p>
 
@@ -402,11 +484,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Declare variables of an agent class.
 <code>varnames</code> is a string of space separated names</p>
@@ -418,11 +500,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>if (this.isBreedSet())
   this.ownVariables = util.clone(this.baseSet.ownVariables)</p>
@@ -438,11 +520,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Move an agent from its AgentSet/breed to be in this AgentSet/breed.</p>
 
@@ -453,11 +535,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Return if <code>a</code> is already of my breed</p>
 
@@ -468,11 +550,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Remove/insert breeds (not baseSets) from their agentsets</p>
 
@@ -484,11 +566,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Make list of <code>a</code>‘s vars and my ownvars.</p>
 
@@ -499,11 +581,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>First remove <code>a</code>‘s vars not in my ownVariables</p>
 
@@ -516,11 +598,11 @@ Returns the object for chaining. The set will be sorted by <code>id</code>.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Now add ownVariables to <code>a</code>‘s vars, default to 0.
 If ownvar already in avars, it is not modified.</p>
@@ -534,11 +616,11 @@ If ownvar already in avars, it is not modified.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Give <code>a</code> my defaults/statics</p>
 
@@ -550,11 +632,11 @@ If ownvar already in avars, it is not modified.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Method to convert an array to the same AgentSet type as this.
 asAgentSet (array) {
@@ -566,75 +648,15 @@ asAgentSet (array) {
         </li>
         
         
-        <li id="section-27">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
-              </div>
-              <h3 id="general-array-of-objects-methods">General Array of Objects methods</h3>
-
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-28">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
-              </div>
-              <p>Return true if there are no items in this set, false if not empty.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  empty () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.length === <span class="hljs-number">0</span> }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-29">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
-              </div>
-              <p>Return !empty()</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  any () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.length !== <span class="hljs-number">0</span> }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-30">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
-              </div>
-              <p>Return last item in this array. Returns undefined if empty.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  last () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[ <span class="hljs-keyword">this</span>.length - <span class="hljs-number">1</span> ] }</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
-              <p>Return true if reporter true for all of this set’s objects</p>
+              <h3 id="general-array-of-objects-methods">General Array of Objects methods</h3>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  all (reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.every(reporter) }</pre></div></div>
             
         </li>
         
@@ -645,11 +667,11 @@ asAgentSet (array) {
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
-              <p>Convert an AgentSet to an Array</p>
+              <p>Return true if there are no items in this set, false if not empty.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toArray () { <span class="hljs-built_in">Object</span>.setPrototypeOf(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">Array</span>.prototype); <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  empty () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.length === <span class="hljs-number">0</span> }</pre></div></div>
             
         </li>
         
@@ -660,11 +682,11 @@ asAgentSet (array) {
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
-              <p>Return Array of property values for key from this array’s objects</p>
+              <p>Return !empty()</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  props (key) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.map(<span class="hljs-function">(<span class="hljs-params">a</span>) =&gt;</span> a[key]).toArray() }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  any () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.length !== <span class="hljs-number">0</span> }</pre></div></div>
             
         </li>
         
@@ -675,11 +697,11 @@ asAgentSet (array) {
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
-              <p>Return agentset with reporter(agent) true</p>
+              <p>Return last item in this array. Returns undefined if empty.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">with</span> (reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.filter(reporter) }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  last () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>[ <span class="hljs-keyword">this</span>.length - <span class="hljs-number">1</span> ] }</pre></div></div>
             
         </li>
         
@@ -689,6 +711,66 @@ asAgentSet (array) {
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>Return true if reporter true for all of this set’s objects</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  all (reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.every(reporter) }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Convert an AgentSet to an Array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  toArray () { <span class="hljs-built_in">Object</span>.setPrototypeOf(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">Array</span>.prototype); <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Return Array of property values for key from this array’s objects</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  props (key) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.map(<span class="hljs-function">(<span class="hljs-params">a</span>) =&gt;</span> a[key]).toArray() }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Return agentset with reporter(agent) true</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">with</span> (reporter) { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.filter(reporter) }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Call fcn(agent) for each agent in AgentSet. Return the AgentSet for chaining.
 Note: 5x+ faster than this.forEach(fcn) !!</p>
@@ -700,11 +782,11 @@ Note: 5x+ faster than this.forEach(fcn) !!</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>Return count of agents with reporter(agent) true</p>
 
@@ -717,11 +799,11 @@ Note: 5x+ faster than this.forEach(fcn) !!</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Replacements for array methods to avoid calling AgentSet ctor</p>
 
@@ -730,11 +812,11 @@ Note: 5x+ faster than this.forEach(fcn) !!</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Return shallow copy of a protion of this agentset
 <a href="https://goo.gl/Ilgsok">See Array.slice</a>
@@ -749,11 +831,11 @@ Default is to clone entire agentset</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Randomize the agentset in place. Use clone first if new agentset needed.
 Return “this” for chaining.</p>
@@ -765,11 +847,11 @@ Return “this” for chaining.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Return this agentset sorted by the reporter in ascending/descending order.
 If reporter is a string, convert to a fcn returning that property.
@@ -785,11 +867,11 @@ Use clone if you don’t want to mutate this array.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>Return a random agent. Return undefined if empty.</p>
 
@@ -800,11 +882,11 @@ Use clone if you don’t want to mutate this array.</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Return a random agent, not equal to a</p>
 
@@ -815,11 +897,11 @@ Use clone if you don’t want to mutate this array.</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>otherOneOf: nOf good enough?
 Return the first agent having the min/max of given value of f(agent).
@@ -844,11 +926,11 @@ If reporter is a string, convert to a fcn returning that property</p>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p>The min version of the above</p>
 
@@ -859,11 +941,11 @@ If reporter is a string, convert to a fcn returning that property</p>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>The max version of the above</p>
 
@@ -874,11 +956,11 @@ If reporter is a string, convert to a fcn returning that property</p>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Return n random agents as agentset.
 See <a href="https://goo.gl/fWNFf">Fisher-Yates-Knuth shuffle</a>
@@ -898,11 +980,11 @@ for better approach for large n.</p>
         </li>
         
         
-        <li id="section-47">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p>return this.asAgentSet(result)</p>
 
@@ -914,11 +996,11 @@ for better approach for large n.</p>
         </li>
         
         
-        <li id="section-48">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-52">&#182;</a>
               </div>
               <p>Return a new agentset of the n min/max agents of the value of reporter,
 in ascending order.
@@ -938,11 +1020,11 @@ NOTE: we do not manage ties, see NetLogo docs.</p>
         </li>
         
         
-        <li id="section-49">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
               <p>Geometry methods for patches, turtles, and other agentsets which have x,y.
 Return all agents within rect, radius, cone from given agent o.
@@ -955,11 +1037,11 @@ the size, then uses these inRect, inRadius or inCone methods</p>
         </li>
         
         
-        <li id="section-50">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>Return all agents within rectangle from given agent o.
 dx &amp; dy are (float) half width/height of rect</p>
@@ -983,11 +1065,11 @@ dx &amp; dy are (float) half width/height of rect</p>
         </li>
         
         
-        <li id="section-51">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>Return all agents in agentset within d distance from given object.</p>
 
@@ -999,11 +1081,11 @@ dx &amp; dy are (float) half width/height of rect</p>
         </li>
         
         
-        <li id="section-52">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>const {x, y} = o // perf?</p>
 
@@ -1021,11 +1103,11 @@ dx &amp; dy are (float) half width/height of rect</p>
         </li>
         
         
-        <li id="section-53">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>As above, but also limited to the angle <code>coneAngle</code> around
 a <code>direction</code> from object <code>o</code>.</p>

@@ -6,9 +6,10 @@ const {ColorMap, DataSet, Model, util} = AS
 
 util.toWindow({ ColorMap, DataSet, Model, util })
 
-class PatchModel extends Model {
+class DiffuseModel extends Model {
   setup () {
     this.patches.own('ran ds')
+
     this.cmap = ColorMap.Rgb256 // this.cmap = ColorMap.Jet
     // REMIND: Three mouse picking: this.mouse = new Mouse(this, true).start()
     this.patches.ask(p => {
@@ -24,7 +25,7 @@ class PatchModel extends Model {
 const opts = Model.defaultOptions(2, 100)
 opts.minX = 2 * opts.minX
 opts.maxX = 2 * opts.maxY
-const model = new PatchModel(document.body, opts).start()
+const model = new DiffuseModel(document.body, opts).start()
 model.whenReady(() => {
   // debugging
   console.log('patches:', model.patches.length)

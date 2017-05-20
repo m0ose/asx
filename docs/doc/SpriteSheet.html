@@ -138,7 +138,8 @@
               
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">import</span> Color <span class="hljs-keyword">from</span> <span class="hljs-string">'./Color.js'</span>
+<span class="hljs-keyword">import</span> util <span class="hljs-keyword">from</span> <span class="hljs-string">'./util.js'</span></pre></div></div>
             
         </li>
         
@@ -175,6 +176,76 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
+              <p>Return a sprite. Create it if not in sprites cache.
+Src can be: image, canvas, function name, function.
+If src is a canvas, it must have a src string w/o / or . chars.
+If src is function or name of path below, colors can be css
+or Color module’s Color object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  newSprite (src, fillColor, strokeColor) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Normalize color names to hex</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (fillColor) fillColor = Color.toColor(fillColor).css
+    <span class="hljs-keyword">if</span> (strokeColor) strokeColor = Color.toColor(strokeColor).css
+    <span class="hljs-keyword">const</span> name = <span class="hljs-keyword">this</span>.spriteName(src, fillColor, strokeColor)
+
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.sprites[name]) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.sprites[name]
+    <span class="hljs-keyword">return</span> util.isImageable(src)
+      ? <span class="hljs-keyword">this</span>.addImage(src)
+      : <span class="hljs-keyword">this</span>.addDrawing(src, fillColor, strokeColor)
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Install a new named function in the paths object below</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  installDrawing (fcn, name = fcn.name) { <span class="hljs-keyword">this</span>.paths[name] = fcn }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>These are internal, experts only, use newSprite above for normal use.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
               <p>width &amp; height in pixels</p>
 
             </div>
@@ -185,11 +256,11 @@
         </li>
         
         
-        <li id="section-4">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>next col, row in pixels</p>
 
@@ -201,11 +272,11 @@
         </li>
         
         
-        <li id="section-5">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>id = number of sprites</p>
 
@@ -216,11 +287,207 @@
         </li>
         
         
-        <li id="section-6">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Make a unique, normalized sprite name. See note on src, colors above.
+Color names are hex css formats, see newSprite’s name transformation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  spriteName (src, fillColor, strokeColor) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>If src is an image, construct a name.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (util.isImageable(src)) {
+      <span class="hljs-keyword">let</span> name = src.src
+      name = name.replace(<span class="hljs-regexp">/^.*\//</span>, <span class="hljs-string">''</span>) <span class="hljs-comment">// remove path</span>
+      name = name.replace(<span class="hljs-regexp">/\..*/</span>, <span class="hljs-string">'img'</span>) <span class="hljs-comment">// replace .png/jpg/.. w/ "img"</span>
+      <span class="hljs-keyword">return</span> name
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>ditto for draw function or name of function in paths obj below</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> name = src.name || src
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`<span class="hljs-subst">${name}</span><span class="hljs-subst">${fillColor}</span>`</span> <span class="hljs-comment">// REMIND: strokeColor too if given?</span>
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>REMIND: figure out how to have img be a path string &amp; return its sprite
+spriteName (name, color1 = null, color2 = null) {
+  name = name.replace(/^.*\//, ‘’)
+  return name.replace(/./, ‘img’)
+}
+addImagePromise (url, fcn = (sprite) =&gt; {}) {
+  util.imagePromise(url).then((img) =&gt; { fcn(this.addImage(img)) })
+}</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  addImage (img) {
+    <span class="hljs-keyword">const</span> name = <span class="hljs-keyword">this</span>.spriteName(img)
+    <span class="hljs-keyword">this</span>.checkSheetSize() <span class="hljs-comment">// Resize ctx if nextRow &gt; rows</span>
+    <span class="hljs-keyword">const</span> [x, y, size] = [<span class="hljs-keyword">this</span>.nextX, <span class="hljs-keyword">this</span>.nextY, <span class="hljs-keyword">this</span>.spriteSize]
+    <span class="hljs-keyword">this</span>.ctx.drawImage(img, x, y, size, size)
+    <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">this</span>.id <span class="hljs-comment">// Object.keys(this.sprites).length</span>
+    <span class="hljs-keyword">const</span> {<span class="hljs-attr">nextRow</span>: row, <span class="hljs-attr">nextCol</span>: col} = <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">const</span> sprite = {id, name, x, y, row, col, size, <span class="hljs-attr">sheet</span>: <span class="hljs-keyword">this</span>}
+    sprite.uvs = <span class="hljs-keyword">this</span>.getUVs(sprite)
+    <span class="hljs-keyword">this</span>.sprites[name] = sprite
+    <span class="hljs-keyword">this</span>.incrementRowCol()
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.texture) <span class="hljs-keyword">this</span>.texture.needsUpdate = <span class="hljs-literal">true</span>
+    <span class="hljs-keyword">return</span> sprite
+  }
+  addDrawing (drawFcn, fillColor, strokeColor, useHelpers = <span class="hljs-literal">true</span>) {
+    <span class="hljs-keyword">const</span> img = <span class="hljs-keyword">this</span>.createFcnCanvas(drawFcn, fillColor, strokeColor, useHelpers)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.addImage(img) <span class="hljs-comment">// return sprite</span>
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>newSprite (name) { return this.sprites[name] }
+Resize ctx if nextRow &gt; rows</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  incrementRowCol () {
+    <span class="hljs-keyword">this</span>.nextCol += <span class="hljs-number">1</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.nextCol &lt; <span class="hljs-keyword">this</span>.cols) <span class="hljs-keyword">return</span>
+    <span class="hljs-keyword">this</span>.nextCol = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">this</span>.nextRow += <span class="hljs-number">1</span>
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Resize ctx if too small for next row/col</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  checkSheetSize () {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.nextRow === <span class="hljs-keyword">this</span>.rows) { <span class="hljs-comment">// this.nextCol should be 0</span>
+      <span class="hljs-keyword">this</span>.rows = (<span class="hljs-keyword">this</span>.usePowerOf2) ? <span class="hljs-keyword">this</span>.rows * <span class="hljs-number">2</span> : <span class="hljs-keyword">this</span>.rows + <span class="hljs-number">1</span>
+      util.resizeCtx(<span class="hljs-keyword">this</span>.ctx, <span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Recalculate existing sprite uvs.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      util.forEach(<span class="hljs-keyword">this</span>.sprites, (sprite) =&gt; { sprite.uvs = <span class="hljs-keyword">this</span>.getUVs(sprite) })
+    }
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Create a sprite image. See <a href="https://goo.gl/uBwxMq">Drawing shapes with canvas</a></p>
+<p>The drawFcn args: drawFcn(ctx).
+The ctx fill &amp; stroke styles are pre-filled w/ fillColor, strokeColor.</p>
+<p>If useHelpers:</p>
+<ul>
+<li>Transform to -1 -&gt; +1 coords</li>
+<li>drawFcn is surrounded with ctx beginPath &amp; closePath, fill fcns.</li>
+</ul>
+<p>If not using helpers, ctx.canvas.width/height is the size of drawing,
+top/left canvas coordinates.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  createFcnCanvas (drawFcn, fillColor, strokeColor = <span class="hljs-string">'black'</span>, useHelpers = <span class="hljs-literal">true</span>) {
+    <span class="hljs-keyword">const</span> ctx = util.createCtx(<span class="hljs-keyword">this</span>.spriteSize, <span class="hljs-keyword">this</span>.spriteSize)
+    ctx.fillStyle = fillColor.css || fillColor
+    ctx.strokeStyle = strokeColor.css || strokeColor
+    <span class="hljs-keyword">if</span> (useHelpers) {
+      ctx.scale(<span class="hljs-keyword">this</span>.spriteSize / <span class="hljs-number">2</span>, <span class="hljs-keyword">this</span>.spriteSize / <span class="hljs-number">2</span>)
+      ctx.translate(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>)
+      ctx.beginPath()
+    }
+
+    <span class="hljs-keyword">if</span> (util.isString(drawFcn)) {
+      <span class="hljs-keyword">this</span>.paths[drawFcn](ctx)
+    } <span class="hljs-keyword">else</span> {
+      drawFcn(ctx)
+    }
+
+    <span class="hljs-keyword">if</span> (useHelpers) {
+      ctx.closePath()
+      ctx.fill()
+    }
+
+    <span class="hljs-keyword">const</span> name = drawFcn.name || drawFcn
+    ctx.canvas.src = <span class="hljs-string">`<span class="hljs-subst">${name}</span><span class="hljs-subst">${fillColor}</span>`</span>
+    <span class="hljs-keyword">return</span> ctx.canvas
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Return standard agentscript quad:</p>
 <pre><code> 3   2
@@ -245,11 +512,11 @@
         </li>
         
         
-        <li id="section-7">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>return [[x0, y1], [x1, y1], [x1, y0], [x0, y0]]</p>
 
@@ -261,11 +528,11 @@
         </li>
         
         
-        <li id="section-8">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Return uv’s object: {topLeft, topRight, botLeft, botRight}
 getUVsObj (sprite) { // REMIND
@@ -285,155 +552,7 @@ getUVsObj (sprite) { // REMIND
     <span class="hljs-keyword">const</span> {width, height} = <span class="hljs-keyword">this</span>
     <span class="hljs-keyword">if</span> (!(util.isPowerOf2(width) &amp;&amp; util.isPowerOf2(height)))
       <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`SpriteSheet non power of 2: <span class="hljs-subst">${width}</span>x<span class="hljs-subst">${height}</span>`</span>)
-  }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-9">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>
-              <p>REMIND: figure out how to have img be a path string &amp; return its sprite
-spriteName (name, color1 = null, color2 = null) {
-  name = name.replace(/^.*\//, ‘’)
-  return name.replace(/./, ‘img’)
-}
-addImagePromise (url, fcn = (sprite) =&gt; {}) {
-  util.imagePromise(url).then((img) =&gt; { fcn(this.addImage(img)) })
-}</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  addImage (img) {
-    <span class="hljs-keyword">let</span> name = img.src
-    name = name.replace(<span class="hljs-regexp">/^.*\//</span>, <span class="hljs-string">''</span>)
-    name = name.replace(<span class="hljs-regexp">/\./</span>, <span class="hljs-string">'img'</span>)
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.sprites[name]) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.sprites[name]
-    <span class="hljs-keyword">this</span>.checkSheetSize() <span class="hljs-comment">// Resize ctx if nextRow &gt; rows</span>
-    <span class="hljs-keyword">const</span> [x, y, size] = [<span class="hljs-keyword">this</span>.nextX, <span class="hljs-keyword">this</span>.nextY, <span class="hljs-keyword">this</span>.spriteSize]
-    <span class="hljs-keyword">this</span>.ctx.drawImage(img, x, y, size, size)
-    <span class="hljs-keyword">const</span> id = <span class="hljs-keyword">this</span>.id <span class="hljs-comment">// Object.keys(this.sprites).length</span>
-    <span class="hljs-keyword">const</span> {<span class="hljs-attr">nextRow</span>: row, <span class="hljs-attr">nextCol</span>: col} = <span class="hljs-keyword">this</span>
-    <span class="hljs-keyword">const</span> sprite = {id, name, x, y, row, col, size, <span class="hljs-attr">sheet</span>: <span class="hljs-keyword">this</span>}
-    sprite.uvs = <span class="hljs-keyword">this</span>.getUVs(sprite)
-    <span class="hljs-keyword">this</span>.sprites[name] = sprite
-    <span class="hljs-keyword">this</span>.incrementRowCol()
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.texture) <span class="hljs-keyword">this</span>.texture.needsUpdate = <span class="hljs-literal">true</span>
-    <span class="hljs-keyword">return</span> sprite
   }
-  addDrawing (drawFcn, fillColor = <span class="hljs-string">'red'</span>, strokeColor = <span class="hljs-string">'black'</span>, useHelpers = <span class="hljs-literal">true</span>) {
-    <span class="hljs-keyword">const</span> img = <span class="hljs-keyword">this</span>.createImage(drawFcn, fillColor, strokeColor, useHelpers)
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.addImage(img) <span class="hljs-comment">// return sprite</span>
-  }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-10">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
-              </div>
-              <p>getSprite (name) { return this.sprites[name] }
-Resize ctx if nextRow &gt; rows</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  incrementRowCol () {
-    <span class="hljs-keyword">this</span>.nextCol += <span class="hljs-number">1</span>
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.nextCol &lt; <span class="hljs-keyword">this</span>.cols) <span class="hljs-keyword">return</span>
-    <span class="hljs-keyword">this</span>.nextCol = <span class="hljs-number">0</span>
-    <span class="hljs-keyword">this</span>.nextRow += <span class="hljs-number">1</span>
-  }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-11">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
-              </div>
-              <p>Resize ctx if too small for next row/col</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  checkSheetSize () {
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.nextRow === <span class="hljs-keyword">this</span>.rows) { <span class="hljs-comment">// this.nextCol should be 0</span>
-      <span class="hljs-keyword">this</span>.rows = (<span class="hljs-keyword">this</span>.usePowerOf2) ? <span class="hljs-keyword">this</span>.rows * <span class="hljs-number">2</span> : <span class="hljs-keyword">this</span>.rows + <span class="hljs-number">1</span>
-      util.resizeCtx(<span class="hljs-keyword">this</span>.ctx, <span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-12">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
-              </div>
-              <p>Recalculate existing sprite uvs.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      util.forEach(<span class="hljs-keyword">this</span>.sprites, (sprite) =&gt; { sprite.uvs = <span class="hljs-keyword">this</span>.getUVs(sprite) })
-    }
-  }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-13">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
-              </div>
-              <p>Create a sprite image. See <a href="https://goo.gl/uBwxMq">Drawing shapes with canvas</a></p>
-<p>The drawFcn args: drawFcn(ctx).
-The ctx fill &amp; stroke styles are pre-filled w/ fillColor, strokeColor.</p>
-<p>If useHelpers:</p>
-<ul>
-<li>Transform to -1 -&gt; +1 coords</li>
-<li>drawFcn is surrounded with ctx beginPath &amp; closePath, fill fcns.</li>
-</ul>
-<p>If not using helpers, ctx.canvas.width/height is the size of drawing,
-top/left canvas coordinates.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  createImage (drawFcn, fillColor, strokeColor = <span class="hljs-string">'black'</span>, useHelpers = <span class="hljs-literal">true</span>) {
-    <span class="hljs-keyword">const</span> ctx = util.createCtx(<span class="hljs-keyword">this</span>.spriteSize, <span class="hljs-keyword">this</span>.spriteSize)
-    ctx.fillStyle = fillColor.css || fillColor
-    ctx.strokeStyle = strokeColor
-    <span class="hljs-keyword">if</span> (useHelpers) {
-      ctx.scale(<span class="hljs-keyword">this</span>.spriteSize / <span class="hljs-number">2</span>, <span class="hljs-keyword">this</span>.spriteSize / <span class="hljs-number">2</span>)
-      ctx.translate(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>)
-      ctx.beginPath()
-    }
-
-    <span class="hljs-keyword">if</span> (util.isString(drawFcn)) {
-      <span class="hljs-keyword">this</span>.paths[drawFcn](ctx)
-    } <span class="hljs-keyword">else</span> {
-      drawFcn(ctx)
-    }
-
-    <span class="hljs-keyword">if</span> (useHelpers) {
-      ctx.closePath()
-      ctx.fill()
-    }
-
-    <span class="hljs-keyword">const</span> name = drawFcn.name || drawFcn
-    ctx.canvas.src = <span class="hljs-string">`<span class="hljs-subst">${name}</span><span class="hljs-subst">${fillColor}</span>`</span>
-    <span class="hljs-keyword">return</span> ctx.canvas
-  }
-  installDrawing (fcn, name = fcn.name) { <span class="hljs-keyword">this</span>.paths[name] = fcn }
-
 }
 
 <span class="hljs-keyword">const</span> paths = {

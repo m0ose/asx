@@ -35,12 +35,43 @@ class AgentSet extends Array {
       this.ownVariables = []
       // Create a proto for our agents by having a defaults and instance layer
       this.agentProto = new AgentProto(this)
+      this.protoMixin()
+    }
+  }
+  // All agents have:
+  // vars: id, agentSet, model, world, breed (getter)
+  //   baseSet by name: turtles/patches/links
+  // methods: setBreed, getBreed, isBreed
+  // getter/setter: breed
+  protoMixin () {
+    const agentProto = this.agentProto
+    Object.assign(agentProto, {
+      // defaults: agentProto,
+      agentSet: this,
+      model: this.model,
+      world: this.world
+      // this.turtles = agentSet.baseSet
+    })
+    agentProto[this.baseSet.name] = this.baseSet
+
+    const AgentProto = Object.getPrototypeOf(agentProto)
+    if (AgentProto.setBreed) console.log('proto already set: ', AgentProto)
+    if (!AgentProto.setBreed) {
+      Object.assign(AgentProto, {
+        setBreed (breed) { breed.setBreed(this) },
+        getBreed () { return this.agentSet },
+        isBreed (breed) { return this.agentSet === breed }
+      })
+      Object.defineProperty(AgentProto, 'breed', {
+        get: function () { return this.agentSet }
+      })
     }
   }
 
   // Is this a baseSet or a derived "breed"
   isBreedSet () { return this.baseSet !== this }
   isBaseSet () { return this.baseSet === this }
+  // isBreed(agent) { return agent.agentSet}
 
   // Abstract method used by subclasses to create and add their instances.
   // create () {}

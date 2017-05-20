@@ -1,3 +1,4 @@
+import Color from './Color.js'
 import util from './util.js'
 
 // Sprites are images/drawings within a sprite-sheet.
@@ -13,6 +14,28 @@ class SpriteSheet {
     this.ctx = util.createCtx(this.width, this.height)
     this.texture = null // THREE use optional
   }
+  // Return a sprite. Create it if not in sprites cache.
+  // Src can be: image, canvas, function name, function.
+  // If src is a canvas, it must have a src string w/o / or . chars.
+  // If src is function or name of path below, colors can be css
+  // or Color module's Color object.
+  newSprite (src, fillColor, strokeColor) {
+    // Normalize color names to hex
+    if (fillColor) fillColor = Color.toColor(fillColor).css
+    if (strokeColor) strokeColor = Color.toColor(strokeColor).css
+    const name = this.spriteName(src, fillColor, strokeColor)
+
+    if (this.sprites[name]) return this.sprites[name]
+    return util.isImageable(src)
+      ? this.addImage(src)
+      : this.addDrawing(src, fillColor, strokeColor)
+  }
+
+  // Install a new named function in the paths object below
+  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn }
+
+// These are internal, experts only, use newSprite above for normal use.
+
   // width & height in pixels
   get width () { return this.spriteSize * this.cols }
   get height () { return this.spriteSize * this.rows }
@@ -21,6 +44,102 @@ class SpriteSheet {
   get nextY () { return this.spriteSize * this.nextRow }
   // id = number of sprites
   get id () { return Object.keys(this.sprites).length }
+
+  // Make a unique, normalized sprite name. See note on src, colors above.
+  // Color names are hex css formats, see newSprite's name transformation.
+  spriteName (src, fillColor, strokeColor) {
+    // If src is an image, construct a name.
+    if (util.isImageable(src)) {
+      let name = src.src
+      name = name.replace(/^.*\//, '') // remove path
+      name = name.replace(/\..*/, 'img') // replace .png/jpg/.. w/ "img"
+      return name
+    }
+    // ditto for draw function or name of function in paths obj below
+    const name = src.name || src
+    return `${name}${fillColor}` // REMIND: strokeColor too if given?
+  }
+
+  // REMIND: figure out how to have img be a path string & return its sprite
+  // spriteName (name, color1 = null, color2 = null) {
+  //   name = name.replace(/^.*\//, '')
+  //   return name.replace(/\./, 'img')
+  // }
+  // addImagePromise (url, fcn = (sprite) => {}) {
+  //   util.imagePromise(url).then((img) => { fcn(this.addImage(img)) })
+  // }
+  addImage (img) {
+    const name = this.spriteName(img)
+    this.checkSheetSize() // Resize ctx if nextRow > rows
+    const [x, y, size] = [this.nextX, this.nextY, this.spriteSize]
+    this.ctx.drawImage(img, x, y, size, size)
+    const id = this.id // Object.keys(this.sprites).length
+    const {nextRow: row, nextCol: col} = this
+    const sprite = {id, name, x, y, row, col, size, sheet: this}
+    sprite.uvs = this.getUVs(sprite)
+    this.sprites[name] = sprite
+    this.incrementRowCol()
+    if (this.texture) this.texture.needsUpdate = true
+    return sprite
+  }
+  addDrawing (drawFcn, fillColor, strokeColor, useHelpers = true) {
+    const img = this.createFcnCanvas(drawFcn, fillColor, strokeColor, useHelpers)
+    return this.addImage(img) // return sprite
+  }
+  // newSprite (name) { return this.sprites[name] }
+  // Resize ctx if nextRow > rows
+  incrementRowCol () {
+    this.nextCol += 1
+    if (this.nextCol < this.cols) return
+    this.nextCol = 0
+    this.nextRow += 1
+  }
+  // Resize ctx if too small for next row/col
+  checkSheetSize () {
+    if (this.nextRow === this.rows) { // this.nextCol should be 0
+      this.rows = (this.usePowerOf2) ? this.rows * 2 : this.rows + 1
+      util.resizeCtx(this.ctx, this.width, this.height)
+      // Recalculate existing sprite uvs.
+      util.forEach(this.sprites, (sprite) => { sprite.uvs = this.getUVs(sprite) })
+    }
+  }
+
+  // Create a sprite image. See [Drawing shapes with canvas](https://goo.gl/uBwxMq)
+  //
+  // The drawFcn args: drawFcn(ctx).
+  // The ctx fill & stroke styles are pre-filled w/ fillColor, strokeColor.
+  //
+  // If useHelpers:
+  // - Transform to -1 -> +1 coords
+  // - drawFcn is surrounded with ctx beginPath & closePath, fill fcns.
+  //
+  // If not using helpers, ctx.canvas.width/height is the size of drawing,
+  // top/left canvas coordinates.
+  createFcnCanvas (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
+    const ctx = util.createCtx(this.spriteSize, this.spriteSize)
+    ctx.fillStyle = fillColor.css || fillColor
+    ctx.strokeStyle = strokeColor.css || strokeColor
+    if (useHelpers) {
+      ctx.scale(this.spriteSize / 2, this.spriteSize / 2)
+      ctx.translate(1, 1)
+      ctx.beginPath()
+    }
+
+    if (util.isString(drawFcn)) {
+      this.paths[drawFcn](ctx)
+    } else {
+      drawFcn(ctx)
+    }
+
+    if (useHelpers) {
+      ctx.closePath()
+      ctx.fill()
+    }
+
+    const name = drawFcn.name || drawFcn
+    ctx.canvas.src = `${name}${fillColor}`
+    return ctx.canvas
+  }
 
   // Return standard agentscript quad:
   //      3   2
@@ -57,92 +176,6 @@ class SpriteSheet {
     if (!(util.isPowerOf2(width) && util.isPowerOf2(height)))
       throw Error(`SpriteSheet non power of 2: ${width}x${height}`)
   }
-
-  // REMIND: figure out how to have img be a path string & return its sprite
-  // spriteName (name, color1 = null, color2 = null) {
-  //   name = name.replace(/^.*\//, '')
-  //   return name.replace(/\./, 'img')
-  // }
-  // addImagePromise (url, fcn = (sprite) => {}) {
-  //   util.imagePromise(url).then((img) => { fcn(this.addImage(img)) })
-  // }
-  addImage (img) {
-    let name = img.src
-    name = name.replace(/^.*\//, '')
-    name = name.replace(/\./, 'img')
-    if (this.sprites[name]) return this.sprites[name]
-    this.checkSheetSize() // Resize ctx if nextRow > rows
-    const [x, y, size] = [this.nextX, this.nextY, this.spriteSize]
-    this.ctx.drawImage(img, x, y, size, size)
-    const id = this.id // Object.keys(this.sprites).length
-    const {nextRow: row, nextCol: col} = this
-    const sprite = {id, name, x, y, row, col, size, sheet: this}
-    sprite.uvs = this.getUVs(sprite)
-    this.sprites[name] = sprite
-    this.incrementRowCol()
-    if (this.texture) this.texture.needsUpdate = true
-    return sprite
-  }
-  addDrawing (drawFcn, fillColor = 'red', strokeColor = 'black', useHelpers = true) {
-    const img = this.createImage(drawFcn, fillColor, strokeColor, useHelpers)
-    return this.addImage(img) // return sprite
-  }
-  // getSprite (name) { return this.sprites[name] }
-  // Resize ctx if nextRow > rows
-  incrementRowCol () {
-    this.nextCol += 1
-    if (this.nextCol < this.cols) return
-    this.nextCol = 0
-    this.nextRow += 1
-  }
-  // Resize ctx if too small for next row/col
-  checkSheetSize () {
-    if (this.nextRow === this.rows) { // this.nextCol should be 0
-      this.rows = (this.usePowerOf2) ? this.rows * 2 : this.rows + 1
-      util.resizeCtx(this.ctx, this.width, this.height)
-      // Recalculate existing sprite uvs.
-      util.forEach(this.sprites, (sprite) => { sprite.uvs = this.getUVs(sprite) })
-    }
-  }
-
-  // Create a sprite image. See [Drawing shapes with canvas](https://goo.gl/uBwxMq)
-  //
-  // The drawFcn args: drawFcn(ctx).
-  // The ctx fill & stroke styles are pre-filled w/ fillColor, strokeColor.
-  //
-  // If useHelpers:
-  // - Transform to -1 -> +1 coords
-  // - drawFcn is surrounded with ctx beginPath & closePath, fill fcns.
-  //
-  // If not using helpers, ctx.canvas.width/height is the size of drawing,
-  // top/left canvas coordinates.
-  createImage (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
-    const ctx = util.createCtx(this.spriteSize, this.spriteSize)
-    ctx.fillStyle = fillColor.css || fillColor
-    ctx.strokeStyle = strokeColor
-    if (useHelpers) {
-      ctx.scale(this.spriteSize / 2, this.spriteSize / 2)
-      ctx.translate(1, 1)
-      ctx.beginPath()
-    }
-
-    if (util.isString(drawFcn)) {
-      this.paths[drawFcn](ctx)
-    } else {
-      drawFcn(ctx)
-    }
-
-    if (useHelpers) {
-      ctx.closePath()
-      ctx.fill()
-    }
-
-    const name = drawFcn.name || drawFcn
-    ctx.canvas.src = `${name}${fillColor}`
-    return ctx.canvas
-  }
-  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn }
-
 }
 
 const paths = {

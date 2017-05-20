@@ -854,12 +854,43 @@ class AgentSet extends Array {
       this.ownVariables = [];
       // Create a proto for our agents by having a defaults and instance layer
       this.agentProto = new AgentProto(this);
+      this.protoMixin();
+    }
+  }
+  // All agents have:
+  // vars: id, agentSet, model, world, breed (getter)
+  //   baseSet by name: turtles/patches/links
+  // methods: setBreed, getBreed, isBreed
+  // getter/setter: breed
+  protoMixin () {
+    const agentProto = this.agentProto;
+    Object.assign(agentProto, {
+      // defaults: agentProto,
+      agentSet: this,
+      model: this.model,
+      world: this.world
+      // this.turtles = agentSet.baseSet
+    });
+    agentProto[this.baseSet.name] = this.baseSet;
+
+    const AgentProto = Object.getPrototypeOf(agentProto);
+    if (AgentProto.setBreed) console.log('proto already set: ', AgentProto);
+    if (!AgentProto.setBreed) {
+      Object.assign(AgentProto, {
+        setBreed (breed) { breed.setBreed(this); },
+        getBreed () { return this.agentSet },
+        isBreed (breed) { return this.agentSet === breed }
+      });
+      Object.defineProperty(AgentProto, 'breed', {
+        get: function () { return this.agentSet }
+      });
     }
   }
 
   // Is this a baseSet or a derived "breed"
   isBreedSet () { return this.baseSet !== this }
   isBaseSet () { return this.baseSet === this }
+  // isBreed(agent) { return agent.agentSet}
 
   // Abstract method used by subclasses to create and add their instances.
   // create () {}
@@ -1683,7 +1714,7 @@ const Color = {
   },
 
   // ### Typed Color
-  // A typedColor is a 4 element Uint8ClampedArray, with two properties:
+  // A Color is a 4 element Uint8ClampedArray, with two properties:
   //
   // * pixelArray: A single element Uint32Array view on the Uint8ClampedArray
   // * string: an optional, lazy evaluated, css color string.
@@ -1691,51 +1722,51 @@ const Color = {
   // This provides a universal color, good for canvas2d pixels, webgl & image
   // TypedArrays, and css/canvas2d strings.
 
-  // Create typedColor from r,g,b,a. Use `toTypedColor()` below for strings etc.
-  newTypedColor (r, g, b, a = 255) {
+  // Create Color from r,g,b,a. Use `toColor()` below for strings etc.
+  newColor (r, g, b, a = 255) {
     const u8array = new Uint8ClampedArray([r, g, b, a]);
     u8array.pixelArray = new Uint32Array(u8array.buffer); // one element array
-    // Make this an instance of TypedColorProto
-    Object.setPrototypeOf(u8array, TypedColorProto);
+    // Make this an instance of ColorProto
+    Object.setPrototypeOf(u8array, ColorProto);
     return u8array
   },
-  isTypedColor (color) {
+  isColor (color) {
     return color.constructor === Uint8ClampedArray && color.pixelArray
   },
-  // Create a typedColor from a css string, pixel, JavaScript or Typed Array.
-  // Returns `any` if is typedColor already. Useful for
+  // Create a Color from a css string, pixel, JavaScript or Typed Array.
+  // Returns `any` if is Color already. Useful for
   // ```
-  // css: `toTypedColor('#ff0a00')`
-  // hsl: `toTypedColor('hsl(200,100%,50%)')`
-  // named colors: `toTypedColor('CadetBlue')`
-  // pixels: `toTypedColor(4294945280)`
-  // JavaScript Arrays: `toTypedColor([255,0,0])`
+  // css: `toColor('#ff0a00')`
+  // hsl: `toColor('hsl(200,100%,50%)')`
+  // named colors: `toColor('CadetBlue')`
+  // pixels: `toColor(4294945280)`
+  // JavaScript Arrays: `toColor([255,0,0])`
   // ```
-  toTypedColor (any) {
-    if (this.isTypedColor(any)) return any
-    const tc = this.newTypedColor(0, 0, 0, 0);
+  toColor (any) {
+    if (this.isColor(any)) return any
+    const tc = this.newColor(0, 0, 0, 0);
     if (util.isInteger(any)) tc.setPixel(any);
     else if (typeof any === 'string') tc.setCss(any);
     else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any);
     else if (util.isFloatArray(any)) tc.setWebgl(any);
-    else throw Error('toTypedColor: invalid argument', any)
+    else throw Error('toColor: invalid argument', any)
     return tc
   },
-  // Return a random rgb typedColor, a=255
+  // Return a random rgb Color, a=255
   randomTypedColor () {
     const r255 = () => util.randomInt(256); // random int in [0,255]
-    return this.newTypedColor(r255(), r255(), r255())
+    return this.newColor(r255(), r255(), r255())
   },
   // A static transparent color, set at end of file
   transparent: null
 };
 
-// Prototype for typedColor. Getters/setters for usability, may be slower.
-const TypedColorProto = {
+// Prototype for Color. Getters/setters for usability, may be slower.
+const ColorProto = {
   // Inherit from Uint8ClampedArray
   __proto__: Uint8ClampedArray.prototype,
 
-  // Set the typedColor to new rgba values.
+  // Set the Color to new rgba values.
   setColor (r, g, b, a = 255) {
     this.checkColorChange();
     this[0] = r; this[1] = g; this[2] = b; this[3] = a;
@@ -1744,7 +1775,7 @@ const TypedColorProto = {
   set rgb (rgbaArray) { this.setColor(...rgbaArray); },
   get rgb () { return this },
 
-  // Set the typedColor to a new pixel value
+  // Set the Color to a new pixel value
   setPixel (pixel) {
     this.checkColorChange();
     this.pixelArray[0] = pixel;
@@ -1762,7 +1793,7 @@ const TypedColorProto = {
   setCss (string) {
     return this.setColor(...Color.stringToUint8s(string))
   },
-  // Return the triString for this typedColor, cached in the @string value
+  // Return the triString for this Color, cached in the @string value
   getCss () {
     if (this.string == null) this.string = Color.triString(...this);
     return this.string
@@ -1810,7 +1841,7 @@ const TypedColorProto = {
   }
 };
 
-Color.transparent = Color.newTypedColor(0, 0, 0, 0);
+Color.transparent = Color.newColor(0, 0, 0, 0);
 
 // A colormap is simply an array of typedColors with several utilities such
 // as randomColor, closestColor etc.
@@ -1854,12 +1885,12 @@ const ColorMap = {
   // Convert a Uint8Array into Array of 4 element typedColors.
   // Useful for converting ImageData objects like gradients to colormaps.
   // WebGL ready: the array.typedArray is suitable for Uniforms.
-  typedArrayToTypedColors (typedArray) {
+  typedArraytoColors (typedArray) {
     const array = [];
     util.step(typedArray.length, 4,
       // Note: can't share subarray as color's typed array:
       // it's buffer is for entire array, not just subarray.
-      (i) => array.push(Color.newTypedColor(...typedArray.subarray(i, i + 4))));
+      (i) => array.push(Color.newColor(...typedArray.subarray(i, i + 4))));
     array.typedArray = typedArray;
     return array
   },
@@ -1872,7 +1903,7 @@ const ColorMap = {
       if (a.length === 3) a.push(255);
       typedArray.set(a, i * 4);
     });
-    return this.typedArrayToTypedColors(typedArray)
+    return this.typedArraytoColors(typedArray)
   },
 
   // Permute the values of 3 arrays. Ex:
@@ -1897,7 +1928,7 @@ const ColorMap = {
 // ### ColorMaps
 
   // ColorMaps are Arrays of TypedColors with these additional methods. Webgl
-  // ready if made w/ `typedArrayToTypedColors` or `arraysToColors` above.
+  // ready if made w/ `typedArraytoColors` or `arraysToColors` above.
   // Used to be memory effecent (shared colors), webgl compatible,  and for
   // MatLab-like color-as-data.
   ColorMapProto: {
@@ -2023,7 +2054,7 @@ const ColorMap = {
   // Convert the HSL values to typedColors, default to bright hue ramp (L=50).
   hslColorMap (H, S = [100], L = [50]) {
     const hslArray = this.permuteArrays(H, S, L);
-    const array = hslArray.map(a => Color.toTypedColor(Color.hslString(...a)));
+    const array = hslArray.map(a => Color.toColor(Color.hslString(...a)));
     return this.basicColorMap(array)
   },
 
@@ -2034,7 +2065,7 @@ const ColorMap = {
   // This easily creates all the MatLab colormaps like "jet" below.
   gradientColorMap (nColors, stops, locs) {
     const uint8arrays = this.gradientImageData(nColors, stops, locs);
-    const typedColors = this.typedArrayToTypedColors(uint8arrays);
+    const typedColors = this.typedArraytoColors(uint8arrays);
     Object.setPrototypeOf(typedColors, this.ColorMapProto);
     return typedColors
   },
@@ -2088,16 +2119,16 @@ const ColorMap = {
 // Use links.setDefault(name, val) to change
 // Modelers add additional "own variables" as needed.
 const linkVariables = { // Core variables for patches. Not 'own' variables.
-  id: null,             // unique id, promoted by agentset's add() method
-  defaults: null,       // pointer to defaults/proto object
-  agentSet: null,       // my agentset/breed
-  model: null,      // my model
-  world: null,          // my agent/agentset's world
-  links: null,          // my baseSet
+  // id: null,             // unique id, promoted by agentset's add() method
+  // defaults: null,       // pointer to defaults/proto object
+  // agentSet: null,       // my agentset/breed
+  // model: null,      // my model
+  // world: null,          // my agent/agentset's world
+  // links: null,          // my baseSet
 
   end0: 0,              // Turtles: end0 & 1 are turtle ends of the link
   end1: 0,
-  color: Color.toTypedColor('yellow'), // Note: links must have A = 255, opaque.
+  color: Color.toColor('yellow'), // Note: links must have A = 255, opaque.
   // z: 1, // possibly a z offset from the turtles?
 
   // Line width. In Three.js/webgl this is always 1. See
@@ -2108,11 +2139,11 @@ class Link {
   // Initialize a Link given its Links AgentSet.
   constructor (agentSet) {
     Object.assign(this, linkVariables);
-    this.defaults = this;
-    this.agentSet = agentSet;
-    this.model = agentSet.model;
-    this.world = agentSet.world;
-    this.links = agentSet.baseSet;
+    // this.defaults = this
+    // this.agentSet = agentSet
+    // this.model = agentSet.model
+    // this.world = agentSet.world
+    // this.links = agentSet.baseSet
   }
   init (from, to) {
     this.end0 = from;
@@ -2132,8 +2163,8 @@ class Link {
   otherEnd (turtle) { return turtle === this.end0 ? this.end1 : this.end0 }
 
   // Breed get/set mathods.
-  setBreed (breed) { breed.setBreed(this); }
-  get breed () { return this.agentSet }
+  // setBreed (breed) { breed.setBreed(this) }
+  // get breed () { return this.agentSet }
 }
 
 // Links are a collection of all the Link objects between turtles.
@@ -2489,16 +2520,16 @@ class Patches extends AgentSet {
 // The neighbors and neighbors4 variables are initially getters that
 // are "promoted" to instance variables if used.
 const patchVariables = { // Core variables for patches. Not 'own' variables.
-  id: null,             // unique id, promoted by agentset's add() method
-  defaults: null,       // pointer to defaults/proto object
-  agentSet: null,       // my agentset/breed
-  model: null,          // my model
-  world: null,          // my agent/agentset's world
-  patches: null,        // my patches/baseSet, set by ctor
+  // id: null,             // unique id, promoted by agentset's add() method
+  // defaults: null,       // pointer to defaults/proto object
+  // agentSet: null,       // my agentset/breed
+  // model: null,          // my model
+  // world: null,          // my agent/agentset's world
+  // patches: null,        // my patches/baseSet, set by ctor
 
   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
   labelOffset: [0, 0],  // text pixel offset from the patch center
-  labelColor: Color.newTypedColor(0, 0, 0) // the label color
+  labelColor: Color.newColor(0, 0, 0) // the label color
   // Getter variables: label, color, x, y, neighbors, neighbors4
 };
 
@@ -2512,11 +2543,11 @@ class Patch {
   // Initialize a Patch given its Patches AgentSet.
   constructor (agentSet) {
     Object.assign(this, patchVariables);
-    this.defaults = this;
-    this.agentSet = agentSet;
-    this.model = agentSet.model;
-    this.world = agentSet.world;
-    this.patches = agentSet.baseSet;
+    // this.defaults = this
+    // this.agentSet = agentSet
+    // this.model = agentSet.model
+    // this.world = agentSet.world
+    // this.patches = agentSet.baseSet
   }
   // Getter for x,y derived from patch id, thus no setter.
   get x () {
@@ -2525,6 +2556,12 @@ class Patch {
   get y () {
     return this.world.maxY - Math.floor(this.id / this.world.numX)
   }
+  isOnEdge () {
+    const {x, y, world} = this;
+    return x === world.minX || x === world.maxX ||
+      y === world.minY || y === world.maxY
+  }
+
   // Getter for neighbors of this patch.
   // Uses lazy evaluation to promote neighbors to instance variables.
   // To avoid promotion, use `patches.neighbors(this)`.
@@ -2559,7 +2596,7 @@ class Patch {
       sharedColor.pixel = pixel;
       return sharedColor
     }
-    return Color.toTypedColor(pixel)
+    return Color.toColor(pixel)
   }
   get color () { return this.getColor() }
   set color (typedColor) { return this.setColor(typedColor) }
@@ -2620,8 +2657,9 @@ class Patch {
   }
 
   // Breed get/set mathods and getter/setter versions.
-  setBreed (breed) { breed.setBreed(this); }
-  get breed () { return this.agentSet }
+  // setBreed (breed) { breed.setBreed(this) }
+  // get breed () { return this.agentSet }
+  // isBreed (name) { return this.agentSet.name === name }
 
   sprout (num = 1, breed = this.model.turtles, init = util.noop) {
     breed.create(num, (turtle) => {
@@ -2715,13 +2753,6 @@ class Turtles extends AgentSet {
 // Use turtles.setDefault(name, val) to change
 // Modelers add additional "own variables" as needed.
 const turtleVariables = { // Core variables for patches. Not 'own' variables.
-  id: null,         // unique id, promoted by agentset's add() method
-  defaults: null,   // pointer to defaults/proto object
-  agentSet: null,   // my agentset/breed
-  model: null,      // my model
-  world: null,      // my agent/agentset's world
-  turtles: null,    // my baseSet
-
   x: 0,             // x, y, z in patchSize units.
   y: 0,             // Use turtles.setDefault('z', num) to change default height
   z: 1,
@@ -2735,20 +2766,20 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
   sprite: null
 
   // spriteFcn: 'default',
-  // spriteColor: Color.newTypedColor(255, 0, 0),
+  // spriteColor: Color.newColor(255, 0, 0),
 
   // labelOffset: [0, 0],  // text pixel offset from the turtle center
-  // labelColor: Color.newTypedColor(0, 0, 0) // the label color
+  // labelColor: Color.newColor(0, 0, 0) // the label color
 };
 class Turtle {
   // Initialize a Turtle given its Turtles AgentSet.
   constructor (agentSet) {
     Object.assign(this, turtleVariables);
-    this.defaults = this;
-    this.agentSet = agentSet;
-    this.model = agentSet.model;
-    this.world = agentSet.world;
-    this.turtles = agentSet.baseSet;
+    // this.defaults = this
+    // this.agentSet = agentSet
+    // this.model = agentSet.model
+    // this.world = agentSet.world
+    // this.turtles = agentSet.baseSet
 
     // this.sprite = this.turtles.model.spriteSheet.addDrawing('default')
     // this.sprite = this.turtles.spriteSheet.add('default', 'red')
@@ -2760,6 +2791,10 @@ class Turtle {
     if (this.patch.turtles != null)
       util.removeItem(this.patch.turtles, this);
   }
+  // // Breed get/set mathods.
+  // setBreed (breed) { breed.setBreed(this) }
+  // get breed () { return this.agentSet }
+
   // Factory: create num new turtles at this turtle's location. The optional init
   // proc is called on the new turtle after inserting in its agentSet.
   hatch (num = 1, agentSet = this.agentSet, init = () => {}) {
@@ -2783,10 +2818,6 @@ class Turtle {
   // REMIND: promote to default variable(s) if performance issue
   get patches () { return this.model.patches }
 
-  // Breed get/set mathods.
-  setBreed (breed) { breed.setBreed(this); }
-  get breed () { return this.agentSet }
-
   // Heading vs Euclidean Angles
   get heading () { return util.heading(this.theta) }
   set heading (heading) { this.theta = util.angle(heading); }
@@ -2795,9 +2826,10 @@ class Turtle {
   setSprite (src, color = 'red', strokeColor = 'black') {
     if (src.sheet) { this.sprite = src; return } // src is a sprite
     const ss = this.model.renderer.spriteSheet;
-    this.sprite = util.isImageable(src)
-      ? ss.addImage(src)
-      : ss.addDrawing(src, color, strokeColor);
+    this.sprite = ss.newSprite(src, color, strokeColor);
+    // this.sprite = util.isImageable(src)
+    //   ? ss.addImage(src)
+    //   : ss.addDrawing(src, color, strokeColor)
   }
   // setSize (size) { this.size = size * this.world.patchSize }
   // setDrawSprite (fcn, color, color2) {
@@ -2927,6 +2959,28 @@ class SpriteSheet {
     this.ctx = util.createCtx(this.width, this.height);
     this.texture = null; // THREE use optional
   }
+  // Return a sprite. Create it if not in sprites cache.
+  // Src can be: image, canvas, function name, function.
+  // If src is a canvas, it must have a src string w/o / or . chars.
+  // If src is function or name of path below, colors can be css
+  // or Color module's Color object.
+  newSprite (src, fillColor, strokeColor) {
+    // Normalize color names to hex
+    if (fillColor) fillColor = Color.toColor(fillColor).css;
+    if (strokeColor) strokeColor = Color.toColor(strokeColor).css;
+    const name = this.spriteName(src, fillColor, strokeColor);
+
+    if (this.sprites[name]) return this.sprites[name]
+    return util.isImageable(src)
+      ? this.addImage(src)
+      : this.addDrawing(src, fillColor, strokeColor)
+  }
+
+  // Install a new named function in the paths object below
+  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn; }
+
+// These are internal, experts only, use newSprite above for normal use.
+
   // width & height in pixels
   get width () { return this.spriteSize * this.cols }
   get height () { return this.spriteSize * this.rows }
@@ -2935,6 +2989,102 @@ class SpriteSheet {
   get nextY () { return this.spriteSize * this.nextRow }
   // id = number of sprites
   get id () { return Object.keys(this.sprites).length }
+
+  // Make a unique, normalized sprite name. See note on src, colors above.
+  // Color names are hex css formats, see newSprite's name transformation.
+  spriteName (src, fillColor, strokeColor) {
+    // If src is an image, construct a name.
+    if (util.isImageable(src)) {
+      let name = src.src;
+      name = name.replace(/^.*\//, ''); // remove path
+      name = name.replace(/\..*/, 'img'); // replace .png/jpg/.. w/ "img"
+      return name
+    }
+    // ditto for draw function or name of function in paths obj below
+    const name = src.name || src;
+    return `${name}${fillColor}` // REMIND: strokeColor too if given?
+  }
+
+  // REMIND: figure out how to have img be a path string & return its sprite
+  // spriteName (name, color1 = null, color2 = null) {
+  //   name = name.replace(/^.*\//, '')
+  //   return name.replace(/\./, 'img')
+  // }
+  // addImagePromise (url, fcn = (sprite) => {}) {
+  //   util.imagePromise(url).then((img) => { fcn(this.addImage(img)) })
+  // }
+  addImage (img) {
+    const name = this.spriteName(img);
+    this.checkSheetSize(); // Resize ctx if nextRow > rows
+    const [x, y, size] = [this.nextX, this.nextY, this.spriteSize];
+    this.ctx.drawImage(img, x, y, size, size);
+    const id = this.id; // Object.keys(this.sprites).length
+    const {nextRow: row, nextCol: col} = this;
+    const sprite = {id, name, x, y, row, col, size, sheet: this};
+    sprite.uvs = this.getUVs(sprite);
+    this.sprites[name] = sprite;
+    this.incrementRowCol();
+    if (this.texture) this.texture.needsUpdate = true;
+    return sprite
+  }
+  addDrawing (drawFcn, fillColor, strokeColor, useHelpers = true) {
+    const img = this.createFcnCanvas(drawFcn, fillColor, strokeColor, useHelpers);
+    return this.addImage(img) // return sprite
+  }
+  // newSprite (name) { return this.sprites[name] }
+  // Resize ctx if nextRow > rows
+  incrementRowCol () {
+    this.nextCol += 1;
+    if (this.nextCol < this.cols) return
+    this.nextCol = 0;
+    this.nextRow += 1;
+  }
+  // Resize ctx if too small for next row/col
+  checkSheetSize () {
+    if (this.nextRow === this.rows) { // this.nextCol should be 0
+      this.rows = (this.usePowerOf2) ? this.rows * 2 : this.rows + 1;
+      util.resizeCtx(this.ctx, this.width, this.height);
+      // Recalculate existing sprite uvs.
+      util.forEach(this.sprites, (sprite) => { sprite.uvs = this.getUVs(sprite); });
+    }
+  }
+
+  // Create a sprite image. See [Drawing shapes with canvas](https://goo.gl/uBwxMq)
+  //
+  // The drawFcn args: drawFcn(ctx).
+  // The ctx fill & stroke styles are pre-filled w/ fillColor, strokeColor.
+  //
+  // If useHelpers:
+  // - Transform to -1 -> +1 coords
+  // - drawFcn is surrounded with ctx beginPath & closePath, fill fcns.
+  //
+  // If not using helpers, ctx.canvas.width/height is the size of drawing,
+  // top/left canvas coordinates.
+  createFcnCanvas (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
+    const ctx = util.createCtx(this.spriteSize, this.spriteSize);
+    ctx.fillStyle = fillColor.css || fillColor;
+    ctx.strokeStyle = strokeColor.css || strokeColor;
+    if (useHelpers) {
+      ctx.scale(this.spriteSize / 2, this.spriteSize / 2);
+      ctx.translate(1, 1);
+      ctx.beginPath();
+    }
+
+    if (util.isString(drawFcn)) {
+      this.paths[drawFcn](ctx);
+    } else {
+      drawFcn(ctx);
+    }
+
+    if (useHelpers) {
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    const name = drawFcn.name || drawFcn;
+    ctx.canvas.src = `${name}${fillColor}`;
+    return ctx.canvas
+  }
 
   // Return standard agentscript quad:
   //      3   2
@@ -2971,92 +3121,6 @@ class SpriteSheet {
     if (!(util.isPowerOf2(width) && util.isPowerOf2(height)))
       throw Error(`SpriteSheet non power of 2: ${width}x${height}`)
   }
-
-  // REMIND: figure out how to have img be a path string & return its sprite
-  // spriteName (name, color1 = null, color2 = null) {
-  //   name = name.replace(/^.*\//, '')
-  //   return name.replace(/\./, 'img')
-  // }
-  // addImagePromise (url, fcn = (sprite) => {}) {
-  //   util.imagePromise(url).then((img) => { fcn(this.addImage(img)) })
-  // }
-  addImage (img) {
-    let name = img.src;
-    name = name.replace(/^.*\//, '');
-    name = name.replace(/\./, 'img');
-    if (this.sprites[name]) return this.sprites[name]
-    this.checkSheetSize(); // Resize ctx if nextRow > rows
-    const [x, y, size] = [this.nextX, this.nextY, this.spriteSize];
-    this.ctx.drawImage(img, x, y, size, size);
-    const id = this.id; // Object.keys(this.sprites).length
-    const {nextRow: row, nextCol: col} = this;
-    const sprite = {id, name, x, y, row, col, size, sheet: this};
-    sprite.uvs = this.getUVs(sprite);
-    this.sprites[name] = sprite;
-    this.incrementRowCol();
-    if (this.texture) this.texture.needsUpdate = true;
-    return sprite
-  }
-  addDrawing (drawFcn, fillColor = 'red', strokeColor = 'black', useHelpers = true) {
-    const img = this.createImage(drawFcn, fillColor, strokeColor, useHelpers);
-    return this.addImage(img) // return sprite
-  }
-  // getSprite (name) { return this.sprites[name] }
-  // Resize ctx if nextRow > rows
-  incrementRowCol () {
-    this.nextCol += 1;
-    if (this.nextCol < this.cols) return
-    this.nextCol = 0;
-    this.nextRow += 1;
-  }
-  // Resize ctx if too small for next row/col
-  checkSheetSize () {
-    if (this.nextRow === this.rows) { // this.nextCol should be 0
-      this.rows = (this.usePowerOf2) ? this.rows * 2 : this.rows + 1;
-      util.resizeCtx(this.ctx, this.width, this.height);
-      // Recalculate existing sprite uvs.
-      util.forEach(this.sprites, (sprite) => { sprite.uvs = this.getUVs(sprite); });
-    }
-  }
-
-  // Create a sprite image. See [Drawing shapes with canvas](https://goo.gl/uBwxMq)
-  //
-  // The drawFcn args: drawFcn(ctx).
-  // The ctx fill & stroke styles are pre-filled w/ fillColor, strokeColor.
-  //
-  // If useHelpers:
-  // - Transform to -1 -> +1 coords
-  // - drawFcn is surrounded with ctx beginPath & closePath, fill fcns.
-  //
-  // If not using helpers, ctx.canvas.width/height is the size of drawing,
-  // top/left canvas coordinates.
-  createImage (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
-    const ctx = util.createCtx(this.spriteSize, this.spriteSize);
-    ctx.fillStyle = fillColor.css || fillColor;
-    ctx.strokeStyle = strokeColor;
-    if (useHelpers) {
-      ctx.scale(this.spriteSize / 2, this.spriteSize / 2);
-      ctx.translate(1, 1);
-      ctx.beginPath();
-    }
-
-    if (util.isString(drawFcn)) {
-      this.paths[drawFcn](ctx);
-    } else {
-      drawFcn(ctx);
-    }
-
-    if (useHelpers) {
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    const name = drawFcn.name || drawFcn;
-    ctx.canvas.src = `${name}${fillColor}`;
-    return ctx.canvas
-  }
-  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn; }
-
 }
 
 const paths = {

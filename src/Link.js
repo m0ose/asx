@@ -9,16 +9,16 @@ import Color from './Color.js'
 // Use links.setDefault(name, val) to change
 // Modelers add additional "own variables" as needed.
 const linkVariables = { // Core variables for patches. Not 'own' variables.
-  id: null,             // unique id, promoted by agentset's add() method
-  defaults: null,       // pointer to defaults/proto object
-  agentSet: null,       // my agentset/breed
-  model: null,      // my model
-  world: null,          // my agent/agentset's world
-  links: null,          // my baseSet
+  // id: null,             // unique id, promoted by agentset's add() method
+  // defaults: null,       // pointer to defaults/proto object
+  // agentSet: null,       // my agentset/breed
+  // model: null,      // my model
+  // world: null,          // my agent/agentset's world
+  // links: null,          // my baseSet
 
   end0: 0,              // Turtles: end0 & 1 are turtle ends of the link
   end1: 0,
-  color: Color.toTypedColor('yellow'), // Note: links must have A = 255, opaque.
+  color: Color.toColor('yellow'), // Note: links must have A = 255, opaque.
   // z: 1, // possibly a z offset from the turtles?
 
   // Line width. In Three.js/webgl this is always 1. See
@@ -29,11 +29,11 @@ class Link {
   // Initialize a Link given its Links AgentSet.
   constructor (agentSet) {
     Object.assign(this, linkVariables)
-    this.defaults = this
-    this.agentSet = agentSet
-    this.model = agentSet.model
-    this.world = agentSet.world
-    this.links = agentSet.baseSet
+    // this.defaults = this
+    // this.agentSet = agentSet
+    // this.model = agentSet.model
+    // this.world = agentSet.world
+    // this.links = agentSet.baseSet
   }
   init (from, to) {
     this.end0 = from
@@ -53,8 +53,8 @@ class Link {
   otherEnd (turtle) { return turtle === this.end0 ? this.end1 : this.end0 }
 
   // Breed get/set mathods.
-  setBreed (breed) { breed.setBreed(this) }
-  get breed () { return this.agentSet }
+  // setBreed (breed) { breed.setBreed(this) }
+  // get breed () { return this.agentSet }
 }
 
 export default Link

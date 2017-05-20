@@ -290,7 +290,7 @@ WebGL ready: the array.typedArray is suitable for Uniforms.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  typedArrayToTypedColors (typedArray) {
+            <div class="content"><div class='highlight'><pre>  typedArraytoColors (typedArray) {
     <span class="hljs-keyword">const</span> array = []
     util.step(typedArray.length, <span class="hljs-number">4</span>,</pre></div></div>
             
@@ -308,7 +308,7 @@ it’s buffer is for entire array, not just subarray.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      (i) =&gt; array.push(Color.newTypedColor(...typedArray.subarray(i, i + <span class="hljs-number">4</span>))))
+            <div class="content"><div class='highlight'><pre>      (i) =&gt; array.push(Color.newColor(...typedArray.subarray(i, i + <span class="hljs-number">4</span>))))
     array.typedArray = typedArray
     <span class="hljs-keyword">return</span> array
   },</pre></div></div>
@@ -334,7 +334,7 @@ Webgl ready as above.</p>
       <span class="hljs-keyword">if</span> (a.length === <span class="hljs-number">3</span>) a.push(<span class="hljs-number">255</span>)
       typedArray.set(a, i * <span class="hljs-number">4</span>)
     })
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.typedArrayToTypedColors(typedArray)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.typedArraytoColors(typedArray)
   },</pre></div></div>
             
         </li>
@@ -403,7 +403,7 @@ Ex: if numRs is 3, permuteArrays’s A1 would be [0, 127, 255]</p>
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>ColorMaps are Arrays of TypedColors with these additional methods. Webgl
-ready if made w/ <code>typedArrayToTypedColors</code> or <code>arraysToColors</code> above.
+ready if made w/ <code>typedArraytoColors</code> or <code>arraysToColors</code> above.
 Used to be memory effecent (shared colors), webgl compatible,  and for
 MatLab-like color-as-data.</p>
 
@@ -781,7 +781,7 @@ Convert the HSL values to typedColors, default to bright hue ramp (L=50).</p>
             
             <div class="content"><div class='highlight'><pre>  hslColorMap (H, S = [<span class="hljs-number">100</span>], L = [<span class="hljs-number">50</span>]) {
     <span class="hljs-keyword">const</span> hslArray = <span class="hljs-keyword">this</span>.permuteArrays(H, S, L)
-    <span class="hljs-keyword">const</span> array = hslArray.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> Color.toTypedColor(Color.hslString(...a)))
+    <span class="hljs-keyword">const</span> array = hslArray.map(<span class="hljs-function"><span class="hljs-params">a</span> =&gt;</span> Color.toColor(Color.hslString(...a)))
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.basicColorMap(array)
   },</pre></div></div>
             
@@ -803,7 +803,7 @@ locs defaults to evenly spaced, probably what you want.</p>
             
             <div class="content"><div class='highlight'><pre>  gradientColorMap (nColors, stops, locs) {
     <span class="hljs-keyword">const</span> uint8arrays = <span class="hljs-keyword">this</span>.gradientImageData(nColors, stops, locs)
-    <span class="hljs-keyword">const</span> typedColors = <span class="hljs-keyword">this</span>.typedArrayToTypedColors(uint8arrays)
+    <span class="hljs-keyword">const</span> typedColors = <span class="hljs-keyword">this</span>.typedArraytoColors(uint8arrays)
     <span class="hljs-built_in">Object</span>.setPrototypeOf(typedColors, <span class="hljs-keyword">this</span>.ColorMapProto)
     <span class="hljs-keyword">return</span> typedColors
   },</pre></div></div>

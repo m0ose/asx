@@ -370,7 +370,7 @@ If you need a JavaScript Array, use <code>new Array(...TypedArray)</code></p>
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <h3 id="typed-color">Typed Color</h3>
-<p>A typedColor is a 4 element Uint8ClampedArray, with two properties:</p>
+<p>A Color is a 4 element Uint8ClampedArray, with two properties:</p>
 <ul>
 <li>pixelArray: A single element Uint32Array view on the Uint8ClampedArray</li>
 <li>string: an optional, lazy evaluated, css color string.</li>
@@ -389,11 +389,11 @@ TypedArrays, and css/canvas2d strings.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>Create typedColor from r,g,b,a. Use <code>toTypedColor()</code> below for strings etc.</p>
+              <p>Create Color from r,g,b,a. Use <code>toColor()</code> below for strings etc.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  newTypedColor (r, g, b, a = <span class="hljs-number">255</span>) {
+            <div class="content"><div class='highlight'><pre>  newColor (r, g, b, a = <span class="hljs-number">255</span>) {
     <span class="hljs-keyword">const</span> u8array = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8ClampedArray</span>([r, g, b, a])
     u8array.pixelArray = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint32Array</span>(u8array.buffer) <span class="hljs-comment">// one element array</span></pre></div></div>
             
@@ -406,14 +406,14 @@ TypedArrays, and css/canvas2d strings.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>Make this an instance of TypedColorProto</p>
+              <p>Make this an instance of ColorProto</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-built_in">Object</span>.setPrototypeOf(u8array, TypedColorProto)
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-built_in">Object</span>.setPrototypeOf(u8array, ColorProto)
     <span class="hljs-keyword">return</span> u8array
   },
-  isTypedColor (color) {
+  isColor (color) {
     <span class="hljs-keyword">return</span> color.constructor === <span class="hljs-built_in">Uint8ClampedArray</span> &amp;&amp; color.pixelArray
   },</pre></div></div>
             
@@ -426,24 +426,24 @@ TypedArrays, and css/canvas2d strings.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>Create a typedColor from a css string, pixel, JavaScript or Typed Array.
-Returns <code>any</code> if is typedColor already. Useful for</p>
-<pre><code>css: <span class="hljs-string">`toTypedColor('#ff0a00')`</span>
-hsl: <span class="hljs-string">`toTypedColor('hsl(200,100%,50%)')`</span>
-named colors: <span class="hljs-string">`toTypedColor('CadetBlue')`</span>
-pixels: <span class="hljs-string">`toTypedColor(4294945280)`</span>
-JavaScript Arrays: <span class="hljs-string">`toTypedColor([255,0,0])`</span>
+              <p>Create a Color from a css string, pixel, JavaScript or Typed Array.
+Returns <code>any</code> if is Color already. Useful for</p>
+<pre><code>css: <span class="hljs-string">`toColor('#ff0a00')`</span>
+hsl: <span class="hljs-string">`toColor('hsl(200,100%,50%)')`</span>
+named colors: <span class="hljs-string">`toColor('CadetBlue')`</span>
+pixels: <span class="hljs-string">`toColor(4294945280)`</span>
+JavaScript Arrays: <span class="hljs-string">`toColor([255,0,0])`</span>
 </code></pre>
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toTypedColor (any) {
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.isTypedColor(any)) <span class="hljs-keyword">return</span> any
-    <span class="hljs-keyword">const</span> tc = <span class="hljs-keyword">this</span>.newTypedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+            <div class="content"><div class='highlight'><pre>  toColor (any) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.isColor(any)) <span class="hljs-keyword">return</span> any
+    <span class="hljs-keyword">const</span> tc = <span class="hljs-keyword">this</span>.newColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
     <span class="hljs-keyword">if</span> (util.isInteger(any)) tc.setPixel(any)
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> any === <span class="hljs-string">'string'</span>) tc.setCss(any)
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(any) || util.isUintArray(any)) tc.setColor(...any)
     <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (util.isFloatArray(any)) tc.setWebgl(any)
-    <span class="hljs-keyword">else</span> <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'toTypedColor: invalid argument'</span>, any)
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'toColor: invalid argument'</span>, any)
     <span class="hljs-keyword">return</span> tc
   },</pre></div></div>
             
@@ -456,13 +456,13 @@ JavaScript Arrays: <span class="hljs-string">`toTypedColor([255,0,0])`</span>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>Return a random rgb typedColor, a=255</p>
+              <p>Return a random rgb Color, a=255</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  randomTypedColor () {
     <span class="hljs-keyword">const</span> r255 = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> util.randomInt(<span class="hljs-number">256</span>) <span class="hljs-comment">// random int in [0,255]</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.newTypedColor(r255(), r255(), r255())
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.newColor(r255(), r255(), r255())
   },</pre></div></div>
             
         </li>
@@ -490,11 +490,11 @@ JavaScript Arrays: <span class="hljs-string">`toTypedColor([255,0,0])`</span>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <p>Prototype for typedColor. Getters/setters for usability, may be slower.</p>
+              <p>Prototype for Color. Getters/setters for usability, may be slower.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> TypedColorProto = {</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">const</span> ColorProto = {</pre></div></div>
             
         </li>
         
@@ -520,7 +520,7 @@ JavaScript Arrays: <span class="hljs-string">`toTypedColor([255,0,0])`</span>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
-              <p>Set the typedColor to new rgba values.</p>
+              <p>Set the Color to new rgba values.</p>
 
             </div>
             
@@ -554,7 +554,7 @@ JavaScript Arrays: <span class="hljs-string">`toTypedColor([255,0,0])`</span>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
-              <p>Set the typedColor to a new pixel value</p>
+              <p>Set the Color to a new pixel value</p>
 
             </div>
             
@@ -609,7 +609,7 @@ to its common triString by getCss(). The above would all return ‘#f00’.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
-              <p>Return the triString for this typedColor, cached in the @string value</p>
+              <p>Return the triString for this Color, cached in the @string value</p>
 
             </div>
             
@@ -722,7 +722,7 @@ For our purposes, omitting the sqrt will not effect our results</p>
   }
 }
 
-Color.transparent = Color.newTypedColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+Color.transparent = Color.newColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Color</pre></div></div>
             

@@ -10,13 +10,6 @@ import util from './util.js'
 // Use turtles.setDefault(name, val) to change
 // Modelers add additional "own variables" as needed.
 const turtleVariables = { // Core variables for patches. Not 'own' variables.
-  id: null,         // unique id, promoted by agentset's add() method
-  defaults: null,   // pointer to defaults/proto object
-  agentSet: null,   // my agentset/breed
-  model: null,      // my model
-  world: null,      // my agent/agentset's world
-  turtles: null,    // my baseSet
-
   x: 0,             // x, y, z in patchSize units.
   y: 0,             // Use turtles.setDefault('z', num) to change default height
   z: 1,
@@ -30,20 +23,20 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
   sprite: null
 
   // spriteFcn: 'default',
-  // spriteColor: Color.newTypedColor(255, 0, 0),
+  // spriteColor: Color.newColor(255, 0, 0),
 
   // labelOffset: [0, 0],  // text pixel offset from the turtle center
-  // labelColor: Color.newTypedColor(0, 0, 0) // the label color
+  // labelColor: Color.newColor(0, 0, 0) // the label color
 }
 class Turtle {
   // Initialize a Turtle given its Turtles AgentSet.
   constructor (agentSet) {
     Object.assign(this, turtleVariables)
-    this.defaults = this
-    this.agentSet = agentSet
-    this.model = agentSet.model
-    this.world = agentSet.world
-    this.turtles = agentSet.baseSet
+    // this.defaults = this
+    // this.agentSet = agentSet
+    // this.model = agentSet.model
+    // this.world = agentSet.world
+    // this.turtles = agentSet.baseSet
 
     // this.sprite = this.turtles.model.spriteSheet.addDrawing('default')
     // this.sprite = this.turtles.spriteSheet.add('default', 'red')
@@ -55,6 +48,10 @@ class Turtle {
     if (this.patch.turtles != null)
       util.removeItem(this.patch.turtles, this)
   }
+  // // Breed get/set mathods.
+  // setBreed (breed) { breed.setBreed(this) }
+  // get breed () { return this.agentSet }
+
   // Factory: create num new turtles at this turtle's location. The optional init
   // proc is called on the new turtle after inserting in its agentSet.
   hatch (num = 1, agentSet = this.agentSet, init = () => {}) {
@@ -78,10 +75,6 @@ class Turtle {
   // REMIND: promote to default variable(s) if performance issue
   get patches () { return this.model.patches }
 
-  // Breed get/set mathods.
-  setBreed (breed) { breed.setBreed(this) }
-  get breed () { return this.agentSet }
-
   // Heading vs Euclidean Angles
   get heading () { return util.heading(this.theta) }
   set heading (heading) { this.theta = util.angle(heading) }
@@ -90,9 +83,10 @@ class Turtle {
   setSprite (src, color = 'red', strokeColor = 'black') {
     if (src.sheet) { this.sprite = src; return } // src is a sprite
     const ss = this.model.renderer.spriteSheet
-    this.sprite = util.isImageable(src)
-      ? ss.addImage(src)
-      : ss.addDrawing(src, color, strokeColor)
+    this.sprite = ss.newSprite(src, color, strokeColor)
+    // this.sprite = util.isImageable(src)
+    //   ? ss.addImage(src)
+    //   : ss.addDrawing(src, color, strokeColor)
   }
   // setSize (size) { this.size = size * this.world.patchSize }
   // setDrawSprite (fcn, color, color2) {

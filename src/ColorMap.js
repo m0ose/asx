@@ -43,12 +43,12 @@ const ColorMap = {
   // Convert a Uint8Array into Array of 4 element typedColors.
   // Useful for converting ImageData objects like gradients to colormaps.
   // WebGL ready: the array.typedArray is suitable for Uniforms.
-  typedArrayToTypedColors (typedArray) {
+  typedArraytoColors (typedArray) {
     const array = []
     util.step(typedArray.length, 4,
       // Note: can't share subarray as color's typed array:
       // it's buffer is for entire array, not just subarray.
-      (i) => array.push(Color.newTypedColor(...typedArray.subarray(i, i + 4))))
+      (i) => array.push(Color.newColor(...typedArray.subarray(i, i + 4))))
     array.typedArray = typedArray
     return array
   },
@@ -61,7 +61,7 @@ const ColorMap = {
       if (a.length === 3) a.push(255)
       typedArray.set(a, i * 4)
     })
-    return this.typedArrayToTypedColors(typedArray)
+    return this.typedArraytoColors(typedArray)
   },
 
   // Permute the values of 3 arrays. Ex:
@@ -86,7 +86,7 @@ const ColorMap = {
 // ### ColorMaps
 
   // ColorMaps are Arrays of TypedColors with these additional methods. Webgl
-  // ready if made w/ `typedArrayToTypedColors` or `arraysToColors` above.
+  // ready if made w/ `typedArraytoColors` or `arraysToColors` above.
   // Used to be memory effecent (shared colors), webgl compatible,  and for
   // MatLab-like color-as-data.
   ColorMapProto: {
@@ -212,7 +212,7 @@ const ColorMap = {
   // Convert the HSL values to typedColors, default to bright hue ramp (L=50).
   hslColorMap (H, S = [100], L = [50]) {
     const hslArray = this.permuteArrays(H, S, L)
-    const array = hslArray.map(a => Color.toTypedColor(Color.hslString(...a)))
+    const array = hslArray.map(a => Color.toColor(Color.hslString(...a)))
     return this.basicColorMap(array)
   },
 
@@ -223,7 +223,7 @@ const ColorMap = {
   // This easily creates all the MatLab colormaps like "jet" below.
   gradientColorMap (nColors, stops, locs) {
     const uint8arrays = this.gradientImageData(nColors, stops, locs)
-    const typedColors = this.typedArrayToTypedColors(uint8arrays)
+    const typedColors = this.typedArraytoColors(uint8arrays)
     Object.setPrototypeOf(typedColors, this.ColorMapProto)
     return typedColors
   },

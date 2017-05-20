@@ -48,7 +48,7 @@ class ExitModel extends Model {
   setupTurtles () {
     const ss = this.renderer.spriteSheet
 
-    this.exits.ask(e => { e.turtleSprite = ss.addDrawing('circle', e.color) })
+    this.exits.ask(e => { e.turtleSprite = ss.newSprite('circle', e.color) })
 
     const turtlePatches = this.inside.nOf(this.population * this.inside.length)
     turtlePatches.ask(p => {

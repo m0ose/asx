@@ -12,8 +12,8 @@ class FireModel extends Model {
     // this.anim.setRate(60)
 
     this.fireColorMap = ColorMap.gradientColorMap(6, ['red', [128, 0, 0]])
-    this.treeColor = Color.newTypedColor(0, 255, 0)
-    this.dirtColor = Color.toTypedColor('yellow')
+    this.treeColor = Color.newColor(0, 255, 0)
+    this.dirtColor = Color.toColor('yellow')
     this.fireColor = this.fireColorMap[0]
     this.done = false
 
