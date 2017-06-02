@@ -55,6 +55,16 @@
                 </a>
               
                 
+                <a class="source" href="DataSetIO.html">
+                  DataSetIO.js
+                </a>
+              
+                
+                <a class="source" href="Int24.html">
+                  Int24.js
+                </a>
+              
+                
                 <a class="source" href="Link.html">
                   Link.js
                 </a>
@@ -182,7 +192,7 @@ Generally useful utilities for use with TypedArrays &amp; JS Arrays</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Return an empty dataset of given width, height, datatype</p>
+              <p>Return an empty dataset of given width, height, dataType</p>
 
             </div>
             
@@ -221,8 +231,7 @@ Checks data is right size, throws an error if not.</p>
     <span class="hljs-keyword">if</span> (data.length !== width * height)
       <span class="hljs-keyword">throw</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`new DataSet length: <span class="hljs-subst">${data.length}</span> !== <span class="hljs-subst">${width}</span> * <span class="hljs-subst">${height}</span>`</span>)
     <span class="hljs-keyword">else</span>
-      [<span class="hljs-keyword">this</span>.width, <span class="hljs-keyword">this</span>.height, <span class="hljs-keyword">this</span>.data] = [width, height, data]
-  }</pre></div></div>
+      <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>, {width, height, data})</pre></div></div>
             
         </li>
         
@@ -233,17 +242,11 @@ Checks data is right size, throws an error if not.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
-              <p>Get/Set name, useful for storage key.</p>
+              <p>[this.width, this.height, this.data] = [width, height, data]</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  setName (string) { <span class="hljs-keyword">this</span>.name = string; <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> }
-  getName () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.name ? <span class="hljs-keyword">this</span>.name : <span class="hljs-keyword">this</span>.makeName() }
-  makeName () {
-    <span class="hljs-keyword">const</span> {width, height} = <span class="hljs-keyword">this</span>
-    <span class="hljs-keyword">const</span> sum = util.arraySum(<span class="hljs-keyword">this</span>.data).toFixed(<span class="hljs-number">2</span>)
-    <span class="hljs-keyword">return</span> <span class="hljs-string">`<span class="hljs-subst">${<span class="hljs-keyword">this</span>.datatype().name}</span>-<span class="hljs-subst">${width}</span>-<span class="hljs-subst">${height}</span>-<span class="hljs-subst">${sum}</span>`</span>
-  }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  }</pre></div></div>
             
         </li>
         
@@ -253,6 +256,27 @@ Checks data is right size, throws an error if not.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Get/Set name, useful for storage key.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  setName (string) { <span class="hljs-keyword">this</span>.name = string; <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> }
+  getName () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.name ? <span class="hljs-keyword">this</span>.name : <span class="hljs-keyword">this</span>.makeName() }
+  makeName () {
+    <span class="hljs-keyword">const</span> {width, height} = <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">const</span> sum = util.arraySum(<span class="hljs-keyword">this</span>.data).toFixed(<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-string">`<span class="hljs-subst">${<span class="hljs-keyword">this</span>.dataType().name}</span>-<span class="hljs-subst">${width}</span>-<span class="hljs-subst">${height}</span>-<span class="hljs-subst">${sum}</span>`</span>
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Checks x,y are within DataSet. Throw error if not.</p>
 
@@ -266,11 +290,11 @@ Checks data is right size, throws an error if not.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>true if x,y in dataset bounds</p>
 
@@ -280,23 +304,8 @@ Checks data is right size, throws an error if not.</p>
     <span class="hljs-keyword">return</span> (util.between(x, <span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.width - <span class="hljs-number">1</span>) &amp;&amp; util.between(y, <span class="hljs-number">0</span>, <span class="hljs-keyword">this</span>.height - <span class="hljs-number">1</span>))
   }
 
-  datatype () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data.constructor }
+  dataType () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data.constructor }
   type () { <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.constructor }</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-10">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
-              </div>
-              <p>Given x,y in data space, return index into data</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  toIndex (x, y) { <span class="hljs-keyword">return</span> x + (y * <span class="hljs-keyword">this</span>.width) }</pre></div></div>
             
         </li>
         
@@ -307,11 +316,11 @@ Checks data is right size, throws an error if not.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
-              <p>Given index into data, return dataset [x, y] position</p>
+              <p>Given x,y in data space, return index into data</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  toXY (i) { <span class="hljs-keyword">return</span> [i % <span class="hljs-keyword">this</span>.width, <span class="hljs-built_in">Math</span>.floor(i / <span class="hljs-keyword">this</span>.width)] }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  toIndex (x, y) { <span class="hljs-keyword">return</span> x + (y * <span class="hljs-keyword">this</span>.width) }</pre></div></div>
             
         </li>
         
@@ -321,6 +330,21 @@ Checks data is right size, throws an error if not.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Given index into data, return dataset [x, y] position</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  toXY (i) { <span class="hljs-keyword">return</span> [i % <span class="hljs-keyword">this</span>.width, <span class="hljs-built_in">Math</span>.floor(i / <span class="hljs-keyword">this</span>.width)] }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Get dataset value at x,y, assuming that x,y valididated previously
 getXY (x, y) { return this.data[this.toIndex(Math.floor(x), Math.floor(y))] }</p>
@@ -332,11 +356,11 @@ getXY (x, y) { return this.data[this.toIndex(Math.floor(x), Math.floor(y))] }</p
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Set the data value at x,y to num. assume x,y valid
 setxy (x, y, num) { this.data[this.toIndex(Math.floor(x), Math.floor(y))] = num }</p>
@@ -348,11 +372,11 @@ setxy (x, y, num) { this.data[this.toIndex(Math.floor(x), Math.floor(y))] = num 
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Wrapper for sampling, defaults to “nearest”. Checks x,y valid as well.
 Use this for individual sampling.</p>
@@ -367,11 +391,11 @@ Use this for individual sampling.</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Nearest neighbor sampling, w/o x,y validity check, i.e. our inner loops</p>
 
@@ -384,11 +408,11 @@ Use this for individual sampling.</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Billinear sampling w/o x,y validity check, i.e. our inner loops</p>
 
@@ -399,11 +423,11 @@ Use this for individual sampling.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Billinear sampling works by making two linear interpolations (lerps)
 in the x direction, and a third in the y direction, between the
@@ -416,37 +440,20 @@ The diagram shows the three lerps</p>
         </li>
         
         
-        <li id="section-18">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
-              </div>
-              <p>const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next line for speed</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> x0 = <span class="hljs-built_in">Math</span>.floor(x), y0 = <span class="hljs-built_in">Math</span>.floor(y)
-    <span class="hljs-keyword">const</span> i = <span class="hljs-keyword">this</span>.toIndex(x0, y0)
-    <span class="hljs-keyword">const</span> w = <span class="hljs-keyword">this</span>.width</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
-              <p>const [dx, dy] = [(x - x0), (y - y0)] // dx, dy = 0 if x, y on boundary. commented out for speed
-const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary</p>
+              <p>const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next line for speed</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> dx = x - x0, dy = y - y0
-    <span class="hljs-keyword">const</span> dx1 = <span class="hljs-number">1</span> - dx, dy1 = <span class="hljs-number">1</span> - dy
-    <span class="hljs-keyword">const</span> f00 = <span class="hljs-keyword">this</span>.data[i]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> x0 = <span class="hljs-built_in">Math</span>.floor(x)
+    <span class="hljs-keyword">const</span> y0 = <span class="hljs-built_in">Math</span>.floor(y)
+    <span class="hljs-keyword">const</span> i = <span class="hljs-keyword">this</span>.toIndex(x0, y0)
+    <span class="hljs-keyword">const</span> w = <span class="hljs-keyword">this</span>.width</pre></div></div>
             
         </li>
         
@@ -456,6 +463,26 @@ const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>const [dx, dy] = [(x - x0), (y - y0)] // dx, dy = 0 if x, y on boundary. commented out for speed
+const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> dx = x - x0
+    <span class="hljs-keyword">const</span> dy = y - y0
+    <span class="hljs-keyword">const</span> dx1 = <span class="hljs-number">1</span> - dx
+    <span class="hljs-keyword">const</span> dy1 = <span class="hljs-number">1</span> - dy
+    <span class="hljs-keyword">const</span> f00 = <span class="hljs-keyword">this</span>.data[i]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Edge case: fij is 0 if beyond data array; undefined -&gt; 0.
 This cancels the given component’s factor in the result.</p>
@@ -469,11 +496,11 @@ This cancels the given component’s factor in the result.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>This is a bit involved but:</p>
 <pre><code>If dx = <span class="hljs-number">0</span>; dx1 = <span class="hljs-number">1</span>, dy != <span class="hljs-number">0</span>
@@ -493,11 +520,11 @@ fxy = f00(<span class="hljs-number">1</span>-dx) + f10(dx) i.e. x-lerp
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Return a copy of this, with new data array</p>
 
@@ -510,28 +537,28 @@ fxy = f00(<span class="hljs-number">1</span>-dx) + f10(dx) i.e. x-lerp
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Return new (empty) dataset, defaulting to this type</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  emptyDataSet (width, height, type = <span class="hljs-keyword">this</span>.datatype()) {
+            <div class="content"><div class='highlight'><pre>  emptyDataSet (width, height, type = <span class="hljs-keyword">this</span>.dataType()) {
     <span class="hljs-keyword">return</span> DataSet.emptyDataSet(width, height, type) <span class="hljs-comment">// see static above</span>
   }</pre></div></div>
             
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Return new (empty) array of this type</p>
 
@@ -545,11 +572,11 @@ fxy = f00(<span class="hljs-number">1</span>-dx) + f10(dx) i.e. x-lerp
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Create new dataset of size width/height/type by resampling each point.
 Type is not this.type() due to integer/float differences. Default Array.
@@ -571,11 +598,11 @@ If same size, return a copy of this.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Return a rectangular subset of the dataset.
 Returned dataset is of same array type as this.</p>
@@ -595,11 +622,11 @@ Returned dataset is of same array type as this.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Return maped dataset by applying f to each dataset element</p>
 
@@ -612,11 +639,11 @@ Returned dataset is of same array type as this.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>Return the column of data at position x as this array’s type</p>
 
@@ -635,11 +662,11 @@ Returned dataset is of same array type as this.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>Return the row of data at position y as this array’s type</p>
 
@@ -655,11 +682,11 @@ Returned dataset is of same array type as this.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>Convert this dataset’s data to new type. Precision may be lost.
 Does nothing if current data is already of this Type.</p>
@@ -673,11 +700,11 @@ Does nothing if current data is already of this Type.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Concatinate a dataset of equal height to my right to my east.
 New DataSet is of same type as this.</p>
@@ -703,11 +730,11 @@ New DataSet is of same type as this.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Concatinate a dataset of equal width to my south, returning new DataSet.
 New DataSet is of same type as this.</p>
@@ -726,11 +753,11 @@ New DataSet is of same type as this.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>return dataset x,y given x,y in a euclidean space defined by tlx, tly, w, h
 x,y is in topleft-bottomright box: [tlx,tly,tlx+w,tly-h], y positive util.
@@ -747,11 +774,11 @@ Ex: NetLogo’s coords: x, y, minXcor, maxYcor, numX, numY</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>get a sample using a transformed euclidean coord system; see above</p>
 
@@ -765,11 +792,11 @@ Ex: NetLogo’s coords: x, y, minXcor, maxYcor, numX, numY</p>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Return Array 3x3 neighbor values of the given x,y of the dataset.
 Off-edge neighbors revert to nearest edge value.</p>
@@ -797,11 +824,11 @@ Off-edge neighbors revert to nearest edge value.</p>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Return a new dataset of this array type convolved with the
 given kernel 3x3 matrix. See <a href="https://goo.gl/gCfXmU">Convolution article</a></p>
@@ -827,11 +854,11 @@ dataset of same size.</p>
         </li>
         
         
-        <li id="section-37">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>sum2 += kernel[i2] * nei[i2] // Chrome can’t optimize compound let</p>
 
@@ -848,11 +875,11 @@ dataset of same size.</p>
         </li>
         
         
-        <li id="section-38">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>A few common convolutions.  dzdx/y are also called horiz/vert Sobel</p>
 
@@ -880,11 +907,11 @@ dataset of same size.</p>
         </li>
         
         
-        <li id="section-39">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>Create two new Array convolved datasets, slope and aspect, common in
 the use of an elevation data set. See Esri tutorials for
@@ -913,11 +940,11 @@ those wanting to use the results of the two convolutions.</p>
         </li>
         
         
-        <li id="section-40">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>radians in [-PI,PI], downhill</p>
 
@@ -928,11 +955,11 @@ those wanting to use the results of the two convolutions.</p>
         </li>
         
         
-        <li id="section-41">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>positive radians in [0,2PI] if desired</p>
 
@@ -950,13 +977,16 @@ those wanting to use the results of the two convolutions.</p>
         </li>
         
         
-        <li id="section-42">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
-              <p>Convert dataset to an image context object.</p>
+              <p>REMIND: limit to data that can be 24 bit. Error otherwise.
+DataType of Int8, 16, Int24 OK, others need testing.
+Possibly use precision to minimize byte size to 3, rgb?</p>
+<p>Convert dataset to an image context object.</p>
 <p>This can be used to “visualize” the data by normalizing
 which will scale the data to use the entire RGB space.
 It can also be used to create tiles or image-as-data if
@@ -1001,11 +1031,11 @@ tile datasets via blobs or arraybuffers. Sigh.</p>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Convert dataset to a canvas, which can be used as an image</p>
 
@@ -1018,11 +1048,11 @@ tile datasets via blobs or arraybuffers. Sigh.</p>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>Convert dataset to a base64 string</p>
 
@@ -1035,11 +1065,11 @@ tile datasets via blobs or arraybuffers. Sigh.</p>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Return max/min of data</p>
 
@@ -1054,8 +1084,23 @@ tile datasets via blobs or arraybuffers. Sigh.</p>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.data.reduce(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">a, b</span>) </span>{
       <span class="hljs-keyword">return</span> <span class="hljs-built_in">Math</span>.min(a, b)
     })
-  }
-  equals (dataset) {
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>Test that this has same width, height, data as dataset.
+Note: does not require equal array type (Array or TypedArray)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  equals (dataset) {
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.width === dataset.width &amp;&amp;
       <span class="hljs-keyword">this</span>.height === dataset.height &amp;&amp;
       util.arraysEqual(<span class="hljs-keyword">this</span>.data, dataset.data)

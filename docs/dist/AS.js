@@ -4,6 +4,7 @@
 // A set of useful misc utils which will eventually move to individual files.
 // Note we use arrow functions one-liners, more likely to be optimized.
 // REMIND: Test optimization, if none, remove arrow one-liners.
+
 const util = {
 
 // ### Types
@@ -43,20 +44,11 @@ const util = {
 
   // Convert Array or TypedArray to given Type (Array or TypedArray).
   // Result same length as array, precision may be lost.
-  // * If array already of correct type, return it unmodified.
-  // * If Type is Array, call typedArrayToArray(array) below.
-  // * Otherwise return `new Type(array)`
   convertArray (array, Type) {
     const Type0 = array.constructor;
-    // return array if already same Type
-    if (Type0 === Type) return array
-    // If Type is Array, convert via typedArrayToArray
-    if (Type === Array) return this.typedArrayToArray(array)
-    return new Type(array) // Use standard TypedArray constructor
+    if (Type0 === Type) return array  // return array if already same Type
+    return Type.from(array) // Use .from (both TypedArrays and Arrays)
   },
-  // Convert a TypedArray (or Array) to an Array with the same length.
-  // To convert an Array to a TypedArray use new TypedArray(array)
-  typedArrayToArray: (typedArray) => Array.prototype.slice.call(typedArray),
   // Convert to/from new Uint8Array view onto an Array or TypedArray.
   // Arrays converted to ArrayType, default Float64Array.
   // Return will in general be a different length than array
@@ -66,11 +58,15 @@ const util = {
   },
   bufferToArray (uint8array, Type, ArrayType = Float64Array) {
     if (Type === Array) Type = ArrayType;
-    return new Type(uint8array.buffer)
+    return (Type === Array)
+      ? Array.from(new ArrayType(uint8array.buffer))
+      : new Type(uint8array.buffer)
+    // return new Type(uint8array.buffer)
   },
 
   // Convert between Uint8Array buffer and base64 string.
   // https://coolaj86.com/articles/typedarray-buffer-to-base64-in-javascript/
+  // Stack Overflow: https://goo.gl/xscs8T
   bufferToBase64 (uint8Array) {
     const binstr = Array.prototype.map.call(uint8Array, (ch) =>
       String.fromCharCode(ch)
@@ -84,31 +80,6 @@ const util = {
       uint8Array[i] = ch.charCodeAt(0);
     });
     return uint8Array
-  },
-  // Convert between Uint8Array buffer and utf8 8bit char strings (0-255).
-  escapeByteString (byteString) {
-    const chars = '\'"\\\0\n\r\v\t\b\f';
-    const regex = /['"\\\0\n\r\v\t\b\f]/g;
-    const esc =
-      ["\\'", '\\"', '\\\\', '\\0', '\\n', '\\r', '\\v', '\\t', '\\b', '\\f'];
-    const f = (match) => esc[chars.indexOf(match)];
-    return byteString.replace(regex, f)
-  },
-  bufferToByteString (uint8Array, chunkSize = 32768) { // 2**15
-    // See [MDN apply array size limit](https://goo.gl/zBGub)
-    // and StackOverflow Buffer to/from String [here](http://goo.gl/vyEkIL)
-    // and [here](http://goo.gl/79RlVc)
-    let result = '';
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const subArray = uint8Array.subarray(i, i + chunkSize); // subarray clamps
-      result += String.fromCharCode.apply(null, subArray);
-    }
-    return result
-  },
-  byteStringToBuffer (utf8) {
-    const result = new Uint8Array(utf8.length);
-    for (let i = 0; i < utf8.length; i++) result[i] = utf8.codePointAt(i);
-    return result
   },
 
 // ### Debug
@@ -180,7 +151,8 @@ const util = {
   setScript (path, props = {}) {
     const scriptTag = document.createElement('script');
     scriptTag.src = path;
-    this.forEach(props, (val, key) => { scriptTag[key] = val; });
+    // this.forEach(props, (val, key) => { scriptTag[key] = val })
+    Object.assign(scriptTag, props);
     document.querySelector('head').appendChild(scriptTag);
   },
 
@@ -220,6 +192,9 @@ const util = {
 
   // Return whether num is [Power of Two](http://goo.gl/tCfg5). Very clever!
   isPowerOf2: (num) => (num & (num - 1)) === 0, // twgl library
+  // Return next greater power of two. There are faster, see:
+  // [Stack Overflow](https://goo.gl/zvD78e)
+  nextPowerOf2: (num) => Math.pow(2, Math.ceil(Math.log2(num))),
 
   // Trims decimal digits of float to reduce size.
   fixed (n, digits = 4) {
@@ -575,20 +550,29 @@ const util = {
       xhr.send();
     })
   },
-  // Return promise for pause of ms.
-  timeoutPromise (ms) {
+  // Return promise for pause of ms. Use:
+  // timeoutPromise(2000).then(()=>console.log('foo'))
+  timeoutPromise (ms = 1000) {
     return new Promise((resolve, reject) => {
-      const id = setTimeout(() => { clearTimeout(id); resolve(); }, ms);
+      setTimeout(() => resolve(), ms);
     })
   },
-  // Wait until done(), then trigger promise.then
-  waitPromise (done, ms) {
+  // Imports a script, waits 'till loaded, then resolves. Use:
+  // scriptPromise('../lib/pako.js', 'pako')
+  //   .then((script) => console.log(script))
+  scriptPromise (path, name, f = () => window[name], props = {}) {
+    if (window[name] == null) this.setScript(path, props);
+    return this.waitPromise(() => window[name] != null, f)
+  },
+  // Promise: Wait until done(), then resolve with f()'s value, default to noop
+  // Ex: This waits until window.foo is defined, then reports:
+  // waitPromise(()=>window.foo).then(()=>console.log('foo defined'))
+  waitPromise (done, f = this.noop, ms = 10) {
     return new Promise((resolve, reject) => {
-      this.waitOn(done, resolve, ms);
+      this.waitOn(done, () => resolve(f()), ms);
     })
   },
-
-  // Wait (setTimeout) until done() true, then call f()
+  // Callback: Wait (setTimeout) until done() true, then call f()
   waitOn (done, f, ms = 10) {
     if (done())
       f();
@@ -727,6 +711,14 @@ const util = {
     ctx.save(); // NOTE: Does not change state, only saves current state.
     ctx.setTransform(1, 0, 0, 1, 0, 0); // or ctx.resetTransform()
   },
+  // Set ctx.canvas size, ctx scale, origin to the model's world.
+  setWorldTransform (ctx, world) {
+    ctx.canvas.width = world.width;
+    ctx.canvas.height = world.height;
+    ctx.save();
+    ctx.scale(world.patchSize, -world.patchSize);
+    ctx.translate(-world.minXcor, -world.maxYcor);
+  },
 
 // ### Canvas 2D Context Text Drawing
 
@@ -761,6 +753,7 @@ const util = {
 
 // ### WebGL/Three.js
 
+  // REMIND: Move to Three.js module
   createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
     const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z];
     const indices = [0, 1, 2, 0, 2, 3];
@@ -771,12 +764,21 @@ const util = {
   // or color profile modification.
   // Img can be Image, ImageData, Canvas: [See MDN](https://goo.gl/a3oyRA).
   // `flipY` is used to invert image to upright.
+  imageToBytesCtx: null,
   imageToBytes (img, flipY = false, imgFormat = 'RGBA') {
     // Create the gl context using the image width and height
+    if (!this.imageToBytesCtx) {
+      this.imageToBytesCtx = this.createCtx(0, 0, 'webgl', {
+        premultipliedAlpha: false
+      });
+    }
+
     const {width, height} = img;
-    const gl = this.createCtx(width, height, 'webgl', {
-      premultipliedAlpha: false
-    });
+    const gl = this.imageToBytesCtx;
+    Object.assign(gl.canvas, {width, height});
+    // const gl = this.createCtx(width, height, 'webgl', {
+    //   premultipliedAlpha: false
+    // })
     const fmt = gl[imgFormat];
 
     // Create and initialize the texture.
@@ -816,7 +818,6 @@ const util = {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return pixels
   }
-
 };
 
 // AgentSets are arrays that are factories for their own agents/objects.
@@ -1199,7 +1200,7 @@ class DataSet {
   // **Static methods:** called via DataSet.foo(), similar to Math.foo().
   // Generally useful utilities for use with TypedArrays & JS Arrays
 
-  // Return an empty dataset of given width, height, datatype
+  // Return an empty dataset of given width, height, dataType
   static emptyDataSet (width, height, Type) {
     return new DataSet(width, height, new Type(width * height))
   }
@@ -1212,7 +1213,8 @@ class DataSet {
     if (data.length !== width * height)
       throw Error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
     else
-      [this.width, this.height, this.data] = [width, height, data];
+      Object.assign(this, {width, height, data});
+      // [this.width, this.height, this.data] = [width, height, data]
   }
 
   // Get/Set name, useful for storage key.
@@ -1221,7 +1223,7 @@ class DataSet {
   makeName () {
     const {width, height} = this;
     const sum = util.arraySum(this.data).toFixed(2);
-    return `${this.datatype().name}-${width}-${height}-${sum}`
+    return `${this.dataType().name}-${width}-${height}-${sum}`
   }
 
   // Checks x,y are within DataSet. Throw error if not.
@@ -1234,7 +1236,7 @@ class DataSet {
     return (util.between(x, 0, this.width - 1) && util.between(y, 0, this.height - 1))
   }
 
-  datatype () { return this.data.constructor }
+  dataType () { return this.data.constructor }
   type () { return this.constructor }
 
   // Given x,y in data space, return index into data
@@ -1272,13 +1274,16 @@ class DataSet {
     // The diagram shows the three lerps
 
     // const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next line for speed
-    const x0 = Math.floor(x), y0 = Math.floor(y);
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
     const i = this.toIndex(x0, y0);
     const w = this.width;
     // const [dx, dy] = [(x - x0), (y - y0)] // dx, dy = 0 if x, y on boundary. commented out for speed
     // const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary
-    const dx = x - x0, dy = y - y0;
-    const dx1 = 1 - dx, dy1 = 1 - dy;
+    const dx = x - x0;
+    const dy = y - y0;
+    const dx1 = 1 - dx;
+    const dy1 = 1 - dy;
     const f00 = this.data[i];
     // Edge case: fij is 0 if beyond data array; undefined -> 0.
     // This cancels the given component's factor in the result.
@@ -1305,7 +1310,7 @@ class DataSet {
   }
 
   // Return new (empty) dataset, defaulting to this type
-  emptyDataSet (width, height, type = this.datatype()) {
+  emptyDataSet (width, height, type = this.dataType()) {
     return DataSet.emptyDataSet(width, height, type) // see static above
   }
 
@@ -1518,6 +1523,10 @@ class DataSet {
     return { slope, aspect, dzdx, dzdy }
   }
 
+  // REMIND: limit to data that can be 24 bit. Error otherwise.
+  // DataType of Int8, 16, Int24 OK, others need testing.
+  // Possibly use precision to minimize byte size to 3, rgb?
+  //
   // Convert dataset to an image context object.
   //
   // This can be used to "visualize" the data by normalizing
@@ -1580,6 +1589,8 @@ class DataSet {
       return Math.min(a, b)
     })
   }
+  // Test that this has same width, height, data as dataset.
+  // Note: does not require equal array type (Array or TypedArray)
   equals (dataset) {
     return this.width === dataset.width &&
       this.height === dataset.height &&
@@ -2109,6 +2120,131 @@ const ColorMap = {
   get Basic16 () {
     return this.LazyMap('Basic16', this.cssColorMap(this.basicColorNames))
   }
+};
+
+// Export/Import DataSets
+// import DataSet from './DataSet.js'
+// Private utility functions:
+
+// Create a legal dataset JSON object, defaulting to base64 data string.
+// This is the object that JSON.stringify will use for IO
+function jsonObject (dataset, useBase64, meta) {
+  return {
+    width: dataset.width,
+    height: dataset.height,
+    data: arrayToString(dataset.data, useBase64),
+    dataType: dataset.dataType().name,
+    meta: meta
+  }
+}
+// Convert an array, Typed or JS, to a string for dataset's data array
+function arrayToString (array, useBase64) {
+  if (useBase64) {
+    const data = util.arrayToBuffer(array);
+    return util.bufferToBase64(data)
+  }
+  return JSON.stringify(util.convertArray(array, Array))
+}
+// Convert a string, base64 or JSON, to an array of the given Type
+function stringToArray (string, dataTypeName) {
+  const dataType = window[dataTypeName];
+  if (isBase64(string)) {
+    const uint8array = util.base64ToBuffer(string);
+    return util.bufferToArray(uint8array, dataType)
+  }
+  return util.convertArray(JSON.parse(string), dataType)
+}
+function isBase64 (arrayString) {
+  // Base64 does not allow '[', only A-Z, a-z, 0-9, +, /
+  // https://en.wikipedia.org/wiki/Base64
+  return arrayString[0] !== '['
+}
+
+const DataSetIO = {
+  // JSON import/export. The JSON returned looks like:
+  // ```
+  // {
+  //   width: dataset.width,
+  //   height: dataset.height,
+  //   data: string, // json or base64 string of DataSet array
+  //   dataType: string, // name of data array type: TypedArray or Array
+  //   type: string, // dataset class name
+  // }
+  // ```
+
+  // Create JSON string from DataSet, see jsonObject above
+  dataSetToJson (dataset, useBase64 = true, meta = {}) {
+    const obj = jsonObject(dataset, useBase64, meta);
+    return JSON.stringify(obj)
+  },
+
+  // Convert the jsonObject string to a basic dataset: width, height, data.
+  // The data array will be the same type as the original dataset.
+  jsonToDataSet (jsonString) {
+    const jsonObj = JSON.parse(jsonString);
+    const data = stringToArray(jsonObj.data, jsonObj.dataType);
+    return new DataSet(jsonObj.width, jsonObj.height, data)
+  },
+
+  // IndexedDB uses the [Structured Clone Algorithm](https://goo.gl/x8H9HK).
+  // DataSets can be directly stored and retrieved, they satisfy
+  // the SCA requirements.
+  toIndexedDB (dataset) {
+    return dataset // place holder for IDB sugar if needed
+  }
+};
+
+// A small Int24/Uint24 module, mainly for rgb image data
+
+// A shared 4 element Uint8Array array and two 1 element 32bit views
+const byteArray = new Uint8Array(4);
+const uint24array = new Uint32Array(byteArray.buffer);
+const int24array = new Int32Array(byteArray.buffer);
+
+const Int24 = {
+
+  maxUint24: (2 ** 24) - 1,
+  minUint24: 0,
+  maxInt24: (2 ** 23) - 1,
+  minInt24: 0 - (2 ** 23), // REMIND: rollup bug
+
+  checkInt24 (int) {
+    if (int < this.minInt24 || int > this.maxInt24)
+      throw Error(`Int24: Range error ${int}`)
+  },
+  checkUint24 (int) {
+    if (int < this.minUint24 || int > this.maxUint24)
+      throw Error(`Uint24: Range error ${int}`)
+  },
+
+  // RGB most common case but any 3 sequential bytes OK
+  rgbToInt24 (r, g, b) {
+    // byteArray.set([r, g, b, b > 127 ? 255 : 0]) // slow!
+    byteArray[0] = r;
+    byteArray[1] = g;
+    byteArray[2] = b;
+    byteArray[3] = b > 127 ? 255 : 0;
+    return int24array[0]
+  },
+  rgbToUint24 (r, g, b) {
+    byteArray[0] = r;
+    byteArray[1] = g;
+    byteArray[2] = b;
+    byteArray[3] = 0;
+    return uint24array[0]
+  },
+  int24ToRGB (int24) {
+    this.checkInt24(int24);
+    int24array[0] = int24;
+    // return byteArray.slice(0, 3) // slow!
+    return [byteArray[0], byteArray[1], byteArray[2]]
+  },
+  uint24ToRGB (uint24) {
+    this.checkUint24(uint24);
+    uint24array[0] = uint24;
+    return [byteArray[0], byteArray[1], byteArray[2]]
+  }
+
 };
 
 // Flyweight object creation, see Patch/Patches.
@@ -2831,7 +2967,7 @@ class Turtle {
     //   ? ss.addImage(src)
     //   : ss.addDrawing(src, color, strokeColor)
   }
-  // setSize (size) { this.size = size * this.world.patchSize }
+  setSize (size) { this.size = size * this.world.patchSize; }
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
@@ -2929,11 +3065,12 @@ class Turtle {
   }
   // Return turtles/breeds within radius from me
   inRadius (radius, meToo = false) {
-    return this.agentSet(this, radius, meToo)
+    return this.agentSet.inRadius(this, radius, meToo)
   }
   // Return turtles/breeds within cone from me
+  // Note: agentSet rather than turtles to allow for breeds
   inCone (radius, meToo = false) {
-    return this.agentSet(this, radius, meToo)
+    return this.agentSet.inCone(this, radius, meToo)
   }
 
   // Link methods. Note: this.links returns all links linked to me.
@@ -3309,27 +3446,69 @@ class Three {
     mesh.material.dispose();
     if (mesh.material.map) mesh.material.map.dispose();
   }
-  initPatchesMesh (canvas) {
-    if (this.patchesMesh) this.disposeThreeMesh(this.patchesMesh);
+
+  // Canvas Meshes are generalized Canvas 2D Textures.
+  // Note: You may want to use a PowerOfTwo canvas to avoid constraints
+  //   canvas.width = util.nextPowerOf2(canvas.width)
+  //   canvas.height = util.nextPowerOf2(canvas.height)
+  initCanvasMesh (canvas, name, z, textureOptions = {}) {
+    if (this[name]) this.disposeThreeMesh(this[name]);
     const {width, height, numX, numY} = this.model.world;
-    // [CanvasTexture args:](https://goo.gl/HkTuHO)
-    // canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy
+
     const texture = new THREE.CanvasTexture(canvas);
-    // texture.generateMipmaps = false
-    texture.minFilter = THREE.NearestFilter;
-    texture.magFilter = THREE.NearestFilter;
-    // texture.premultiplyAlpha = false
+    if (!util.isPowerOf2(canvas.width) || !util.isPowerOf2(canvas.height)) {
+      // Can be Linear. Also wrap params could be clamp to edge
+      // See MDN: https://goo.gl/JBH1I9
+      texture.minFilter = THREE.NearestFilter;
+      texture.magFilter = THREE.NearestFilter;
+    }
+    // Can override above.
+    Object.assign(texture, textureOptions);
 
     const geometry = new THREE.PlaneGeometry(width, height, numX, numY);
-    geometry.name = 'patches';
+    geometry.name = name;
+
     const material = new THREE.MeshBasicMaterial({
-      map: texture, shading: THREE.FlatShading, side: THREE.DoubleSide
-      //, side: THREE.DoubleSide//, wireframe: true
+      map: texture,
+      shading: THREE.FlatShading,
+      side: THREE.DoubleSide,
+      transparent: true
     });
-    const mesh = this.patchesMesh = new THREE.Mesh(geometry, material);
-    // mesh.rotation.x = -Math.PI / 2
+
+    const mesh = this[name] = new THREE.Mesh(geometry, material);
+    mesh.position.z = z;
     this.scene.add(mesh);
   }
+  updateCanvasMesh (name) {
+    this[name].material.map.needsUpdate = true;
+  }
+
+  // Patch meshes are a form of Canvas Mesh
+  initPatchesMesh (canvas) {
+    this.initCanvasMesh(canvas, 'patchesMesh', 0);
+  }
+
+  // initPatchesMesh (canvas) {
+  //   if (this.patchesMesh) this.disposeThreeMesh(this.patchesMesh)
+  //   const {width, height, numX, numY} = this.model.world
+  //   // [CanvasTexture args:](https://goo.gl/HkTuHO)
+  //   // canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy
+  //   const texture = new THREE.CanvasTexture(canvas)
+  //   // texture.generateMipmaps = false
+  //   texture.minFilter = THREE.NearestFilter
+  //   texture.magFilter = THREE.NearestFilter
+  //   // texture.premultiplyAlpha = false
+  //
+  //   const geometry = new THREE.PlaneGeometry(width, height, numX, numY)
+  //   geometry.name = 'patches'
+  //   const material = new THREE.MeshBasicMaterial({
+  //     map: texture, shading: THREE.FlatShading, side: THREE.DoubleSide
+  //     //, side: THREE.DoubleSide//, wireframe: true
+  //   })
+  //   const mesh = this.patchesMesh = new THREE.Mesh(geometry, material)
+  //   // mesh.rotation.x = -Math.PI / 2
+  //   this.scene.add(mesh)
+  // }
   updatePatchesMesh (patches) {
     patches.installPixels();
     this.patchesMesh.material.map.needsUpdate = true;
@@ -3632,10 +3811,13 @@ class RGBDataSet extends DataSet {
     const imgData = util.ctxImageData(ctx);
     const convertedData = this.data; // new Float32Array(img.width * img.height)
     for (var i = 0; i < convertedData.length; i++) {
-      let r = imgData.data[4 * i], g = imgData.data[4 * i + 1], b = imgData.data[4 * i + 2];
+      const r = imgData.data[4 * i];
+      const g = imgData.data[4 * i + 1];
+      const b = imgData.data[4 * i + 2];
       convertedData[i] = this.rgb2Number(r, g, b);
     }
     this.src = img.src;
+    this.ctx = ctx; // REMIND: debug
     // var mydata = new DataSet(img.width, img.height, convertedData)
     // return mydata
   }
@@ -3643,15 +3825,15 @@ class RGBDataSet extends DataSet {
   // Convert RGB to a number.
   // by default this assumes the values are in decimeters, but it can be overwritten.
   //  This funnction gets called in a tight loop for every pixel.
-  rgb2Number (r,g,b) {
-      var negative = 1;
-      if( r > 63 ){
-         negative = -1;
-         r = 0;
-      }
-      var n = negative * (r*256*256 + g*256 + b);
-      n=n/10;
-      return n;
+  rgb2Number (r, g, b) {
+    var negative = 1;
+    if (r > 63) {
+      negative = -1;
+      r = 0;
+    }
+    var n = negative * (r * 256 * 256 + g * 256 + b);
+    n = n / 10;
+    return n
   }
 }
 
@@ -3663,6 +3845,8 @@ exports.AscDataSet = AscDataSet;
 exports.Color = Color;
 exports.ColorMap = ColorMap;
 exports.DataSet = DataSet;
+exports.DataSetIO = DataSetIO;
+exports.Int24 = Int24;
 exports.Link = Link;
 exports.Links = Links;
 exports.Model = Model;

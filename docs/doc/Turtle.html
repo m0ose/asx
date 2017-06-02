@@ -55,6 +55,16 @@
                 </a>
               
                 
+                <a class="source" href="DataSetIO.html">
+                  DataSetIO.js
+                </a>
+              
+                
+                <a class="source" href="Int24.html">
+                  Int24.js
+                </a>
+              
+                
                 <a class="source" href="Link.html">
                   Link.js
                 </a>
@@ -459,7 +469,8 @@ Uses lazy evaluation to promote links to instance variables.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  }</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  }
+  setSize (size) { <span class="hljs-keyword">this</span>.size = size * <span class="hljs-keyword">this</span>.world.patchSize }</pre></div></div>
             
         </li>
         
@@ -470,8 +481,7 @@ Uses lazy evaluation to promote links to instance variables.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
-              <p>setSize (size) { this.size = size * this.world.patchSize }
-setDrawSprite (fcn, color, color2) {
+              <p>setDrawSprite (fcn, color, color2) {
   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
 }</p>
 
@@ -736,7 +746,7 @@ Use Left/Right versions below</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  inRadius (radius, meToo = <span class="hljs-literal">false</span>) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet(<span class="hljs-keyword">this</span>, radius, meToo)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet.inRadius(<span class="hljs-keyword">this</span>, radius, meToo)
   }</pre></div></div>
             
         </li>
@@ -748,12 +758,13 @@ Use Left/Right versions below</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
-              <p>Return turtles/breeds within cone from me</p>
+              <p>Return turtles/breeds within cone from me
+Note: agentSet rather than turtles to allow for breeds</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  inCone (radius, meToo = <span class="hljs-literal">false</span>) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet(<span class="hljs-keyword">this</span>, radius, meToo)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.agentSet.inCone(<span class="hljs-keyword">this</span>, radius, meToo)
   }</pre></div></div>
             
         </li>

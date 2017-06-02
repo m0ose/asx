@@ -5,6 +5,8 @@ import AscDataSet      from './AscDataSet.js'
 import Color           from './Color.js'
 import ColorMap        from './ColorMap.js'
 import DataSet         from './DataSet.js'
+import DataSetIO       from './DataSetIO.js'
+import Int24           from './Int24.js'
 import Link            from './Link.js'
 import Links           from './Links.js'
 import Model           from './Model.js'
@@ -26,6 +28,8 @@ export {
   Color,
   ColorMap,
   DataSet,
+  DataSetIO,
+  Int24,
   Link,
   Links,
   Model,

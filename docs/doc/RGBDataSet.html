@@ -55,6 +55,16 @@
                 </a>
               
                 
+                <a class="source" href="DataSetIO.html">
+                  DataSetIO.js
+                </a>
+              
+                
+                <a class="source" href="Int24.html">
+                  Int24.js
+                </a>
+              
+                
                 <a class="source" href="Link.html">
                   Link.js
                 </a>
@@ -151,10 +161,13 @@
     <span class="hljs-keyword">const</span> imgData = util.ctxImageData(ctx)
     <span class="hljs-keyword">const</span> convertedData = <span class="hljs-keyword">this</span>.data <span class="hljs-comment">// new Float32Array(img.width * img.height)</span>
     <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; convertedData.length; i++) {
-      <span class="hljs-keyword">let</span> r = imgData.data[<span class="hljs-number">4</span> * i], g = imgData.data[<span class="hljs-number">4</span> * i + <span class="hljs-number">1</span>], b = imgData.data[<span class="hljs-number">4</span> * i + <span class="hljs-number">2</span>]
+      <span class="hljs-keyword">const</span> r = imgData.data[<span class="hljs-number">4</span> * i]
+      <span class="hljs-keyword">const</span> g = imgData.data[<span class="hljs-number">4</span> * i + <span class="hljs-number">1</span>]
+      <span class="hljs-keyword">const</span> b = imgData.data[<span class="hljs-number">4</span> * i + <span class="hljs-number">2</span>]
       convertedData[i] = <span class="hljs-keyword">this</span>.rgb2Number(r, g, b)
     }
-    <span class="hljs-keyword">this</span>.src = img.src</pre></div></div>
+    <span class="hljs-keyword">this</span>.src = img.src
+    <span class="hljs-keyword">this</span>.ctx = ctx <span class="hljs-comment">// REMIND: debug</span></pre></div></div>
             
         </li>
         
@@ -187,15 +200,15 @@ by default this assumes the values are in decimeters, but it can be overwritten.
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  rgb2Number (r,g,b) {
-      <span class="hljs-keyword">var</span> negative = <span class="hljs-number">1</span>
-      <span class="hljs-keyword">if</span>( r &gt; <span class="hljs-number">63</span> ){
-         negative = <span class="hljs-number">-1</span>
-         r = <span class="hljs-number">0</span>;
-      }
-      <span class="hljs-keyword">var</span> n = negative * (r*<span class="hljs-number">256</span>*<span class="hljs-number">256</span> + g*<span class="hljs-number">256</span> + b);
-      n=n/<span class="hljs-number">10</span>;
-      <span class="hljs-keyword">return</span> n;
+            <div class="content"><div class='highlight'><pre>  rgb2Number (r, g, b) {
+    <span class="hljs-keyword">var</span> negative = <span class="hljs-number">1</span>
+    <span class="hljs-keyword">if</span> (r &gt; <span class="hljs-number">63</span>) {
+      negative = <span class="hljs-number">-1</span>
+      r = <span class="hljs-number">0</span>
+    }
+    <span class="hljs-keyword">var</span> n = negative * (r * <span class="hljs-number">256</span> * <span class="hljs-number">256</span> + g * <span class="hljs-number">256</span> + b)
+    n = n / <span class="hljs-number">10</span>
+    <span class="hljs-keyword">return</span> n
   }
 }
 

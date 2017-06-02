@@ -22,12 +22,21 @@ class TurtlesModel extends Model {
       t.size = util.randomFloat2(0.2, 0.5) // + Math.random()
       t.speed = util.randomFloat2(0.01, 0.05) // 0.5 + Math.random()
     })
+
+    const {width, height} = this.world
+    // width = util.nextPowerOf2(width)
+    // height = util.nextPowerOf2(height)
+    this.ctx = util.createCtx(width, height)
+    this.ctx.clearRect(0, 0, width, height)
+    // initCanvasMesh (canvas, name, z, textureOptions = {}) {
+    this.renderer.initCanvasMesh(this.ctx.canvas, 'testMesh', 10)
   }
   step () {
     this.turtles.ask((t) => {
       t.theta += util.randomCentered(0.1)
       t.forward(t.speed)
     })
+    this.renderer.updateCanvasMesh('testMesh')
   }
 }
 

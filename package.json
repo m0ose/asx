@@ -15,19 +15,6 @@
     "3D",
     "three.js"
   ],
-  "attic": {
-    "threelibs": "controls/OrbitControls controls/FlyControls controls/FirstPersonControls",
-    "build-three": "node bin/build3modules.js; babel --plugins transform-es2015-modules-systemjs libs/threelibs -d libs/threelibs",
-    "build-as": "mkdir lib; babel --plugins transform-es2015-modules-systemjs src -d lib",
-    "themes": "Use one of these below: architect cayman dinky hacker leap-day merlot midnight minima minimal modernist slate tactile time-machine",
-    "start": "node bin/server.js",
-    "gh-pages": "npm run build-docs && git add -f docs && git commit -m 'gh-pages' && git push origin master",
-    "make-page": "git merge master && npm run build && git add --all && git add -f doc test/scripts models/scripts dist libs && git commit -m 'master merge'",
-    "gh-pages0": "git checkout gh-pages && npm run make-page && git push origin gh-pages --follow-tags && git checkout master",
-    "build-src": "npm run build-test && npm run build-models && npm run build-dist",
-    "build-min0": "babili dist/AS.js > dist/AS.min.js",
-    "build-bundle": "rollup -c"
-  },
   "now": {
     "alias": "https://asx.now.sh"
   },
@@ -84,7 +71,7 @@
     "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
     "build-test": "rm -rf test/scripts/* && bin/buildscripts.sh test/src",
     "build-models": "bin/buildscripts.sh models/src",
-    "build-dist": "rollup -c",
+    "build-dist": "rollup -c && cp -R src dist/AS",
     "build-min": "squash dist/AS.js > dist/AS.min.js",
     "watch-test": "sane 'npm run build-test' './test/src/'",
     "watch-models": "sane 'npm run build-models' './models/src/'",
@@ -94,7 +81,7 @@
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
     "git-commit": "git commit -v && git push origin master # --follow-tags",
-    "foo": "butternut -h"
+    "foo": "rollup libs/src/dat.gui/dat/index.js --format es --output /tmp/dat.gui.module.js"
   },
   "dependencies": {
     "dat.gui": "dataarts/dat.gui",

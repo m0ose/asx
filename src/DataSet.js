@@ -10,7 +10,7 @@ class DataSet {
   // **Static methods:** called via DataSet.foo(), similar to Math.foo().
   // Generally useful utilities for use with TypedArrays & JS Arrays
 
-  // Return an empty dataset of given width, height, datatype
+  // Return an empty dataset of given width, height, dataType
   static emptyDataSet (width, height, Type) {
     return new DataSet(width, height, new Type(width * height))
   }
@@ -23,7 +23,8 @@ class DataSet {
     if (data.length !== width * height)
       throw Error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
     else
-      [this.width, this.height, this.data] = [width, height, data]
+      Object.assign(this, {width, height, data})
+      // [this.width, this.height, this.data] = [width, height, data]
   }
 
   // Get/Set name, useful for storage key.
@@ -32,7 +33,7 @@ class DataSet {
   makeName () {
     const {width, height} = this
     const sum = util.arraySum(this.data).toFixed(2)
-    return `${this.datatype().name}-${width}-${height}-${sum}`
+    return `${this.dataType().name}-${width}-${height}-${sum}`
   }
 
   // Checks x,y are within DataSet. Throw error if not.
@@ -45,7 +46,7 @@ class DataSet {
     return (util.between(x, 0, this.width - 1) && util.between(y, 0, this.height - 1))
   }
 
-  datatype () { return this.data.constructor }
+  dataType () { return this.data.constructor }
   type () { return this.constructor }
 
   // Given x,y in data space, return index into data
@@ -83,13 +84,16 @@ class DataSet {
     // The diagram shows the three lerps
 
     // const [x0, y0] = [Math.floor(x), Math.floor(y)] // replaced by next line for speed
-    const x0 = Math.floor(x), y0 = Math.floor(y)
+    const x0 = Math.floor(x)
+    const y0 = Math.floor(y)
     const i = this.toIndex(x0, y0)
     const w = this.width
     // const [dx, dy] = [(x - x0), (y - y0)] // dx, dy = 0 if x, y on boundary. commented out for speed
     // const [dx1, dy1] = [1 - dx, 1 - dy] // dx1, dy1 = 1 if x, y on boundary
-    const dx = x - x0, dy = y - y0
-    const dx1 = 1 - dx, dy1 = 1 - dy
+    const dx = x - x0
+    const dy = y - y0
+    const dx1 = 1 - dx
+    const dy1 = 1 - dy
     const f00 = this.data[i]
     // Edge case: fij is 0 if beyond data array; undefined -> 0.
     // This cancels the given component's factor in the result.
@@ -116,7 +120,7 @@ class DataSet {
   }
 
   // Return new (empty) dataset, defaulting to this type
-  emptyDataSet (width, height, type = this.datatype()) {
+  emptyDataSet (width, height, type = this.dataType()) {
     return DataSet.emptyDataSet(width, height, type) // see static above
   }
 
@@ -329,6 +333,10 @@ class DataSet {
     return { slope, aspect, dzdx, dzdy }
   }
 
+  // REMIND: limit to data that can be 24 bit. Error otherwise.
+  // DataType of Int8, 16, Int24 OK, others need testing.
+  // Possibly use precision to minimize byte size to 3, rgb?
+  //
   // Convert dataset to an image context object.
   //
   // This can be used to "visualize" the data by normalizing
@@ -391,6 +399,8 @@ class DataSet {
       return Math.min(a, b)
     })
   }
+  // Test that this has same width, height, data as dataset.
+  // Note: does not require equal array type (Array or TypedArray)
   equals (dataset) {
     return this.width === dataset.width &&
       this.height === dataset.height &&

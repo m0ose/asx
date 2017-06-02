@@ -1,6 +1,7 @@
 // A set of useful misc utils which will eventually move to individual files.
 // Note we use arrow functions one-liners, more likely to be optimized.
 // REMIND: Test optimization, if none, remove arrow one-liners.
+
 const util = {
 
 // ### Types
@@ -40,20 +41,11 @@ const util = {
 
   // Convert Array or TypedArray to given Type (Array or TypedArray).
   // Result same length as array, precision may be lost.
-  // * If array already of correct type, return it unmodified.
-  // * If Type is Array, call typedArrayToArray(array) below.
-  // * Otherwise return `new Type(array)`
   convertArray (array, Type) {
     const Type0 = array.constructor
-    // return array if already same Type
-    if (Type0 === Type) return array
-    // If Type is Array, convert via typedArrayToArray
-    if (Type === Array) return this.typedArrayToArray(array)
-    return new Type(array) // Use standard TypedArray constructor
+    if (Type0 === Type) return array  // return array if already same Type
+    return Type.from(array) // Use .from (both TypedArrays and Arrays)
   },
-  // Convert a TypedArray (or Array) to an Array with the same length.
-  // To convert an Array to a TypedArray use new TypedArray(array)
-  typedArrayToArray: (typedArray) => Array.prototype.slice.call(typedArray),
   // Convert to/from new Uint8Array view onto an Array or TypedArray.
   // Arrays converted to ArrayType, default Float64Array.
   // Return will in general be a different length than array
@@ -63,11 +55,15 @@ const util = {
   },
   bufferToArray (uint8array, Type, ArrayType = Float64Array) {
     if (Type === Array) Type = ArrayType
-    return new Type(uint8array.buffer)
+    return (Type === Array)
+      ? Array.from(new ArrayType(uint8array.buffer))
+      : new Type(uint8array.buffer)
+    // return new Type(uint8array.buffer)
   },
 
   // Convert between Uint8Array buffer and base64 string.
   // https://coolaj86.com/articles/typedarray-buffer-to-base64-in-javascript/
+  // Stack Overflow: https://goo.gl/xscs8T
   bufferToBase64 (uint8Array) {
     const binstr = Array.prototype.map.call(uint8Array, (ch) =>
       String.fromCharCode(ch)
@@ -81,31 +77,6 @@ const util = {
       uint8Array[i] = ch.charCodeAt(0)
     })
     return uint8Array
-  },
-  // Convert between Uint8Array buffer and utf8 8bit char strings (0-255).
-  escapeByteString (byteString) {
-    const chars = '\'"\\\0\n\r\v\t\b\f'
-    const regex = /['"\\\0\n\r\v\t\b\f]/g
-    const esc =
-      ["\\'", '\\"', '\\\\', '\\0', '\\n', '\\r', '\\v', '\\t', '\\b', '\\f']
-    const f = (match) => esc[chars.indexOf(match)]
-    return byteString.replace(regex, f)
-  },
-  bufferToByteString (uint8Array, chunkSize = 32768) { // 2**15
-    // See [MDN apply array size limit](https://goo.gl/zBGub)
-    // and StackOverflow Buffer to/from String [here](http://goo.gl/vyEkIL)
-    // and [here](http://goo.gl/79RlVc)
-    let result = ''
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const subArray = uint8Array.subarray(i, i + chunkSize) // subarray clamps
-      result += String.fromCharCode.apply(null, subArray)
-    }
-    return result
-  },
-  byteStringToBuffer (utf8) {
-    const result = new Uint8Array(utf8.length)
-    for (let i = 0; i < utf8.length; i++) result[i] = utf8.codePointAt(i)
-    return result
   },
 
 // ### Debug
@@ -177,7 +148,8 @@ const util = {
   setScript (path, props = {}) {
     const scriptTag = document.createElement('script')
     scriptTag.src = path
-    this.forEach(props, (val, key) => { scriptTag[key] = val })
+    // this.forEach(props, (val, key) => { scriptTag[key] = val })
+    Object.assign(scriptTag, props)
     document.querySelector('head').appendChild(scriptTag)
   },
 
@@ -217,6 +189,9 @@ const util = {
 
   // Return whether num is [Power of Two](http://goo.gl/tCfg5). Very clever!
   isPowerOf2: (num) => (num & (num - 1)) === 0, // twgl library
+  // Return next greater power of two. There are faster, see:
+  // [Stack Overflow](https://goo.gl/zvD78e)
+  nextPowerOf2: (num) => Math.pow(2, Math.ceil(Math.log2(num))),
 
   // Trims decimal digits of float to reduce size.
   fixed (n, digits = 4) {
@@ -572,20 +547,29 @@ const util = {
       xhr.send()
     })
   },
-  // Return promise for pause of ms.
-  timeoutPromise (ms) {
+  // Return promise for pause of ms. Use:
+  // timeoutPromise(2000).then(()=>console.log('foo'))
+  timeoutPromise (ms = 1000) {
     return new Promise((resolve, reject) => {
-      const id = setTimeout(() => { clearTimeout(id); resolve() }, ms)
+      setTimeout(() => resolve(), ms)
     })
   },
-  // Wait until done(), then trigger promise.then
-  waitPromise (done, ms) {
+  // Imports a script, waits 'till loaded, then resolves. Use:
+  // scriptPromise('../lib/pako.js', 'pako')
+  //   .then((script) => console.log(script))
+  scriptPromise (path, name, f = () => window[name], props = {}) {
+    if (window[name] == null) this.setScript(path, props)
+    return this.waitPromise(() => window[name] != null, f)
+  },
+  // Promise: Wait until done(), then resolve with f()'s value, default to noop
+  // Ex: This waits until window.foo is defined, then reports:
+  // waitPromise(()=>window.foo).then(()=>console.log('foo defined'))
+  waitPromise (done, f = this.noop, ms = 10) {
     return new Promise((resolve, reject) => {
-      this.waitOn(done, resolve, ms)
+      this.waitOn(done, () => resolve(f()), ms)
     })
   },
-
-  // Wait (setTimeout) until done() true, then call f()
+  // Callback: Wait (setTimeout) until done() true, then call f()
   waitOn (done, f, ms = 10) {
     if (done())
       f()
@@ -724,6 +708,14 @@ const util = {
     ctx.save() // NOTE: Does not change state, only saves current state.
     ctx.setTransform(1, 0, 0, 1, 0, 0) // or ctx.resetTransform()
   },
+  // Set ctx.canvas size, ctx scale, origin to the model's world.
+  setWorldTransform (ctx, world) {
+    ctx.canvas.width = world.width
+    ctx.canvas.height = world.height
+    ctx.save()
+    ctx.scale(world.patchSize, -world.patchSize)
+    ctx.translate(-world.minXcor, -world.maxYcor)
+  },
 
 // ### Canvas 2D Context Text Drawing
 
@@ -758,6 +750,7 @@ const util = {
 
 // ### WebGL/Three.js
 
+  // REMIND: Move to Three.js module
   createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
     const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z]
     const indices = [0, 1, 2, 0, 2, 3]
@@ -768,12 +761,21 @@ const util = {
   // or color profile modification.
   // Img can be Image, ImageData, Canvas: [See MDN](https://goo.gl/a3oyRA).
   // `flipY` is used to invert image to upright.
+  imageToBytesCtx: null,
   imageToBytes (img, flipY = false, imgFormat = 'RGBA') {
     // Create the gl context using the image width and height
+    if (!this.imageToBytesCtx) {
+      this.imageToBytesCtx = this.createCtx(0, 0, 'webgl', {
+        premultipliedAlpha: false
+      })
+    }
+
     const {width, height} = img
-    const gl = this.createCtx(width, height, 'webgl', {
-      premultipliedAlpha: false
-    })
+    const gl = this.imageToBytesCtx
+    Object.assign(gl.canvas, {width, height})
+    // const gl = this.createCtx(width, height, 'webgl', {
+    //   premultipliedAlpha: false
+    // })
     const fmt = gl[imgFormat]
 
     // Create and initialize the texture.
@@ -813,7 +815,6 @@ const util = {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     return pixels
   }
-
 }
 
 export default util

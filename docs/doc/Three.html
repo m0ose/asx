@@ -55,6 +55,16 @@
                 </a>
               
                 
+                <a class="source" href="DataSetIO.html">
+                  DataSetIO.js
+                </a>
+              
+                
+                <a class="source" href="Int24.html">
+                  Int24.js
+                </a>
+              
+                
                 <a class="source" href="Link.html">
                   Link.js
                 </a>
@@ -399,10 +409,7 @@ document.body.appendChild(helpers.gui.domElement)</p>
     mesh.geometry.dispose()
     mesh.material.dispose()
     <span class="hljs-keyword">if</span> (mesh.material.map) mesh.material.map.dispose()
-  }
-  initPatchesMesh (canvas) {
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.patchesMesh) <span class="hljs-keyword">this</span>.disposeThreeMesh(<span class="hljs-keyword">this</span>.patchesMesh)
-    <span class="hljs-keyword">const</span> {width, height, numX, numY} = <span class="hljs-keyword">this</span>.model.world</pre></div></div>
+  }</pre></div></div>
             
         </li>
         
@@ -413,12 +420,19 @@ document.body.appendChild(helpers.gui.domElement)</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
-              <p><a href="https://goo.gl/HkTuHO">CanvasTexture args:</a>
-canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p>
+              <p>Canvas Meshes are generalized Canvas 2D Textures.
+Note: You may want to use a PowerOfTwo canvas to avoid constraints
+  canvas.width = util.nextPowerOf2(canvas.width)
+  canvas.height = util.nextPowerOf2(canvas.height)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">const</span> texture = <span class="hljs-keyword">new</span> THREE.CanvasTexture(canvas)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  initCanvasMesh (canvas, name, z, textureOptions = {}) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>[name]) <span class="hljs-keyword">this</span>.disposeThreeMesh(<span class="hljs-keyword">this</span>[name])
+    <span class="hljs-keyword">const</span> {width, height, numX, numY} = <span class="hljs-keyword">this</span>.model.world
+
+    <span class="hljs-keyword">const</span> texture = <span class="hljs-keyword">new</span> THREE.CanvasTexture(canvas)
+    <span class="hljs-keyword">if</span> (!util.isPowerOf2(canvas.width) || !util.isPowerOf2(canvas.height)) {</pre></div></div>
             
         </li>
         
@@ -429,12 +443,14 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
-              <p>texture.generateMipmaps = false</p>
+              <p>Can be Linear. Also wrap params could be clamp to edge
+See MDN: <a href="https://goo.gl/JBH1I9">https://goo.gl/JBH1I9</a></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    texture.minFilter = THREE.NearestFilter
-    texture.magFilter = THREE.NearestFilter</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      texture.minFilter = THREE.NearestFilter
+      texture.magFilter = THREE.NearestFilter
+    }</pre></div></div>
             
         </li>
         
@@ -445,15 +461,29 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
-              <p>texture.premultiplyAlpha = false</p>
+              <p>Can override above.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-built_in">Object</span>.assign(texture, textureOptions)
+
     <span class="hljs-keyword">const</span> geometry = <span class="hljs-keyword">new</span> THREE.PlaneGeometry(width, height, numX, numY)
-    geometry.name = <span class="hljs-string">'patches'</span>
+    geometry.name = name
+
     <span class="hljs-keyword">const</span> material = <span class="hljs-keyword">new</span> THREE.MeshBasicMaterial({
-      <span class="hljs-attr">map</span>: texture, <span class="hljs-attr">shading</span>: THREE.FlatShading, <span class="hljs-attr">side</span>: THREE.DoubleSide</pre></div></div>
+      <span class="hljs-attr">map</span>: texture,
+      <span class="hljs-attr">shading</span>: THREE.FlatShading,
+      <span class="hljs-attr">side</span>: THREE.DoubleSide,
+      <span class="hljs-attr">transparent</span>: <span class="hljs-literal">true</span>
+    })
+
+    <span class="hljs-keyword">const</span> mesh = <span class="hljs-keyword">this</span>[name] = <span class="hljs-keyword">new</span> THREE.Mesh(geometry, material)
+    mesh.position.z = z
+    <span class="hljs-keyword">this</span>.scene.add(mesh)
+  }
+  updateCanvasMesh (name) {
+    <span class="hljs-keyword">this</span>[name].material.map.needsUpdate = <span class="hljs-literal">true</span>
+  }</pre></div></div>
             
         </li>
         
@@ -464,12 +494,13 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
-              <p>, side: THREE.DoubleSide//, wireframe: true</p>
+              <p>Patch meshes are a form of Canvas Mesh</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    })
-    <span class="hljs-keyword">const</span> mesh = <span class="hljs-keyword">this</span>.patchesMesh = <span class="hljs-keyword">new</span> THREE.Mesh(geometry, material)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  initPatchesMesh (canvas) {
+    <span class="hljs-keyword">this</span>.initCanvasMesh(canvas, <span class="hljs-string">'patchesMesh'</span>, <span class="hljs-number">0</span>)
+  }</pre></div></div>
             
         </li>
         
@@ -480,13 +511,30 @@ canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy</p
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
-              <p>mesh.rotation.x = -Math.PI / 2</p>
+              <p>initPatchesMesh (canvas) {
+  if (this.patchesMesh) this.disposeThreeMesh(this.patchesMesh)
+  const {width, height, numX, numY} = this.model.world
+  // <a href="https://goo.gl/HkTuHO">CanvasTexture args:</a>
+  // canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy
+  const texture = new THREE.CanvasTexture(canvas)
+  // texture.generateMipmaps = false
+  texture.minFilter = THREE.NearestFilter
+  texture.magFilter = THREE.NearestFilter
+  // texture.premultiplyAlpha = false</p>
+<p>  const geometry = new THREE.PlaneGeometry(width, height, numX, numY)
+  geometry.name = ‘patches’
+  const material = new THREE.MeshBasicMaterial({
+    map: texture, shading: THREE.FlatShading, side: THREE.DoubleSide
+    //, side: THREE.DoubleSide//, wireframe: true
+  })
+  const mesh = this.patchesMesh = new THREE.Mesh(geometry, material)
+  // mesh.rotation.x = -Math.PI / 2
+  this.scene.add(mesh)
+}</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.scene.add(mesh)
-  }
-  updatePatchesMesh (patches) {
+            <div class="content"><div class='highlight'><pre>  updatePatchesMesh (patches) {
     patches.installPixels()
     <span class="hljs-keyword">this</span>.patchesMesh.material.map.needsUpdate = <span class="hljs-literal">true</span>
   }

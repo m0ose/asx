@@ -11,14 +11,15 @@ class AntModel extends Model {
     this.diffusionRate = 0.30
     this.evaporationRate = 0.01
     this.wiggleAngle = util.radians(30)
+
     this.nestColor = 'yellow'
     this.foodColor = 'blue'
 
     const ss = this.renderer.spriteSheet
-    this.nestSprite = ss.newSprite('bug', this.nestColor, 'black')
-    this.foodSprite = ss.newSprite('bug', this.foodColor, 'black')
-    // this.nestSprite = SpriteSheetShapes.shapeToSprite "bug", @nestColor, bitSize, "red"
-    // this.foodSprite = Shapes.shapeToSprite "bug", @foodColor, bitSize, "blue"
+    this.nestSprite = ss.newSprite('bug', this.nestColor, 'blue')
+    this.foodSprite = ss.newSprite('bug', this.foodColor, 'yellow')
+
+    this.nestColorMap = ColorMap.gradientColorMap()
 
     this.setupPatches()
     this.setupTurtles()
@@ -41,4 +42,5 @@ model.whenReady(() => {
   console.log('turtles:', model.turtles.length)
   const {world, patches, turtles, links} = model
   util.toWindow({ world, patches, turtles, links, model })
+  document.body.appendChild(model.renderer.spriteSheet.ctx.canvas)
 })

@@ -88,7 +88,7 @@ class Turtle {
     //   ? ss.addImage(src)
     //   : ss.addDrawing(src, color, strokeColor)
   }
-  // setSize (size) { this.size = size * this.world.patchSize }
+  setSize (size) { this.size = size * this.world.patchSize }
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
@@ -186,11 +186,12 @@ class Turtle {
   }
   // Return turtles/breeds within radius from me
   inRadius (radius, meToo = false) {
-    return this.agentSet(this, radius, meToo)
+    return this.agentSet.inRadius(this, radius, meToo)
   }
   // Return turtles/breeds within cone from me
+  // Note: agentSet rather than turtles to allow for breeds
   inCone (radius, meToo = false) {
-    return this.agentSet(this, radius, meToo)
+    return this.agentSet.inCone(this, radius, meToo)
   }
 
   // Link methods. Note: this.links returns all links linked to me.

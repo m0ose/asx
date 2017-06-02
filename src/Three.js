@@ -124,27 +124,69 @@ class Three {
     mesh.material.dispose()
     if (mesh.material.map) mesh.material.map.dispose()
   }
-  initPatchesMesh (canvas) {
-    if (this.patchesMesh) this.disposeThreeMesh(this.patchesMesh)
+
+  // Canvas Meshes are generalized Canvas 2D Textures.
+  // Note: You may want to use a PowerOfTwo canvas to avoid constraints
+  //   canvas.width = util.nextPowerOf2(canvas.width)
+  //   canvas.height = util.nextPowerOf2(canvas.height)
+  initCanvasMesh (canvas, name, z, textureOptions = {}) {
+    if (this[name]) this.disposeThreeMesh(this[name])
     const {width, height, numX, numY} = this.model.world
-    // [CanvasTexture args:](https://goo.gl/HkTuHO)
-    // canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy
+
     const texture = new THREE.CanvasTexture(canvas)
-    // texture.generateMipmaps = false
-    texture.minFilter = THREE.NearestFilter
-    texture.magFilter = THREE.NearestFilter
-    // texture.premultiplyAlpha = false
+    if (!util.isPowerOf2(canvas.width) || !util.isPowerOf2(canvas.height)) {
+      // Can be Linear. Also wrap params could be clamp to edge
+      // See MDN: https://goo.gl/JBH1I9
+      texture.minFilter = THREE.NearestFilter
+      texture.magFilter = THREE.NearestFilter
+    }
+    // Can override above.
+    Object.assign(texture, textureOptions)
 
     const geometry = new THREE.PlaneGeometry(width, height, numX, numY)
-    geometry.name = 'patches'
+    geometry.name = name
+
     const material = new THREE.MeshBasicMaterial({
-      map: texture, shading: THREE.FlatShading, side: THREE.DoubleSide
-      //, side: THREE.DoubleSide//, wireframe: true
+      map: texture,
+      shading: THREE.FlatShading,
+      side: THREE.DoubleSide,
+      transparent: true
     })
-    const mesh = this.patchesMesh = new THREE.Mesh(geometry, material)
-    // mesh.rotation.x = -Math.PI / 2
+
+    const mesh = this[name] = new THREE.Mesh(geometry, material)
+    mesh.position.z = z
     this.scene.add(mesh)
   }
+  updateCanvasMesh (name) {
+    this[name].material.map.needsUpdate = true
+  }
+
+  // Patch meshes are a form of Canvas Mesh
+  initPatchesMesh (canvas) {
+    this.initCanvasMesh(canvas, 'patchesMesh', 0)
+  }
+
+  // initPatchesMesh (canvas) {
+  //   if (this.patchesMesh) this.disposeThreeMesh(this.patchesMesh)
+  //   const {width, height, numX, numY} = this.model.world
+  //   // [CanvasTexture args:](https://goo.gl/HkTuHO)
+  //   // canvas, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy
+  //   const texture = new THREE.CanvasTexture(canvas)
+  //   // texture.generateMipmaps = false
+  //   texture.minFilter = THREE.NearestFilter
+  //   texture.magFilter = THREE.NearestFilter
+  //   // texture.premultiplyAlpha = false
+  //
+  //   const geometry = new THREE.PlaneGeometry(width, height, numX, numY)
+  //   geometry.name = 'patches'
+  //   const material = new THREE.MeshBasicMaterial({
+  //     map: texture, shading: THREE.FlatShading, side: THREE.DoubleSide
+  //     //, side: THREE.DoubleSide//, wireframe: true
+  //   })
+  //   const mesh = this.patchesMesh = new THREE.Mesh(geometry, material)
+  //   // mesh.rotation.x = -Math.PI / 2
+  //   this.scene.add(mesh)
+  // }
   updatePatchesMesh (patches) {
     patches.installPixels()
     this.patchesMesh.material.map.needsUpdate = true

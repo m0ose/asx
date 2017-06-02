@@ -11,10 +11,13 @@ class RGBDataSet extends DataSet {
     const imgData = util.ctxImageData(ctx)
     const convertedData = this.data // new Float32Array(img.width * img.height)
     for (var i = 0; i < convertedData.length; i++) {
-      let r = imgData.data[4 * i], g = imgData.data[4 * i + 1], b = imgData.data[4 * i + 2]
+      const r = imgData.data[4 * i]
+      const g = imgData.data[4 * i + 1]
+      const b = imgData.data[4 * i + 2]
       convertedData[i] = this.rgb2Number(r, g, b)
     }
     this.src = img.src
+    this.ctx = ctx // REMIND: debug
     // var mydata = new DataSet(img.width, img.height, convertedData)
     // return mydata
   }
@@ -22,15 +25,15 @@ class RGBDataSet extends DataSet {
   // Convert RGB to a number.
   // by default this assumes the values are in decimeters, but it can be overwritten.
   //  This funnction gets called in a tight loop for every pixel.
-  rgb2Number (r,g,b) {
-      var negative = 1
-      if( r > 63 ){
-         negative = -1
-         r = 0;
-      }
-      var n = negative * (r*256*256 + g*256 + b);
-      n=n/10;
-      return n;
+  rgb2Number (r, g, b) {
+    var negative = 1
+    if (r > 63) {
+      negative = -1
+      r = 0
+    }
+    var n = negative * (r * 256 * 256 + g * 256 + b)
+    n = n / 10
+    return n
   }
 }
 
