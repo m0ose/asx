@@ -1,13 +1,9 @@
 # Local ignores, also see ~/.gitignore
 
 # Derived files other than docs/ (gh-page). Also test, not part of dist.
-dist/
 libs/
-doc/
 test/
-# test/scripts/
 models/scripts/
-asx.zip
 
 node_modules/
 npm-debug.log

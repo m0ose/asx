@@ -15,9 +15,6 @@
     "3D",
     "three.js"
   ],
-  "now": {
-    "alias": "https://asx.now.sh"
-  },
   "libs": [
     "node_modules/three/build/three.min.js",
     "node_modules/three/build/three.module.js",
@@ -50,38 +47,29 @@
   ],
   "docsfiles": [
     "README.md",
-    "doc",
     "dist",
     "libs",
     "models"
   ],
   "docstheme": "theme: jekyll-theme-hacker",
-  "mkdirs": "doc docs dist libs models/scripts",
+  "mkdirs": "docs dist libs models/scripts",
   "scripts": {
-    "postinstall": "npm run build",
     "clean": "rm -rf `node bin/pkgkey.js mkdirs` && npm run mkdirs",
     "mkdirs": "mkdir -p `node bin/pkgkey.js mkdirs` libs/src",
-    "zip": "rm asx.zip; zip -r asx.zip dist libs src models",
     "start": "node node_modules/serve/bin/serve.js -p 3000",
-    "now": "now && now alias # deploy to https://asx.now.sh/",
-    "build": "npm run clean && npm run build-libs && npm run build-models && npm run build-dist && npm run build-min && npm run build-doc && npm run build-docs",
+    "build": "npm run clean && npm run build-libs && npm run build-models && npm run build-dist && squash dist/AS.js > dist/AS.min.js && npm run build-docs",
     "build-libs": "cp `node bin/pkgkey.js libs` libs && npm run build-libs-src",
     "build-libs-src": "bin/cplibsrc.sh `node bin/pkgkey.js libssrc`",
-    "build-doc": "docco -o doc/ src/*.js",
     "build-docs": "cp -Rp `node bin/pkgkey.js docsfiles` docs && echo `node bin/pkgkey.js docstheme` > docs/_config.yml",
-    "build-test": "rm -rf test/scripts/* && bin/buildscripts.sh test/src",
     "build-models": "bin/buildscripts.sh models/src",
     "build-dist": "rollup -c && cp -R src dist/AS",
-    "build-min": "squash dist/AS.js > dist/AS.min.js",
-    "watch-test": "sane 'npm run build-test' './test/src/'",
     "watch-models": "sane 'npm run build-models' './models/src/'",
     "watch-src": "sane 'npm run build-dist' './src/'",
-    "watch": "npm run watch-test & npm run watch-models & npm run watch-src",
+    "watch": "npm run watch-models & npm run watch-src",
     "git-tag": "git tag -a `node bin/pkgkey.js version` && git push origin `node bin/pkgkey.js version` # uses version: above",
     "git-diff": "git diff --cached",
     "git-prep": "npm run build && git add --all && git status",
-    "git-commit": "git commit -v && git push origin master # --follow-tags",
-    "foo": "rollup libs/src/dat.gui/dat/index.js --format es --output /tmp/dat.gui.module.js"
+    "git-commit": "git commit -v && git push origin master # --follow-tags"
   },
   "dependencies": {
     "dat.gui": "dataarts/dat.gui",
@@ -90,7 +78,6 @@
   },
   "devDependencies": {
     "butternut": "^0.4.5",
-    "docco": "^0.7.0",
     "rollup": "^0.41.6",
     "sane": "^1.6.0",
     "serve": "^5.1.4"

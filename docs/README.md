@@ -19,9 +19,8 @@ The repo has no "derived" files, other than gh-page, see below, i.e. won't run b
 
 A [gh-pages branch](http://backspaces.github.io/asx/) is used for the site. It contains the master repo, including the derived files. It uses [the docs/ simplification](https://help.github.com/articles/user-organization-and-project-pages/#project-pages) for gh-page creation. A new page is built each commit automatically.
 
-This can be used to run example models and access documentation:
+This can be used to run example models:
 * [http://backspaces.github.io/asx/models?diffuse](http://backspaces.github.io/asx/models?diffuse)
-* [http://backspaces.github.io/asx/doc/Model.html](http://backspaces.github.io/asx/doc/Model.html)
 
 It can also be used as a CDN for all the es6 Modules:
 
@@ -48,7 +47,6 @@ Our directory layout is:
 ```
 bin: workflow scripts
 dist: AS bundle & AS/ es6 modules distribution
-doc: docco src documentation
 docs: gh-page
 libs: dependencies
 models: sample models
@@ -67,10 +65,6 @@ The default directory is scripts/ for now, but will convert to es6 modules, src/
 * [http://backspaces.github.io/asx/models?fire](http://backspaces.github.io/asx/models?fire)
 
 The current sample models are: diffuse, fire, links, turtles
-
-### Documentation
-
-Developer Documentation is created by [docco](https://jashkenas.github.io/docco/) and is [available here](http://backspaces.github.io/asx/doc/Model.html) Use **Jump To** menu, top right, to navigate between modules.
 
 ### License
 
