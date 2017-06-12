@@ -34,6 +34,13 @@ class SpriteSheet {
   // Install a new named function in the paths object below
   installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn }
 
+  // Return sprite's color/shape name if not an image sprite.
+  spriteShape (sprite) {
+    const match = sprite.name.match(/(.*)#(.*)/)
+    return match.length === 3
+      ? {shape: match[1], color: Color.toColor(match[2])} : null
+  }
+
 // These are internal, experts only, use newSprite above for normal use.
 
   // width & height in pixels

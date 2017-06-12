@@ -34,6 +34,7 @@ class AgentSet extends Array {
       // Keep a list of this set's variables; see `own` below
       this.ownVariables = []
       // Create a proto for our agents by having a defaults and instance layer
+      // this.AgentProto = AgentProto
       this.agentProto = new AgentProto(this)
       this.protoMixin()
     }
@@ -54,9 +55,12 @@ class AgentSet extends Array {
     })
     agentProto[this.baseSet.name] = this.baseSet
 
+    // const AgentProto = this.AgentProto
     const AgentProto = Object.getPrototypeOf(agentProto)
-    if (AgentProto.setBreed) console.log('proto already set: ', AgentProto)
+    // if (this.isBaseSet()) {
     if (!AgentProto.setBreed) {
+      // const AgentProto = Object.getPrototypeOf(agentProto)
+      // const AgentProto = this.AgentProto
       Object.assign(AgentProto, {
         setBreed (breed) { breed.setBreed(this) },
         getBreed () { return this.agentSet },

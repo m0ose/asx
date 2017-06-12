@@ -1,13 +1,16 @@
+#!/usr/bin/env node
+
 // Convert three "examples" to es6 modules.
 // The files to convert are in package.json.threelibs
 const fs = require('fs')
 
 const fromPath = 'node_modules/three/examples/js/'
-const toPath = 'libs/threelibs/'
-const THREEPath = 'libs/three.min.js'
+const toPath = 'libs/'
+// const THREEPath = 'libs/three.min.js'
+const THREEPath = 'libs/three.module.js'
 
 // Each name is a lib/name (w/o.js) pair in THREE's examples/js hierarchy
-const threeLibNames = process.env.npm_package_threelibs.split(/ +/)
+const threeLibNames = JSON.parse(fs.readFileSync('package.json')).threelibs
 
 threeLibNames.forEach((dirNamePair) => {
   const [dir, name] = dirNamePair.split('/')
@@ -19,5 +22,5 @@ threeLibNames.forEach((dirNamePair) => {
 ${code}
 export default ${name}
 `
-  fs.writeFileSync(`${toPath}${name}.js`, code)
+  fs.writeFileSync(`${toPath}${name}.module.js`, code)
 })

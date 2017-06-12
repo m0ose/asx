@@ -529,7 +529,7 @@ const util = {
       const img = new Image()
       img.crossOrigin = 'Anonymous'
       img.onload = () => resolve(img)
-      img.onerror = () => reject(`Could not load image ${url}`)
+      img.onerror = () => reject(Error(`Could not load image ${url}`))
       img.src = url
     })
   },
@@ -543,7 +543,7 @@ const util = {
       xhr.open(method, url) // POST mainly for security and large files
       xhr.responseType = type
       xhr.onload = () => resolve(xhr.response)
-      xhr.onerror = () => reject(`Could not load ${url}: ${xhr.status}`)
+      xhr.onerror = () => reject(Error(`Could not load ${url}: ${xhr.status}`))
       xhr.send()
     })
   },
@@ -749,13 +749,6 @@ const util = {
   },
 
 // ### WebGL/Three.js
-
-  // REMIND: Move to Three.js module
-  createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
-    const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z]
-    const indices = [0, 1, 2, 0, 2, 3]
-    return {vertices, indices}
-  },
 
   // Use webgl texture to convert img to Uint8Array w/o alpha premultiply
   // or color profile modification.

@@ -103,7 +103,9 @@ class Model {
     this.patches = new Patches(this, Patch, 'patches')
     this.renderer.initPatchesMesh(this.patches.pixels.ctx.canvas)
     this.turtles = new Turtles(this, Turtle, 'turtles')
-    this.renderer.initTurtlesMesh()
+    // this.renderer.initTurtlesMesh()
+    this.renderer.initQuadSpriteMesh('turtlesMesh')
+    // this.renderer.initPointsMesh('turtlesMesh')
     this.links = new Links(this, Link, 'links')
     this.renderer.initLinksMesh()
     // REMIND: temp
@@ -155,7 +157,9 @@ class Model {
       }
       if (force || this.refreshTurtles) {
         if (this.turtles.length > 0)
-          this.renderer.updateTurtlesMesh(this.turtles)
+          // this.renderer.updateTurtlesMesh(this.turtles)
+          this.renderer.updateQuadSpriteMesh('turtlesMesh', this.turtles)
+          // this.renderer.updatePointsMesh('turtlesMesh', this.turtles)
       }
       if (force || this.refreshLinks) {
         if (this.links.length > 0)

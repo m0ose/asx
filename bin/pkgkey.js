@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fs = require('fs')
 const json = JSON.parse(fs.readFileSync('package.json'))
 // console.log(json)

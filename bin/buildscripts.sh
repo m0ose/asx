@@ -20,13 +20,14 @@ for file in $files; do
       s: from .*$: = AS:
     }
   ' < $file > ../scripts/$file
-  # sed '
-  #   /^import .*[^.]..\//{
-  #     s:^import *::
-  #     s: from.*::
-  #     s:\(^.*$\):\1 \1:
-  #     s: : = AS.:
-  #     s:^:const :
-  #   }
-  # ' < $file > ../scripts/$file
 done
+
+# sed '
+#   /^import .*[^.]..\//{
+#     s:^import *::
+#     s: from.*::
+#     s:\(^.*$\):\1 \1:
+#     s: : = AS.:
+#     s:^:const :
+#   }
+# ' < $file > ../scripts/$file
