@@ -2,7 +2,7 @@
 // import ColorMap from '../../dist/AS/ColorMap.js'
 // import Model from '../../dist/AS/Model.js'
 // import util from '../../dist/AS/util.js'
-import {Color, ColorMap, Model, util} from '../../dist/AS.modules.js'
+import {Color, ColorMap, Model, util} from '../../dist/AS.module.js'
 
 util.toWindow({ Color, ColorMap, Model, util })
 

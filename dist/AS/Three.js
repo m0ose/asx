@@ -1,11 +1,12 @@
 import SpriteSheet from './SpriteSheet.js'
 import util from './util.js'
 
-// import * as THREE from '../libs/three.module.js'
+// import THREE from '../libs/three.wrapper.js'
+// import * as THREE from 'http://backspaces.github.io/asx/libs/three.module.js'
 // import * as THREE from '../libs/src/three/Three.js'
-// import OrbitControls from '../libs/threelibs/OrbitControls.js'
-// import Stats from '../libs/src/stats.js/Stats.js'
-// import dat from '../libs/dat.gui.min.js'
+// import OrbitControls from '../libs/OrbitControls.module.js'
+// import Stats from '../libs/Stats.js'
+// import dat from '../libs/dat.gui.module.js'
 // import GUI from '../libs/src/dat.gui/dat/gui/GUI.js'
 
 class Three {

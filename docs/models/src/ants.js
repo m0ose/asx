@@ -1,4 +1,4 @@
-import {ColorMap, Model, util} from '../../dist/AS.modules.js'
+import {ColorMap, Model, util} from '../../dist/AS.module.js'
 
 util.toWindow({ ColorMap, Model, util })
 

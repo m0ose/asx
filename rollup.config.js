@@ -1,7 +1,21 @@
 export default {
   entry: 'src/AS.js',
   targets: [
-    { dest: 'dist/AS.js', format: 'iife', moduleName: 'AS' },
-    { dest: 'dist/AS.modules.js', format: 'es' }
+    { dest: 'dist/AS.js',
+      format: 'iife',
+      // external: [
+      //   'http://backspaces.github.io/asx/libs/three.module.js'
+      // ],
+      // global: {
+      //   THREE: 'http://backspaces.github.io/asx/libs/three.module.js'
+      // },
+      moduleName: 'AS'
+    },
+    { dest: 'dist/AS.module.js',
+      // external: [
+      //   'http://backspaces.github.io/asx/libs/three.module.js'
+      // ],
+      format: 'es'
+    }
   ]
 }

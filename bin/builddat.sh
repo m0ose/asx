@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 
 cd dat.gui/src/dat
+echo 'dat.gui'
+pwd
 ls
 which rollup
 

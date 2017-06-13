@@ -1,0 +1,27 @@
+<html>
+<head>
+  <title>asx</title>
+</head>
+<body>
+  <script type="module">
+    import util from '../../dist/AS/util.js'
+
+    const app = document.location.search.substring(1) || 'diffuse'
+    const loc = `./${app}.js`
+    console.log('running:', loc)
+    document.title = `src:${app}`
+
+    util.setScript(loc, {type: 'module'})
+  </script>
+  <div id='textdiv'></div>
+  <div id='modeldiv'></div>
+</body>
+</html>
+<!-- <script type="module">
+  import util from '../src/util.js'
+  let appName = document.location.search.substring(1) || 'app'
+  window.appPath = `./${appName}.js`
+  console.log('running:', appName + '.js')
+  document.title = `test:${appName}`
+  util.setScript(appPath, {type: 'module'})
+</script> -->
