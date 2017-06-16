@@ -1,5 +1,10 @@
-(function (exports) {
+/* eslint-disable */
+(function (exports,THREE,___libs_OrbitControls_js,Stats,dat) {
 'use strict';
+
+THREE = 'default' in THREE ? THREE['default'] : THREE;
+Stats = 'default' in Stats ? Stats['default'] : Stats;
+dat = 'default' in dat ? dat['default'] : dat;
 
 // A set of useful misc utils which will eventually move to individual files.
 // Note we use arrow functions one-liners, more likely to be optimized.
@@ -3327,14 +3332,6 @@ const paths = {
   triangle (ctx) { this.poly(ctx, [[1, 0], [-1, -0.8], [-1, 0.8]]); }
 };
 
-// import THREE from '../libs/three.wrapper.js'
-// import * as THREE from 'http://backspaces.github.io/asx/libs/three.module.js'
-// import * as THREE from '../libs/src/three/Three.js'
-// import OrbitControls from '../libs/OrbitControls.module.js'
-// import Stats from '../libs/Stats.js'
-// import dat from '../libs/dat.gui.module.js'
-// import GUI from '../libs/src/dat.gui/dat/gui/GUI.js'
-
 class Three {
   static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {
     return {
@@ -3952,4 +3949,4 @@ exports.Turtle = Turtle;
 exports.Turtles = Turtles;
 exports.util = util;
 
-}((this.AS = this.AS || {})));
+}((this.AS = this.AS || {}),THREE,null,Stats,dat));

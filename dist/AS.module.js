@@ -1,3 +1,9 @@
+/* eslint-disable */
+import THREE from '../libs/three.wrapper.js';
+import '../libs/OrbitControls.js';
+import Stats from '../libs/stats.wrapper.js';
+import dat from '../libs/dat.gui.wrapper.js';
+
 // A set of useful misc utils which will eventually move to individual files.
 // Note we use arrow functions one-liners, more likely to be optimized.
 // REMIND: Test optimization, if none, remove arrow one-liners.
@@ -3323,14 +3329,6 @@ const paths = {
   square (ctx) { ctx.fillRect(-1, -1, 2, 2); },
   triangle (ctx) { this.poly(ctx, [[1, 0], [-1, -0.8], [-1, 0.8]]); }
 };
-
-// import THREE from '../libs/three.wrapper.js'
-// import * as THREE from 'http://backspaces.github.io/asx/libs/three.module.js'
-// import * as THREE from '../libs/src/three/Three.js'
-// import OrbitControls from '../libs/OrbitControls.module.js'
-// import Stats from '../libs/Stats.js'
-// import dat from '../libs/dat.gui.module.js'
-// import GUI from '../libs/src/dat.gui/dat/gui/GUI.js'
 
 class Three {
   static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {

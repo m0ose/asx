@@ -18,22 +18,13 @@
   "libs": [
     "node_modules/three/build/three.min.js",
     "node_modules/three/examples/js/controls/OrbitControls.js",
-    "node_modules/three/examples/js/controls/FlyControls.js",
-    "node_modules/three/examples/js/controls/FirstPersonControls.js",
     "node_modules/stats.js/build/stats.min.js",
-    "node_modules/dat.gui/build/dat.gui.min.js",
-    "node_modules/three/build/three.module.js",
-    "node_modules/stats.js/src/Stats.js"
-  ],
-  "threelibs": [
-    "controls/OrbitControls",
-    "controls/FlyControls",
-    "controls/FirstPersonControls"
+    "node_modules/dat.gui/build/dat.gui.min.js"
   ],
   "wraplibs": [
-    "libs/three.min.js",
-    "libs/dat.gui.min.js",
-    "libs/stats.min.js"
+    ["libs/three.min.js", "THREE"],
+    ["libs/dat.gui.min.js", "dat"],
+    ["libs/stats.min.js", "Stats"]
   ],
   "themenames": [
     "Use one of these for 'docstheme' below",
@@ -57,15 +48,19 @@
     "libs",
     "models"
   ],
+  "mkdirs": [
+    "docs",
+    "dist",
+    "libs",
+    "models/scripts"
+  ],
   "docstheme": "theme: jekyll-theme-hacker",
-  "mkdirs": "docs dist libs models/scripts",
   "scripts": {
-    "postinstall": "git clone https://github.com/dataarts/dat.gui.git",
     "clean": "rm -rf `bin/pkgkey.js mkdirs` && npm run mkdirs",
     "mkdirs": "mkdir -p `bin/pkgkey.js mkdirs`",
     "start": "node node_modules/serve/bin/serve.js -p 3000",
     "build": "npm run clean && npm run build-libs && npm run build-models && npm run build-dist && squash dist/AS.js > dist/AS.min.js && npm run build-docs",
-    "build-libs": "cp `bin/pkgkey.js libs` libs && bin/builddat.sh && bin/build3modules.js && bin/wraplibs.sh",
+    "build-libs": "cp `bin/pkgkey.js libs` libs && bin/wraplibs.js",
     "build-docs": "cp -Rp `bin/pkgkey.js docsfiles` docs && echo `bin/pkgkey.js docstheme` > docs/_config.yml",
     "build-models": "bin/buildscripts.sh models/src",
     "build-dist": "rollup -c && cp -R src dist/AS",
