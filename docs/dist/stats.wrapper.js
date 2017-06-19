@@ -20,7 +20,7 @@ b.fillRect(d,m,n,p);b.fillStyle=l;b.globalAlpha=.9;b.fillRect(d,m,n,p);return{do
     if (typeof returnVal === "boolean") returnVal = undefined
   }
   wrap.call(window)
-  console.log('wraplib libs/stats.min.js Stats', {Stats, returnVal})
+  console.log('wraplib libs/stats.min.js Stats', {global: Stats, return: returnVal})
   result = window.Stats || returnVal
   if (!result) throw Error("wrapper failed, file: libs/stats.min.js name: Stats")
 }

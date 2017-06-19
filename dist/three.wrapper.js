@@ -880,7 +880,7 @@ this.domElement=document.createElementNS("http://www.w3.org/1999/xhtml","canvas"
     if (typeof returnVal === "boolean") returnVal = undefined
   }
   wrap.call(window)
-  console.log('wraplib libs/three.min.js THREE', {THREE, returnVal})
+  console.log('wraplib libs/three.min.js THREE', {global: THREE, return: returnVal})
   result = window.THREE || returnVal
   if (!result) throw Error("wrapper failed, file: libs/three.min.js name: THREE")
 }

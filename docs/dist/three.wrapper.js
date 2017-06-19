@@ -1,4 +1,16 @@
-// threejs.org/license
+// Programmatically created by wraplib.js
+let returnVal
+let result
+
+if (window.THREE) {
+  console.log("wrapper: window.THREE exists; exporting it.")
+  result = window.THREE
+} else {
+
+  function wrap () {
+
+    returnVal =
+    // threejs.org/license
 (function(l,sa){"object"===typeof exports&&"undefined"!==typeof module?sa(exports):"function"===typeof define&&define.amd?define(["exports"],sa):sa(l.THREE=l.THREE||{})})(this,function(l){function sa(){}function D(a,b){this.x=a||0;this.y=b||0}function X(a,b,c,d,e,f,g,h,k,m){Object.defineProperty(this,"id",{value:jf++});this.uuid=Y.generateUUID();this.name="";this.image=void 0!==a?a:X.DEFAULT_IMAGE;this.mipmaps=[];this.mapping=void 0!==b?b:X.DEFAULT_MAPPING;this.wrapS=void 0!==c?c:1001;this.wrapT=
 void 0!==d?d:1001;this.magFilter=void 0!==e?e:1006;this.minFilter=void 0!==f?f:1008;this.anisotropy=void 0!==k?k:1;this.format=void 0!==g?g:1023;this.type=void 0!==h?h:1009;this.offset=new D(0,0);this.repeat=new D(1,1);this.generateMipmaps=!0;this.premultiplyAlpha=!1;this.flipY=!0;this.unpackAlignment=4;this.encoding=void 0!==m?m:3E3;this.version=0;this.onUpdate=null}function ga(a,b,c,d){this.x=a||0;this.y=b||0;this.z=c||0;this.w=void 0!==d?d:1}function Db(a,b,c){this.uuid=Y.generateUUID();this.width=
 a;this.height=b;this.scissor=new ga(0,0,a,b);this.scissorTest=!1;this.viewport=new ga(0,0,a,b);c=c||{};void 0===c.minFilter&&(c.minFilter=1006);this.texture=new X(void 0,void 0,c.wrapS,c.wrapT,c.magFilter,c.minFilter,c.format,c.type,c.anisotropy,c.encoding);this.depthBuffer=void 0!==c.depthBuffer?c.depthBuffer:!0;this.stencilBuffer=void 0!==c.stencilBuffer?c.stencilBuffer:!0;this.depthTexture=void 0!==c.depthTexture?c.depthTexture:null}function Eb(a,b,c){Db.call(this,a,b,c);this.activeMipMapLevel=
@@ -863,3 +875,14 @@ c){console.warn("THREE.GeometryUtils: .merge() has been moved to Geometry. Use g
 var e=new sd;e.setCrossOrigin(this.crossOrigin);a=e.load(a,c,void 0,d);b&&(a.mapping=b);return a},loadTextureCube:function(a,b,c,d){console.warn("THREE.ImageUtils.loadTextureCube has been deprecated. Use THREE.CubeTextureLoader() instead.");var e=new ae;e.setCrossOrigin(this.crossOrigin);a=e.load(a,c,void 0,d);b&&(a.mapping=b);return a},loadCompressedTexture:function(){console.error("THREE.ImageUtils.loadCompressedTexture has been removed. Use THREE.DDSLoader instead.")},loadCompressedTextureCube:function(){console.error("THREE.ImageUtils.loadCompressedTextureCube has been removed. Use THREE.DDSLoader instead.")}};
 l.Projector=function(){console.error("THREE.Projector has been moved to /examples/js/renderers/Projector.js.");this.projectVector=function(a,b){console.warn("THREE.Projector: .projectVector() is now vector.project().");a.project(b)};this.unprojectVector=function(a,b){console.warn("THREE.Projector: .unprojectVector() is now vector.unproject().");a.unproject(b)};this.pickingRay=function(){console.error("THREE.Projector: .pickingRay() is now raycaster.setFromCamera().")}};l.CanvasRenderer=function(){console.error("THREE.CanvasRenderer has been moved to /examples/js/renderers/CanvasRenderer.js");
 this.domElement=document.createElementNS("http://www.w3.org/1999/xhtml","canvas");this.clear=function(){};this.render=function(){};this.setClearColor=function(){};this.setSize=function(){}};Object.defineProperty(l,"__esModule",{value:!0})});
+
+
+    if (typeof returnVal === "boolean") returnVal = undefined
+  }
+  wrap.call(window)
+  console.log('wraplib libs/three.min.js THREE', {global: THREE, return: returnVal})
+  result = window.THREE || returnVal
+  if (!result) throw Error("wrapper failed, file: libs/three.min.js name: THREE")
+}
+
+export default result

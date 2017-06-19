@@ -1,10 +1,10 @@
 import SpriteSheet from './SpriteSheet.js'
 import util from './util.js'
 
-import THREE from '../libs/three.wrapper.js'
-import '../libs/OrbitControls.js'
-import Stats from '../libs/stats.wrapper.js'
-import dat from '../libs/dat.gui.wrapper.js'
+import THREE from '../dist/three.wrapper.js'
+import '../dist/OrbitControls.wrapper.js'
+import Stats from '../dist/stats.wrapper.js'
+import dat from '../dist/dat.gui.wrapper.js'
 
 class Three {
   static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {

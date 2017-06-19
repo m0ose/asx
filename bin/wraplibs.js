@@ -1,29 +1,30 @@
 #!/usr/bin/env node
 const fs = require('fs')
-const { spawn } = require('child_process')
+const { exec, execSync } = require('child_process')
 
 const json = JSON.parse(fs.readFileSync('package.json'))
-
 const libs = json.wraplibs
 
 libs.forEach((lib) => {
-  const [dir, name, style] = lib
-  const toFile = dir.endsWith('.min.js')
-    ? dir.replace(/\.min\.js/, '.wrapper.js')
-    : dir.replace(/\.js/, '.wrapper.js')
-  console.log('wraplibs:', dir, name, style, toFile)
-  const wrapStream = fs.createWriteStream(toFile)
-  const wrapProc = spawn('bin/wraplib.js', [dir, name, style])
-  wrapProc.stdout.pipe(wrapStream)
-})
+  const [dir, name] = lib
+  let fromPath = dir
 
-// dirs=`bin/pkgkey.js 'wraplibs'`
-//
-// echo "wraplibs.sh"
-// # echo 'libes to wrap' $dirs
-//
-// for dir in $dirs; do
-//   toFile=`echo $dir | sed 's:\.min\.js:.wrapper.js:'`
-//   echo $dir '->' $toFile
-//   bin/wraplib.js $dir > $toFile
-// done
+  // Oops .. minification broke OrbitControls. squash bug. trying uglify
+  // Minify vanilla .js files:
+  if (!dir.endsWith('.min.js')) {
+    const minPath = dir.replace(/\.js$/, '.min.js')
+    execSync(`uglifyjs ${dir} -c > ${minPath}`)
+    fromPath = minPath
+  }
+
+  // const toPath = fromPath.endsWith('.min.js')
+  //   ? fromPath.replace(/\.min\.js/, '.wrapper.js').replace('libs/', 'dist/')
+  //   : fromPath.replace(/\.js$/, '.wrapper.js').replace('libs/', 'dist/')
+  const toPath = fromPath
+    .replace(/\.min\.js/, '.wrapper.js')
+    .replace('libs/', 'dist/')
+
+  console.log('wraplibs:', fromPath, name, toPath)
+  // Run wraplib
+  exec(`bin/wraplib.js ${fromPath} ${name} > ${toPath}`)
+})

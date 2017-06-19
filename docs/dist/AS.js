@@ -1,5 +1,5 @@
 /* eslint-disable */
-(function (exports,THREE,___libs_OrbitControls_js,Stats,dat) {
+(function (exports,THREE,___dist_OrbitControls_wrapper_js,Stats,dat) {
 'use strict';
 
 THREE = 'default' in THREE ? THREE['default'] : THREE;
@@ -3949,4 +3949,4 @@ exports.Turtle = Turtle;
 exports.Turtles = Turtles;
 exports.util = util;
 
-}((this.AS = this.AS || {}),THREE,null,Stats,dat));
+}((this.AS = this.AS || {}),THREE,OrbitControls,Stats,dat));

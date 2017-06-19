@@ -16,7 +16,7 @@ min:n.__min,max:n.__max,step:n.__step});U.default.each(["updateDisplay","onChang
     if (typeof returnVal === "boolean") returnVal = undefined
   }
   wrap.call(window)
-  console.log('wraplib libs/dat.gui.min.js dat', {dat, returnVal})
+  console.log('wraplib libs/dat.gui.min.js dat', {global: dat, return: returnVal})
   result = window.dat || returnVal
   if (!result) throw Error("wrapper failed, file: libs/dat.gui.min.js name: dat")
 }

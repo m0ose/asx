@@ -1,46 +1,22 @@
 // externals = (id) => id.includes('/libs/')
-function externals (id) { return id.includes('/libs/') }
+function externals (id) { return id.includes('/dist/') }
 
 export default {
   entry: 'src/AS.js',
   banner: '/* eslint-disable */',
   external: externals,
-  // external: [
-  //   'stats.wrapper.js',
-  //   'dat.gui.wrapper.js',
-  //   'three.module.js',
-  //   'OrbitControls.js'
-  // ],
-  // external: [
-  //   'Stats',
-  //   'dat',
-  //   'THREE',
-  //   'OrbitControls'
-  // ],
-  // paths: { // id: path
-  //   Stats: 'http://backspaces.github.io/asx/libs/Stats.js'
-  // },
   targets: [
     { dest: 'dist/AS.js',
       format: 'iife',
       globals: { // id: name pairs (import name from id)
-        '../libs/stats.wrapper.js': 'Stats',
-        '../libs/dat.gui.wrapper.js': 'dat',
-        '../libs/three.wrapper.js': 'THREE',
-        '../libs/OrbitControls.js': 'OrbitControls'
+        '/Users/owen/Dropbox/src/asx/dist/stats.wrapper.js': 'Stats',
+        '/Users/owen/Dropbox/src/asx/dist/dat.gui.wrapper.js': 'dat',
+        '/Users/owen/Dropbox/src/asx/dist/three.wrapper.js': 'THREE',
+        '/Users/owen/Dropbox/src/asx/dist/OrbitControls.wrapper.js': 'OrbitControls'
       },
-      // external: [
-      //   'http://backspaces.github.io/asx/libs/three.module.js'
-      // ],
-      // global: {
-      //   THREE: 'http://backspaces.github.io/asx/libs/three.module.js'
-      // },
       moduleName: 'AS'
     },
     { dest: 'dist/AS.module.js',
-      // external: [
-      //   'http://backspaces.github.io/asx/libs/three.module.js'
-      // ],
       format: 'es'
     }
   ]

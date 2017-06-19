@@ -12,7 +12,7 @@ const inWinMsg = // eslint-disable-line
 
 const debug = true
 const debugCode = debug
-  ? `console.log('wraplib ${file} ${name}', {${name}, returnVal})`
+  ? `console.log('wraplib ${file} ${name}', {global: ${name}, return: returnVal})`
   : ''
 
 const code = fs.readFileSync(file)

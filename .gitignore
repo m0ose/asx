@@ -2,11 +2,10 @@
 
 # Derived files other than docs/
 /libs/
-/dat.gui/
 /test
-/test/Attic
+# /test/Attic
 /models/scripts/
-/models/scripts/index.html
+# /models/scripts/index.html
 /models/src/index.html
 
 node_modules/
