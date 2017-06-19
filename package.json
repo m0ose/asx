@@ -22,22 +22,10 @@
     "node_modules/dat.gui/build/dat.gui.min.js"
   ],
   "wraplibs": [
-    [
-      "libs/three.min.js",
-      "THREE"
-    ],
-    [
-      "libs/OrbitControls.js",
-      "THREE.OrbitControls"
-    ],
-    [
-      "libs/dat.gui.min.js",
-      "dat"
-    ],
-    [
-      "libs/stats.min.js",
-      "Stats"
-    ]
+    ["libs/three.min.js", "THREE"],
+    ["libs/OrbitControls.js", "THREE.OrbitControls"],
+    ["libs/dat.gui.min.js", "dat"],
+    ["libs/stats.min.js", "Stats"]
   ],
   "themenames": [
     "Use one of these for 'docstheme' below",

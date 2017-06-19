@@ -3949,4 +3949,4 @@ exports.Turtle = Turtle;
 exports.Turtles = Turtles;
 exports.util = util;
 
-}((this.AS = this.AS || {}),THREE,OrbitControls,Stats,dat));
+}((this.AS = this.AS || {}),THREE,null,Stats,dat));

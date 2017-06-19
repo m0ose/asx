@@ -12,7 +12,7 @@ export default {
         '/Users/owen/Dropbox/src/asx/dist/stats.wrapper.js': 'Stats',
         '/Users/owen/Dropbox/src/asx/dist/dat.gui.wrapper.js': 'dat',
         '/Users/owen/Dropbox/src/asx/dist/three.wrapper.js': 'THREE',
-        '/Users/owen/Dropbox/src/asx/dist/OrbitControls.wrapper.js': 'OrbitControls'
+        // '/Users/owen/Dropbox/src/asx/dist/OrbitControls.wrapper.js': 'THREE.OrbitControls'
       },
       moduleName: 'AS'
     },
