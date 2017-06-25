@@ -111,13 +111,13 @@ const util = {
     }
   },
 
-  // addToDom: add an element to the doeument body
-  addToDom (src, type) {
+  // addToDom: add an element to the doeument body.
+  addToDom (src, type, parent = document.body) {
     if (type) {
       type = document.createElement(type);
       src = type.textContent = src;
     }
-    document.body.appendChild(src);
+    parent.appendChild(src);
   },
 
   // Return a string representation of an array of arrays
@@ -359,8 +359,13 @@ const util = {
   deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
   // Compare Objects or Arrays via JSON string. Note: TypedArrays !== Arrays
   objectsEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
-  // Use JSON to return printable string of an object, array, other
-  objectToString: (obj) => JSON.stringify(obj),
+  // Use JSON to return pretty, printable string of an object, array, other
+  // Remove ""s around keys.
+  objectToString (obj) {
+    return JSON.stringify(obj, null, '  ')
+      .replace(/ {2}"/g, '  ')
+      .replace(/": /g, ': ')
+  },
 
   // Create random array of floats between min/max.
   // Array Type allows conversion to Float32Array or integers (Int32Array etc)
@@ -2961,7 +2966,7 @@ class Turtle {
   // Create my shape via src: sprite, fcn, string, or image/canvas
   setSprite (src, color = 'red', strokeColor = 'black') {
     if (src.sheet) { this.sprite = src; return } // src is a sprite
-    const ss = this.model.renderer.spriteSheet;
+    const ss = this.model.view.spriteSheet;
     this.sprite = ss.newSprite(src, color, strokeColor);
     // this.sprite = util.isImageable(src)
     //   ? ss.addImage(src)
@@ -3080,7 +3085,6 @@ class Turtle {
   otherEnd (l) { return l.end0 === this ? l.end1 : l.end0 }
   // Return all turtles linked to me
   linkNeighbors () { return this.links.map((l) => this.otherEnd(l)) }
-
 }
 
 // Sprites are images/drawings within a sprite-sheet.
@@ -3330,25 +3334,341 @@ const paths = {
   triangle (ctx) { this.poly(ctx, [[1, 0], [-1, -0.8], [-1, 0.8]]); }
 };
 
+// Meshes used by the Three.js view module
+
+// Utility classes meant to be subclassed:
+
+// ============= BaseMesh =============
+// An abstract class for all Meshes. It needs the particular Three.js
+// instance to allow for differences in models on the same page.
+class BaseMesh { // static options(): https://goo.gl/sKdxoY
+  constructor (view, options = this.constructor.options()) {
+    const { scene, model, spriteSheet } = view;
+    Object.assign(this, { scene, model, spriteSheet, view, options });
+    this.mesh = null;
+  }
+  dispose () {
+    if (!this.mesh) return
+    if (this.mesh.parent !== this.scene) console.log('mesh parent not scene');
+    this.mesh.parent.remove(this.mesh);
+    this.mesh.geometry.dispose();
+    this.mesh.material.dispose();
+    if (this.mesh.material.map) this.mesh.material.map.dispose();
+  }
+  init () { throw Error('init is abstract, must be overriden') }
+  update () { throw Error('update is abstract, must be overriden') }
+
+  // Utilities
+  createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
+    const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z];
+    const indices = [0, 1, 2, 0, 2, 3];
+    return {vertices, indices}
+  }
+  get spriteSheetTexture () {
+    if (!this.spriteSheet.texture) {
+      const texture = new THREE.CanvasTexture(this.spriteSheet.ctx.canvas);
+      this.spriteSheet.texture = texture;
+    }
+    return this.spriteSheet.texture
+  }
+}
+
+// ============= CanvasMesh =============
+
+class CanvasMesh extends BaseMesh {
+  init (canvas) {
+    if (this.mesh) this.dispose();
+    const {textureOptions, z} = this.options;
+    Object.assign(this, { canvas, z, textureOptions });
+    const {width, height, numX, numY} = this.model.world;
+
+    const texture = new THREE.CanvasTexture(canvas);
+    for (const key in textureOptions) {
+      texture[key] = THREE[textureOptions[key]];
+    }
+
+    const geometry = new THREE.PlaneGeometry(width, height, numX, numY);
+
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      shading: THREE.FlatShading,
+      side: THREE.DoubleSide,
+      transparent: true
+    });
+
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.position.z = z;
+    this.scene.add(this.mesh);
+  }
+  update () {
+    // REMIND: have canvas owner set a flag
+    this.mesh.material.map.needsUpdate = true;
+  }
+}
+
+// Several classes for patches, turtles, links, etc.
+
+// ============= PatchesMesh =============
+
+// Patch meshes are a form of Canvas Mesh
+class PatchesMesh extends CanvasMesh {
+  static options () {
+    return {
+      textureOptions: {
+        minFilter: 'NearestFilter',
+        magFilter: 'NearestFilter'
+      },
+      z: 0.0
+    }
+  }
+  init (patches) { // REMIND: pass in patches instead of canvas
+    super.init(patches.pixels.ctx.canvas);
+  }
+  update (patches) {
+    patches.installPixels();
+    super.update();
+  }
+}
+
+// ============= QuadSpritesMesh =============
+
+class QuadSpritesMesh extends BaseMesh {
+  static options () {
+    return {
+      z: 0.1
+    }
+  }
+  constructor (view, options) {
+    super(view, options);
+    this.unitQuad = this.createQuad(0.5, 0);
+  }
+  init () {
+    if (this.mesh) this.dispose();
+    const texture = this.spriteSheetTexture;
+
+    const vertices = new Float32Array();
+    const uvs = new Float32Array();
+    const indices = new Uint32Array();
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.addAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    const material = new THREE.MeshBasicMaterial({
+      map: texture, alphaTest: 0.5, side: THREE.DoubleSide});
+
+    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh.position.z = this.options.z;
+    this.scene.add(this.mesh);
+  }
+  // update takes any array of objects with x,y,z,size,sprite .. position & uvs
+  // REMIND: optimize by flags for position/uvs need updates
+  update (turtles) {
+    const mesh = this.mesh;
+    const { vertices, indices } = this.unitQuad;
+    const patchSize = this.model.world.patchSize;
+    const positionAttrib = mesh.geometry.getAttribute('position');
+    const uvAttrib = mesh.geometry.getAttribute('uv');
+    const indexAttrib = mesh.geometry.getIndex();
+    const positions = new Float32Array(vertices.length * turtles.length);
+    const uvs = [];
+    const indexes = [];
+
+    for (let i = 0; i < turtles.length; i++) {
+      const turtle = turtles[i];
+      const size = turtle.size; // * patchSize
+      const theta = turtle.theta;
+      const cos = Math.cos(theta);
+      const sin = Math.sin(theta);
+      const offset = i * vertices.length;
+
+      for (let j = 0; j < vertices.length; j = j + 3) {
+        const x0 = vertices[j];
+        const y0 = vertices[j + 1];
+        const x = turtle.x; // * patchSize
+        const y = turtle.y; // * patchSize
+        positions[j + offset] = (size * (x0 * cos - y0 * sin) + x) * patchSize;
+        positions[j + offset + 1] = (size * (x0 * sin + y0 * cos) + y) * patchSize;
+        positions[j + offset + 2] = turtle.z * patchSize;
+      }
+      indexes.push(...indices.map((ix) => ix + (i * 4))); // 4
+      uvs.push(...turtle.sprite.uvs);
+    }
+    positionAttrib.setArray(positions);
+    positionAttrib.needsUpdate = true;
+    uvAttrib.setArray(new Float32Array(uvs));
+    uvAttrib.needsUpdate = true;
+    indexAttrib.setArray(new Uint32Array(indexes));
+    indexAttrib.needsUpdate = true;
+  }
+}
+
+// ============= PointsMesh =============
+
+class PointsMesh extends BaseMesh {
+  static options () {
+    return {
+      pointSize: 1,
+      color: null,
+      z: 0.1
+    }
+  }
+  init () {
+    if (this.mesh) this.dispose();
+    const {color, z} = this;
+    const pointSize = this.options.pointSize * this.model.world.patchSize;
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position',
+      new THREE.BufferAttribute(new Float32Array(), 3));
+    if (color == null)
+      geometry.addAttribute('color',
+        new THREE.BufferAttribute(new Float32Array(), 3));
+
+    const material = color
+    ? new THREE.PointsMaterial({size: pointSize, color: new THREE.Color(color)})
+    : new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors});
+
+    this.mesh = new THREE.Points(geometry, material);
+    this.mesh.position.z = z;
+    this.scene.add(this.mesh);
+  }
+  // update takes any array of objects with x,y,z,color .. position & color
+  // If non-null color passed to init, only x,y,z .. position used
+  // REMIND: optimize by flags for position/uvs need updates
+  update (turtles) {
+    const positionAttrib = this.mesh.geometry.getAttribute('position');
+    // const positionBuff = positionAttrib.array
+    const colorAttrib = this.mesh.geometry.getAttribute('color');
+    const vertices = [];
+    const colors = colorAttrib == null ? null : [];
+    const patchSize = this.model.world.patchSize;
+
+    const red = [1, 0, 0]; // REMIND: add color/shape to turtles
+
+    for (let i = 0; i < turtles.length; i++) {
+      const {x, y, z} = turtles[i];
+      vertices.push(x * patchSize, y * patchSize, z * patchSize);
+      if (colors != null) colors.push(...red);
+    }
+    positionAttrib.setArray(new Float32Array(vertices));
+    positionAttrib.needsUpdate = true;
+    if (colors) {
+      colorAttrib.setArray(new Float32Array(colors));
+      colorAttrib.needsUpdate = true;
+    }
+  }
+}
+
+// ============= LinksMesh =============
+
+class LinksMesh extends BaseMesh {
+  static options () {
+    return {
+      z: 0.05
+    }
+  }
+  init () {
+    if (this.mesh) this.dispose();
+    const vertices = new Float32Array(0);
+    const colors = new Float32Array(0);
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
+
+    this.mesh = new THREE.LineSegments(geometry, material);
+    this.mesh.position.z = this.options.z;
+    this.scene.add(this.mesh);
+  }
+  // update takes any array of objects with color & end0, end1 having x,y,z
+  // REMIND: optimize by flags for position/uvs need updates
+  update (links) {
+    const vertices = [];
+    const colors = [];
+    for (let i = 0; i < links.length; i++) {
+      const {end0, end1, color} = links[i];
+      const {x: x0, y: y0, z: z0} = end0;
+      const {x: x1, y: y1, z: z1} = end1;
+      const ps = this.model.world.patchSize;
+      vertices.push(x0 * ps, y0 * ps, z0 * ps, x1 * ps, y1 * ps, z1 * ps);
+      colors.push(...color.webgl, ...color.webgl);
+    }
+    const positionAttrib = this.mesh.geometry.getAttribute('position');
+    const colorAttrib = this.mesh.geometry.getAttribute('color');
+    positionAttrib.setArray(new Float32Array(vertices));
+    positionAttrib.needsUpdate = true;
+    colorAttrib.setArray(new Float32Array(colors));
+    colorAttrib.needsUpdate = true;
+  }
+}
+
+var Meshes = {
+  BaseMesh,
+  CanvasMesh,
+  PatchesMesh,
+  QuadSpritesMesh,
+  PointsMesh,
+  LinksMesh
+};
+
+// import SpriteSheet from './SpriteSheet.js'
+// import util from './util.js'
+window.Meshes = Meshes; // REMIND
+
 class Three {
   static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {
-    return {
+    const options = {
     // include me in options so Model can instanciate me!
-      Renderer: Three,
+      Renderer: Three, // REMIND: use string.
       orthoView: false,             // 'Perspective', 'Orthographic'
       clearColor: 0x000000,         // clear to black
       useAxes: useThreeHelpers,     // show x,y,z axes
       useGrid: useThreeHelpers,     // show x,y plane
-      useControls: useThreeHelpers, // activate navigation. REMIND: name of control?
+      useControls: useThreeHelpers, // navigation. REMIND: control name?
       useStats: useUIHelpers,       // show fps widget
-      useGUI: useUIHelpers          // activate dat.gui UI
+      useGUI: useUIHelpers,         // activate dat.gui UI
+      meshes: {
+        patches: {
+          meshClass: 'PatchesMesh',
+          z: 0.0
+        },
+        turtles: {
+          meshClass: 'QuadSpritesMesh',
+          z: 0.1
+        },
+        links: {
+          meshClass: 'LinksMesh',
+          z: 0.05
+        }
+      }
+    };
+    // for (const meshKey in options.meshes) {
+    //   const meshVal = options.meshes[meshKey]
+    //   const Mesh = Meshes[meshVal.meshClass]
+    //   const meshOptions = Mesh.options()
+    //   if (meshOptions) meshVal.options = meshOptions
+    // }
+    return options
+  }
+  static printMeshOptions () {
+    const obj = {};
+    for (const MeshName in Meshes) {
+      const optionsFcn = Meshes[MeshName].options;
+      if (optionsFcn) {
+        obj[MeshName] = {
+          options: Meshes[MeshName].options()
+        };
+      }
     }
+    const json = JSON.stringify(obj, null, '  ');
+    console.log(json.replace(/ {2}"/g, '  ').replace(/": /g, ': '));
   }
 
-  // The Model constructor takes a DOM div and overrides for defaults
   constructor (model, options = {}) {
     this.model = model;
-    this.spriteSheet = new SpriteSheet();
+    this.spriteSheet = model.spriteSheet; // REMIND: Temp
 
     // Initialize options
     Object.assign(this, Three.defaultOptions); // install defaults
@@ -3359,13 +3679,6 @@ class Three {
     // Initialize Three.js
     this.initThree();
     this.initThreeHelpers();
-
-    this.unitQuad = this.createQuad(0.5, 0);
-  }
-  createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
-    const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z];
-    const indices = [0, 1, 2, 0, 2, 3];
-    return {vertices, indices}
   }
   // Init Three.js core: scene, camera, renderer
   initThree () {
@@ -3435,261 +3748,6 @@ class Three {
 
     Object.assign(this, helpers);
   }
-  disposeThreeMesh (mesh) {
-    if (mesh.parent !== this.scene) console.log('mesh parent not scene');
-    mesh.parent.remove(mesh);
-    mesh.geometry.dispose();
-    mesh.material.dispose();
-    if (mesh.material.map) mesh.material.map.dispose();
-  }
-
-  // Canvas Meshes are generalized Canvas 2D Textures.
-  // Note: You may want to use a PowerOfTwo canvas to avoid constraints
-  //   canvas.width = util.nextPowerOf2(canvas.width)
-  //   canvas.height = util.nextPowerOf2(canvas.height)
-  initCanvasMesh (canvas, name, z, textureOptions = {}) {
-    if (this[name]) this.disposeThreeMesh(this[name]);
-    const {width, height, numX, numY} = this.model.world;
-
-    const texture = new THREE.CanvasTexture(canvas);
-    if (!util.isPowerOf2(canvas.width) || !util.isPowerOf2(canvas.height)) {
-      // Can be Linear. Also wrap params could be clamp to edge
-      // See MDN: https://goo.gl/JBH1I9
-      texture.minFilter = THREE.NearestFilter;
-      texture.magFilter = THREE.NearestFilter;
-    }
-    // Can override above.
-    Object.assign(texture, textureOptions);
-
-    const geometry = new THREE.PlaneGeometry(width, height, numX, numY);
-
-    const material = new THREE.MeshBasicMaterial({
-      map: texture,
-      shading: THREE.FlatShading,
-      side: THREE.DoubleSide,
-      transparent: true
-    });
-
-    const mesh = this[name] = new THREE.Mesh(geometry, material);
-    mesh.position.z = z;
-    this.scene.add(mesh);
-  }
-  updateCanvasMesh (name) {
-    this[name].material.map.needsUpdate = true;
-  }
-
-  // Patch meshes are a form of Canvas Mesh
-  initPatchesMesh (canvas) {
-    this.initCanvasMesh(canvas, 'patchesMesh', 0);
-  }
-  updatePatchesMesh (patches) {
-    patches.installPixels();
-    this.patchesMesh.material.map.needsUpdate = true;
-  }
-
-  initPointsMesh (name, pointSize = 0.3, z = 0, color = null) {
-    if (this[name]) this.disposeThreeMesh(this[name]);
-
-    pointSize = pointSize * this.model.world.patchSize;
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position',
-      new THREE.BufferAttribute(new Float32Array(), 3));
-    if (color == null)
-      geometry.addAttribute('color',
-        new THREE.BufferAttribute(new Float32Array(), 3));
-
-    const material = new THREE.PointsMaterial({
-      size: pointSize, vertexColors: THREE.VertexColors
-    });
-    if (color != null) material.color = color.webgl || color;
-
-    const mesh = this[name] = new THREE.Points(geometry, material);
-    mesh.position.z = z;
-    this.scene.add(mesh);
-  }
-  updatePointsMesh (name, turtles) {
-    const mesh = this[name];
-    const positionAttrib = mesh.geometry.getAttribute('position');
-    // const positionBuff = positionAttrib.array
-    const colorAttrib = mesh.geometry.getAttribute('color');
-    const vertices = [];
-    const colors = colorAttrib == null ? null : [];
-    const patchSize = this.model.world.patchSize;
-
-    const red = [1, 0, 0]; // REMIND: add color/shape to turtles
-
-    for (let i = 0; i < turtles.length; i++) {
-      const turtle = turtles[i];
-      vertices.push(turtle.x * patchSize, turtle.y * patchSize, turtle.z * patchSize);
-      if (colors != null) colors.push(...red);
-    }
-    positionAttrib.setArray(new Float32Array(vertices));
-    positionAttrib.needsUpdate = true;
-    if (colors) {
-      colorAttrib.setArray(new Float32Array(colors));
-      colorAttrib.needsUpdate = true;
-    }
-  }
-
-  // initTurtlesMesh (name) {
-  initQuadSpriteMesh (name) {
-    // if (this.turtlesMesh) this.disposeThreeMesh(this.turtlesMesh)
-    if (this[name]) this.disposeThreeMesh(this[name]);
-
-    const texture = new THREE.CanvasTexture(this.spriteSheet.ctx.canvas);
-    this.spriteSheet.texture = texture;
-
-    const vertices = new Float32Array();
-    const uvs = new Float32Array();
-    const indices = new Uint32Array();
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.addAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-    const material = new THREE.MeshBasicMaterial({
-      map: texture, alphaTest: 0.5, side: THREE.DoubleSide});
-
-    // geometry.name = 'turtles'
-    const mesh = this[name] = new THREE.Mesh(geometry, material);
-    this.scene.add(mesh);
-  }
-  // updateTurtlesMesh (name, turtles) {
-  updateQuadSpriteMesh (name, turtles) {
-    const mesh = this[name];
-    const { vertices, indices } = this.unitQuad;
-    const patchSize = this.model.world.patchSize;
-    // const mesh = this.turtlesMesh
-    const positionAttrib = mesh.geometry.getAttribute('position');
-    const uvAttrib = mesh.geometry.getAttribute('uv');
-    const indexAttrib = mesh.geometry.getIndex();
-    // const positions = []
-    const positions = new Float32Array(vertices.length * turtles.length);
-    const uvs = [];
-    const indexes = [];
-
-    for (let i = 0; i < turtles.length; i++) {
-      const turtle = turtles[i];
-      const size = turtle.size; // * patchSize
-      const theta = turtle.theta;
-      const cos = Math.cos(theta);
-      const sin = Math.sin(theta);
-      const offset = i * vertices.length;
-
-      for (let j = 0; j < vertices.length; j = j + 3) {
-        const x0 = vertices[j];
-        const y0 = vertices[j + 1];
-        const x = turtle.x; // * patchSize
-        const y = turtle.y; // * patchSize
-        positions[j + offset] = (size * (x0 * cos - y0 * sin) + x) * patchSize;
-        positions[j + offset + 1] = (size * (x0 * sin + y0 * cos) + y) * patchSize;
-        positions[j + offset + 2] = turtle.z * patchSize;
-      }
-      indexes.push(...indices.map((ix) => ix + (i * 4))); // 4
-      uvs.push(...turtle.sprite.uvs);
-    }
-    // positionAttrib.setArray(new Float32Array(positions))
-    positionAttrib.setArray(positions);
-    positionAttrib.needsUpdate = true;
-    uvAttrib.setArray(new Float32Array(uvs));
-    uvAttrib.needsUpdate = true;
-    indexAttrib.setArray(new Uint32Array(indexes));
-    indexAttrib.needsUpdate = true;
-  }
-  initLinksMesh () {
-    if (this.linksMesh) this.disposeThreeMesh(this.linksMesh);
-    const vertices = new Float32Array(0);
-    const colors = new Float32Array(0);
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-    // geometry.name = 'links'
-    const material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
-
-    const mesh = this.linksMesh = new THREE.LineSegments(geometry, material);
-    this.scene.add(mesh);
-  }
-  updateLinksMesh (links) {
-    const vertices = [];
-    const colors = [];
-    for (let i = 0; i < links.length; i++) {
-      const {end0, end1, color} = links[i];
-      const {x: x0, y: y0, z: z0} = end0;
-      const {x: x1, y: y1, z: z1} = end1;
-      const ps = this.model.world.patchSize;
-      vertices.push(x0 * ps, y0 * ps, z0 * ps, x1 * ps, y1 * ps, z1 * ps);
-      colors.push(...color.webgl, ...color.webgl);
-    }
-    const mesh = this.linksMesh;
-    const positionAttrib = mesh.geometry.getAttribute('position');
-    const colorAttrib = mesh.geometry.getAttribute('color');
-    positionAttrib.setArray(new Float32Array(vertices));
-    positionAttrib.needsUpdate = true;
-    colorAttrib.setArray(new Float32Array(colors));
-    colorAttrib.needsUpdate = true;
-  }
-
-  initTurtlesMesh () {
-    if (this.turtlesMesh) this.disposeThreeMesh(this.turtlesMesh);
-
-    const texture = new THREE.CanvasTexture(this.spriteSheet.ctx.canvas);
-    this.spriteSheet.texture = texture;
-
-    const vertices = new Float32Array(0);
-    const uvs = new Float32Array(0);
-    const indices = new Uint32Array(0);
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.addAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-    geometry.name = 'turtles';
-    const material = new THREE.MeshBasicMaterial({
-      map: texture, alphaTest: 0.5, side: THREE.DoubleSide});
-
-    const mesh = this.turtlesMesh = new THREE.Mesh(geometry, material);
-    this.scene.add(mesh);
-  }
-  updateTurtlesMesh (turtles) {
-    // const turtles = this.turtles
-    const { vertices, indices } = this.unitQuad;
-    const patchSize = this.model.world.patchSize;
-    const mesh = this.turtlesMesh;
-    const positionAttrib = mesh.geometry.getAttribute('position');
-    const uvAttrib = mesh.geometry.getAttribute('uv');
-    const indexAttrib = mesh.geometry.getIndex();
-    // const positions = []
-    const positions = new Float32Array(vertices.length * turtles.length);
-    const uvs = [];
-    const indexes = [];
-
-    for (let i = 0; i < turtles.length; i++) {
-      const turtle = turtles[i];
-      const size = turtle.size; // * patchSize
-      const theta = turtle.theta;
-      const cos = Math.cos(theta);
-      const sin = Math.sin(theta);
-      const offset = i * vertices.length;
-
-      for (let j = 0; j < vertices.length; j = j + 3) {
-        const x0 = vertices[j];
-        const y0 = vertices[j + 1];
-        const x = turtle.x; // * patchSize
-        const y = turtle.y; // * patchSize
-        positions[j + offset] = (size * (x0 * cos - y0 * sin) + x) * patchSize;
-        positions[j + offset + 1] = (size * (x0 * sin + y0 * cos) + y) * patchSize;
-        positions[j + offset + 2] = turtle.z * patchSize;
-      }
-      indexes.push(...indices.map((ix) => ix + (i * 4))); // 4
-      uvs.push(...turtle.sprite.uvs);
-    }
-    // positionAttrib.setArray(new Float32Array(positions))
-    positionAttrib.setArray(positions);
-    positionAttrib.needsUpdate = true;
-    uvAttrib.setArray(new Float32Array(uvs));
-    uvAttrib.needsUpdate = true;
-    indexAttrib.setArray(new Uint32Array(indexes));
-    indexAttrib.needsUpdate = true;
-  }
 }
 
 // Class Model is the primary interface for modelers, integrating
@@ -3709,17 +3767,6 @@ class Model {
       // useLinks: true,
     }
   }
-  // static defaultThree () {
-  //   return {
-  //     orthoView: false, // 'Perspective', 'Orthographic'
-  //     clearColor: 0x000000,
-  //     useAxes: true,
-  //     useGrid: true,
-  //     useStats: true,
-  //     useControls: true,
-  //     useGUI: true
-  //   }
-  // }
 
   // The Model constructor takes a DOM div and overrides for defaults
   constructor (div = document.body,
@@ -3727,19 +3774,33 @@ class Model {
                rendererOptions = Three.defaultOptions()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div;
-    // this.spriteSheet = new SpriteSheet()
+    this.Renderer = rendererOptions.Renderer;
+    this.meshesOptions = rendererOptions.meshes;
+    this.spriteSheet = new SpriteSheet();
 
     // Create this model's `world` object
     this.world = Model.defaultOptions();
     Object.assign(this.world, modelOptions);
     this.setWorld();
 
-    // Initialize renderer
-    this.renderer = new rendererOptions.Renderer(this, rendererOptions);
-    // this.three = Model.defaultThree()
-    // Object.assign(this.three, threeOptions)
-    // this.initThree()
-    // this.initThreeHelpers()
+    // Initialize view
+    this.view = new rendererOptions.Renderer(this, rendererOptions);
+
+    // Initialize meshes.
+    this.meshes = {};
+    for (const key in this.meshesOptions) {
+      const opts = this.meshesOptions[key];
+      const options = Meshes[opts.meshClass].options(); // default options
+      Object.assign(options, opts); // override by user's
+      this.meshes[key] = new Meshes[opts.meshClass](this.view, options);
+    }
+
+    this.patchesMesh = new Meshes.PatchesMesh(this.view);
+
+    // this.turtlesMesh = new Meshes.PointsMesh(this.view)
+    this.turtlesMesh = new Meshes.QuadSpritesMesh(this.view);
+
+    this.linksMesh = new Meshes.LinksMesh(this.view);
 
     // Create animator to handle draw/step.
     this.anim = new Animator(this);
@@ -3781,20 +3842,23 @@ class Model {
   reset (restart = false) {
     this.anim.reset();
     this.setWorld();
-    // this.three.unitQuad = util.createQuad(this.world.patchSize / 2, 0)
-    // this.three.unitQuad = util.createQuad(0.5, 0)
+
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true;
+
+    // Breeds handled by setup
     this.patches = new Patches(this, Patch, 'patches');
-    this.renderer.initPatchesMesh(this.patches.pixels.ctx.canvas);
+    this.meshes.patches.init(this.patches);
+    // this.patchesMesh.init(0, this.patches.pixels.ctx.canvas)
+
     this.turtles = new Turtles(this, Turtle, 'turtles');
-    // this.renderer.initTurtlesMesh()
-    this.renderer.initQuadSpriteMesh('turtlesMesh');
-    // this.renderer.initPointsMesh('turtlesMesh')
+    // this.turtlesMesh.init(1, 1, new THREE.Color(1, 1, 0))
+    // this.turtlesMesh.init(1, 1)
+    this.meshes.turtles.init(this.turtles);
+
     this.links = new Links(this, Link, 'links');
-    this.renderer.initLinksMesh();
-    // REMIND: temp
-    // this.div.appendChild(this.patches.pixels.ctx.canvas)
-    // document.body.appendChild(this.patches.pixels.ctx.canvas)
+    // this.linksMesh.init(0.9)
+    this.meshes.links.init(this.links);
+
     this.setup();
     if (restart) this.start();
   }
@@ -3833,26 +3897,32 @@ class Model {
   // }
 
   draw (force = this.anim.stopped || this.anim.draws === 1) {
-    const {scene, camera} = this.renderer;
+    // const {scene, camera} = this.view
     if (this.div) {
       if (force || this.refreshPatches) {
         if (this.patches.length > 0)
-          this.renderer.updatePatchesMesh(this.patches);
+          // this.patchesMesh.update(this.patches)
+          this.meshes.patches.update(this.patches);
+        // this.view.updatePatchesMesh(this.patches)
       }
       if (force || this.refreshTurtles) {
         if (this.turtles.length > 0)
-          // this.renderer.updateTurtlesMesh(this.turtles)
-          this.renderer.updateQuadSpriteMesh('turtlesMesh', this.turtles);
-          // this.renderer.updatePointsMesh('turtlesMesh', this.turtles)
+          // this.view.updateTurtlesMesh(this.turtles)
+          // this.turtlesMesh.update(this.turtles)
+          this.meshes.turtles.update(this.turtles);
+          // this.view.updatePointsMesh('turtlesMesh', this.turtles)
       }
       if (force || this.refreshLinks) {
         if (this.links.length > 0)
-          this.renderer.updateLinksMesh(this.links);
+          // this.view.updateLinksMesh(this.links)
+          // this.linksMesh.update(this.links)
+          this.meshes.links.update(this.links);
       }
 
-      this.renderer.renderer.render(scene, camera);
+      // REMIND: generalize.
+      this.view.renderer.render(this.view.scene, this.view.camera);
     }
-    if (this.renderer.stats) this.renderer.stats.update();
+    if (this.view.stats) this.view.stats.update();
   }
 
   // Breeds: create subarrays of Patches, Agentss, Links
@@ -3927,4 +3997,4 @@ class RGBDataSet extends DataSet {
 
 /* eslint-disable */
 
-export { AgentSet, Animator, AscDataSet, Color, ColorMap, DataSet, DataSetIO, Int24, Link, Links, Model, Patch, Patches, RGBADataSet, RGBDataSet, SpriteSheet, Turtle, Turtles, util };
+export { AgentSet, Animator, AscDataSet, Color, ColorMap, DataSet, DataSetIO, Int24, Link, Links, Model, Patch, Patches, RGBADataSet, RGBDataSet, SpriteSheet, Three, Meshes as ThreeMeshes, Turtle, Turtles, util };

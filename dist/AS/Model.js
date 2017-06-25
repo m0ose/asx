@@ -5,7 +5,9 @@ import Turtle from './Turtle.js'
 import Links from './Links.js'
 import Link from './Link.js'
 import Animator from './Animator.js'
+import SpriteSheet from './SpriteSheet.js'
 import Three from './Three.js'
+import Meshes from './ThreeMeshes.js'
 import util from './util.js'
 
 // Class Model is the primary interface for modelers, integrating
@@ -25,17 +27,6 @@ class Model {
       // useLinks: true,
     }
   }
-  // static defaultThree () {
-  //   return {
-  //     orthoView: false, // 'Perspective', 'Orthographic'
-  //     clearColor: 0x000000,
-  //     useAxes: true,
-  //     useGrid: true,
-  //     useStats: true,
-  //     useControls: true,
-  //     useGUI: true
-  //   }
-  // }
 
   // The Model constructor takes a DOM div and overrides for defaults
   constructor (div = document.body,
@@ -43,19 +34,33 @@ class Model {
                rendererOptions = Three.defaultOptions()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div
-    // this.spriteSheet = new SpriteSheet()
+    this.Renderer = rendererOptions.Renderer
+    this.meshesOptions = rendererOptions.meshes
+    this.spriteSheet = new SpriteSheet()
 
     // Create this model's `world` object
     this.world = Model.defaultOptions()
     Object.assign(this.world, modelOptions)
     this.setWorld()
 
-    // Initialize renderer
-    this.renderer = new rendererOptions.Renderer(this, rendererOptions)
-    // this.three = Model.defaultThree()
-    // Object.assign(this.three, threeOptions)
-    // this.initThree()
-    // this.initThreeHelpers()
+    // Initialize view
+    this.view = new rendererOptions.Renderer(this, rendererOptions)
+
+    // Initialize meshes.
+    this.meshes = {}
+    for (const key in this.meshesOptions) {
+      const opts = this.meshesOptions[key]
+      const options = Meshes[opts.meshClass].options() // default options
+      Object.assign(options, opts) // override by user's
+      this.meshes[key] = new Meshes[opts.meshClass](this.view, options)
+    }
+
+    this.patchesMesh = new Meshes.PatchesMesh(this.view)
+
+    // this.turtlesMesh = new Meshes.PointsMesh(this.view)
+    this.turtlesMesh = new Meshes.QuadSpritesMesh(this.view)
+
+    this.linksMesh = new Meshes.LinksMesh(this.view)
 
     // Create animator to handle draw/step.
     this.anim = new Animator(this)
@@ -97,20 +102,23 @@ class Model {
   reset (restart = false) {
     this.anim.reset()
     this.setWorld()
-    // this.three.unitQuad = util.createQuad(this.world.patchSize / 2, 0)
-    // this.three.unitQuad = util.createQuad(0.5, 0)
+
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true
+
+    // Breeds handled by setup
     this.patches = new Patches(this, Patch, 'patches')
-    this.renderer.initPatchesMesh(this.patches.pixels.ctx.canvas)
+    this.meshes.patches.init(this.patches)
+    // this.patchesMesh.init(0, this.patches.pixels.ctx.canvas)
+
     this.turtles = new Turtles(this, Turtle, 'turtles')
-    // this.renderer.initTurtlesMesh()
-    this.renderer.initQuadSpriteMesh('turtlesMesh')
-    // this.renderer.initPointsMesh('turtlesMesh')
+    // this.turtlesMesh.init(1, 1, new THREE.Color(1, 1, 0))
+    // this.turtlesMesh.init(1, 1)
+    this.meshes.turtles.init(this.turtles)
+
     this.links = new Links(this, Link, 'links')
-    this.renderer.initLinksMesh()
-    // REMIND: temp
-    // this.div.appendChild(this.patches.pixels.ctx.canvas)
-    // document.body.appendChild(this.patches.pixels.ctx.canvas)
+    // this.linksMesh.init(0.9)
+    this.meshes.links.init(this.links)
+
     this.setup()
     if (restart) this.start()
   }
@@ -149,26 +157,32 @@ class Model {
   // }
 
   draw (force = this.anim.stopped || this.anim.draws === 1) {
-    const {scene, camera} = this.renderer
+    // const {scene, camera} = this.view
     if (this.div) {
       if (force || this.refreshPatches) {
         if (this.patches.length > 0)
-          this.renderer.updatePatchesMesh(this.patches)
+          // this.patchesMesh.update(this.patches)
+          this.meshes.patches.update(this.patches)
+        // this.view.updatePatchesMesh(this.patches)
       }
       if (force || this.refreshTurtles) {
         if (this.turtles.length > 0)
-          // this.renderer.updateTurtlesMesh(this.turtles)
-          this.renderer.updateQuadSpriteMesh('turtlesMesh', this.turtles)
-          // this.renderer.updatePointsMesh('turtlesMesh', this.turtles)
+          // this.view.updateTurtlesMesh(this.turtles)
+          // this.turtlesMesh.update(this.turtles)
+          this.meshes.turtles.update(this.turtles)
+          // this.view.updatePointsMesh('turtlesMesh', this.turtles)
       }
       if (force || this.refreshLinks) {
         if (this.links.length > 0)
-          this.renderer.updateLinksMesh(this.links)
+          // this.view.updateLinksMesh(this.links)
+          // this.linksMesh.update(this.links)
+          this.meshes.links.update(this.links)
       }
 
-      this.renderer.renderer.render(scene, camera)
+      // REMIND: generalize.
+      this.view.renderer.render(this.view.scene, this.view.camera)
     }
-    if (this.renderer.stats) this.renderer.stats.update()
+    if (this.view.stats) this.view.stats.update()
   }
 
   // Breeds: create subarrays of Patches, Agentss, Links

@@ -105,13 +105,13 @@ const util = {
     }
   },
 
-  // addToDom: add an element to the doeument body
-  addToDom (src, type) {
+  // addToDom: add an element to the doeument body.
+  addToDom (src, type, parent = document.body) {
     if (type) {
       type = document.createElement(type)
       src = type.textContent = src
     }
-    document.body.appendChild(src)
+    parent.appendChild(src)
   },
 
   // Return a string representation of an array of arrays
@@ -353,8 +353,13 @@ const util = {
   deepClone: (obj) => JSON.parse(JSON.stringify(obj)),
   // Compare Objects or Arrays via JSON string. Note: TypedArrays !== Arrays
   objectsEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
-  // Use JSON to return printable string of an object, array, other
-  objectToString: (obj) => JSON.stringify(obj),
+  // Use JSON to return pretty, printable string of an object, array, other
+  // Remove ""s around keys.
+  objectToString (obj) {
+    return JSON.stringify(obj, null, '  ')
+      .replace(/ {2}"/g, '  ')
+      .replace(/": /g, ': ')
+  },
 
   // Create random array of floats between min/max.
   // Array Type allows conversion to Float32Array or integers (Int32Array etc)

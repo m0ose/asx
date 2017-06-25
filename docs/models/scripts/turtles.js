@@ -1,7 +1,7 @@
 // import ColorMap from '../../dist/AS/ColorMap.js'
 // import Model from '../../dist/AS/Model.js'
 // import util from '../../dist/AS/util.js'
-const {ColorMap, Model, util} = AS
+const {ColorMap, Model, Three, util} = AS
 
 util.toWindow({ ColorMap, Model, util })
 
@@ -23,28 +23,29 @@ class TurtlesModel extends Model {
       t.speed = util.randomFloat2(0.01, 0.05) // 0.5 + Math.random()
     })
 
-    const {width, height} = this.world
-    // width = util.nextPowerOf2(width)
-    // height = util.nextPowerOf2(height)
-    this.ctx = util.createCtx(width, height)
-    this.ctx.clearRect(0, 0, width, height)
-    // initCanvasMesh (canvas, name, z, textureOptions = {}) {
-    this.renderer.initCanvasMesh(this.ctx.canvas, 'testMesh', 10)
+    // const {width, height} = this.world
+    // // width = util.nextPowerOf2(width)
+    // // height = util.nextPowerOf2(height)
+    // this.ctx = util.createCtx(width, height)
+    // this.ctx.clearRect(0, 0, width, height)
+    // // initCanvasMesh (canvas, name, z, textureOptions = {}) {
+    // this.view.initCanvasMesh(this.ctx.canvas, 'testMesh', 10)
   }
   step () {
     this.turtles.ask((t) => {
       t.theta += util.randomCentered(0.1)
       t.forward(t.speed)
     })
-    this.renderer.updateCanvasMesh('testMesh')
+    // this.renderer.updateCanvasMesh('testMesh')
   }
 }
 
+const renderOptions = Three.defaultOptions()
 const model = new TurtlesModel(document.body).start()
 model.whenReady(() => {
   // debugging
   console.log('patches:', model.patches.length)
   console.log('turtles:', model.turtles.length)
   const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, model })
+  util.toWindow({ world, patches, turtles, links, model, renderOptions })
 })

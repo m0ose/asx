@@ -6,7 +6,6 @@ const {ColorMap, Model, util} = AS
 util.toWindow({ ColorMap, Model, util })
 
 class ExitModel extends Model {
-
   setup () {
     this.patchBreeds('exits inside wall')
     this.turtles.setDefault('shape', 'circle')
@@ -37,6 +36,7 @@ class ExitModel extends Model {
       })
     })
 
+    // REMIND: use setDefault
     this.patches.ask(p => { p.color = grays.randomColor() })
     this.inside.ask(p => { p.color = basic16.closestColor(0, 0, 0) }) // black
     this.wall.ask(p => { p.color = basic16.closestColor(127, 127, 127) }) // gray
@@ -46,7 +46,7 @@ class ExitModel extends Model {
     })
   }
   setupTurtles () {
-    const ss = this.renderer.spriteSheet
+    const ss = this.spriteSheet
 
     this.exits.ask(e => { e.turtleSprite = ss.newSprite('circle', e.color) })
 

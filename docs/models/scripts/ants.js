@@ -3,7 +3,6 @@ const {ColorMap, Model, util} = AS
 util.toWindow({ ColorMap, Model, util })
 
 class AntModel extends Model {
-
   setup () {
     // UI globals:
     this.population = 255
@@ -15,7 +14,8 @@ class AntModel extends Model {
     this.nestColor = 'yellow'
     this.foodColor = 'blue'
 
-    const ss = this.renderer.spriteSheet
+    // const ss = this.renderer.spriteSheet
+    const ss = this.spriteSheet
     this.nestSprite = ss.newSprite('bug', this.nestColor, 'blue')
     this.foodSprite = ss.newSprite('bug', this.foodColor, 'yellow')
 
@@ -42,5 +42,5 @@ model.whenReady(() => {
   console.log('turtles:', model.turtles.length)
   const {world, patches, turtles, links} = model
   util.toWindow({ world, patches, turtles, links, model })
-  document.body.appendChild(model.renderer.spriteSheet.ctx.canvas)
+  document.body.appendChild(model.view.spriteSheet.ctx.canvas)
 })

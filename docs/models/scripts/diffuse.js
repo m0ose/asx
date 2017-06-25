@@ -14,7 +14,8 @@ class DiffuseModel extends Model {
     this.population = 1
     this.radius = 6
 
-    this.cmap = ColorMap.Rgb256 // this.cmap = ColorMap.Jet
+    // this.cmap = ColorMap.Jet
+    this.cmap = ColorMap.Rgb256
     // REMIND: Three mouse picking: this.mouse = new Mouse(this, true).start()
     this.patches.ask(p => {
       p.ran = util.randomFloat(1.0)

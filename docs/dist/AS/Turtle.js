@@ -82,7 +82,7 @@ class Turtle {
   // Create my shape via src: sprite, fcn, string, or image/canvas
   setSprite (src, color = 'red', strokeColor = 'black') {
     if (src.sheet) { this.sprite = src; return } // src is a sprite
-    const ss = this.model.renderer.spriteSheet
+    const ss = this.model.view.spriteSheet
     this.sprite = ss.newSprite(src, color, strokeColor)
     // this.sprite = util.isImageable(src)
     //   ? ss.addImage(src)
@@ -201,7 +201,6 @@ class Turtle {
   otherEnd (l) { return l.end0 === this ? l.end1 : l.end0 }
   // Return all turtles linked to me
   linkNeighbors () { return this.links.map((l) => this.otherEnd(l)) }
-
 }
 
 export default Turtle
