@@ -7,7 +7,8 @@ class Links extends AgentSet {
     // model, name, baseSet, world: model.world & agentProto: new AgentProto
     super(model, AgentProto, name, baseSet)
     // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
-    if (typeof model === 'number' || this.isBreedSet()) return
+    // if (typeof model === 'number' || this.isBreedSet()) return
+
     // this.labels = [] // sparse array for labels
   }
 
@@ -17,13 +18,12 @@ class Links extends AgentSet {
   create (from, to, initFcn = (link) => {}) {
     if (!Array.isArray(to)) to = [to]
     return to.map((t) => { // REMIND: skip dups
-      const link = this.add()
+      const link = this.addAgent()
       link.init(from, t)
       initFcn(link)
       return link
     }) // REMIND: return single link if to not an array?
   }
-
 }
 
 export default Links

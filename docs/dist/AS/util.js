@@ -265,6 +265,8 @@ const util = {
 
   // Return distance between (x, y), (x1, y1)
   distance: (x, y, x1, y1) => Math.sqrt(util.sqDistance(x, y, x1, y1)),
+  // Return distance between (x, y), (x1, y1)
+  hypot: (x, y, x1, y1) => Math.hypot(x - x1, y - y1),
   // Return squared distance .. i.e. avoid Math.sqrt. Faster comparisons
   sqDistance: (x, y, x1, y1) => (x - x1) * (x - x1) + (y - y1) * (y - y1),
   // Return true if x,y is within cone.
@@ -454,7 +456,9 @@ const util = {
     if (this.isString(f)) f = this.propFcn(f)
     const value = f(item)
     // Why not array.length - 1? Because we can insert 1 after end of array.
-    let [low, high] = [0, array.length]
+    // let [low, high] = [0, array.length]
+    let low = 0
+    let high = array.length
     while (low < high) {
       const mid = (low + high) >>> 1 // floor (low+high)/2
       if (f(array[mid]) < value) { low = mid + 1 } else { high = mid }
@@ -477,6 +481,7 @@ const util = {
   removeItem (array, item, f) {
     const i = this.indexOf(array, item, f)
     if (i !== -1) array.splice(i, 1)
+    else console.log(`util.removeItem: item ${item} not in array ${array}`)
   },
   // Insert an item in a sorted array
   insertItem (array, item, f) {

@@ -1,4 +1,5 @@
 import util from './util.js'
+import AgentArray from './AgentArray.js'
 import AgentSet from './AgentSet.js'
 import ColorMap from './ColorMap.js'
 
@@ -10,7 +11,9 @@ class Turtles extends AgentSet {
     // model, name, baseSet, world: model.world & agentProto: new AgentProto
     super(model, AgentProto, name, baseSet)
     // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
-    if (typeof model === 'number' || this.isBreedSet()) return
+
+    // if (typeof model === 'number' || this.isBreedSet()) return
+
     // this.world = model.world
     // this.labels = [] // sparse array for labels
     // this.spriteSheet = new SpriteSheet()
@@ -18,7 +21,7 @@ class Turtles extends AgentSet {
   }
   create (num = 1, initFcn = (turtle) => {}) {
     return util.repeat(num, (i, a) => {
-      const turtle = this.add()
+      const turtle = this.addAgent()
       turtle.theta = util.randomFloat(Math.PI * 2)
       initFcn(turtle)
       if (!turtle.sprite)
@@ -32,7 +35,7 @@ class Turtles extends AgentSet {
 
   // Return an array of this breed within the array of patchs
   inPatches (patches) {
-    let array = new AgentSet(0) // []
+    let array = new AgentArray() // []
     for (const p of patches) array.push(...p.turtlesHere())
     if (this.isBreedSet()) array = array.filter((a) => a.agentSet === this)
     return array
@@ -44,7 +47,7 @@ class Turtles extends AgentSet {
     // meToo: true for patches, could have several turtles on patch
     const patches = this.model.patches.patchRect(turtle.patch, dx, dy, true)
     const aSet = this.inPatches(patches)
-    if (!meToo) util.removeItem(aSet, turtle) // don't use aSet.remove: breeds
+    if (!meToo) util.removeItem(aSet, turtle) // don't use aSet.removeAgent: breeds
     return aSet // this.inPatches(patches)
   }
   // Return the members of this agentset that are within radius distance
@@ -72,7 +75,6 @@ class Turtles extends AgentSet {
       turtle.forward(radius)
     })
   }
-
 }
 
 export default Turtles

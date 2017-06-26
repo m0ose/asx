@@ -43,7 +43,7 @@ class Link {
   }
   // Remove this link from its agentset
   die () {
-    this.agentSet.remove(this)
+    this.agentSet.removeAgent(this)
     util.removeItem(this.end0.links, this)
     util.removeItem(this.end1.links, this)
   }

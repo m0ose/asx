@@ -42,7 +42,7 @@ class Turtle {
     // this.sprite = this.turtles.spriteSheet.add('default', 'red')
   }
   die () {
-    this.agentSet.remove(this) // remove me from my baseSet and breed
+    this.agentSet.removeAgent(this) // remove me from my baseSet and breed
     if (this.hasOwnProperty('links')) // don't promote links
       while (this.links.length > 0) this.links[0].die()
     if (this.patch.turtles != null)

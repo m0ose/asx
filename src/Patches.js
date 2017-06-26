@@ -1,4 +1,5 @@
 import util from './util.js'
+import AgentArray from './AgentArray.js'
 import AgentSet from './AgentSet.js'
 import DataSet from './DataSet.js'
 
@@ -21,7 +22,7 @@ class Patches extends AgentSet {
   // Set up all the patches.
   populate () {
     util.repeat(this.world.numX * this.world.numY, (i) => {
-      this.add(Object.create(this.agentProto))
+      this.addAgent() // Object.create(this.agentProto))
     })
   }
   // Setup pixels ctx used for patch.color: `draw` and `importColors`
@@ -85,7 +86,7 @@ class Patches extends AgentSet {
   neighbors (patch) {
     const {id, x, y} = patch
     const offsets = this.neighborsOffsets(x, y)
-    const as = new AgentSet(offsets.length)
+    const as = new AgentArray(offsets.length)
     offsets.forEach((o, i) => { as[i] = this[o + id] })
     return as
     // offsets.forEach((o, i, a) => { a[i] = this[o + id] })
@@ -95,7 +96,7 @@ class Patches extends AgentSet {
   neighbors4 (patch) {
     const {id, x, y} = patch
     const offsets = this.neighbors4Offsets(x, y)
-    const as = new AgentSet(offsets.length)
+    const as = new AgentArray(offsets.length)
     offsets.forEach((o, i) => { as[i] = this[o + id] })
     return as
   }
@@ -113,7 +114,7 @@ class Patches extends AgentSet {
   patchRect (p, dx, dy = dx, meToo = true) {
     // Return cached rect if one exists.
     if (p.pRect && p.pRect.length === dx * dy) return p.pRect
-    const rect = new AgentSet(0)
+    const rect = new AgentArray()
     let {minX, maxX, minY, maxY} = this.world
     minX = Math.max(minX, p.x - dx)
     maxX = Math.min(maxX, p.x + dx)
@@ -238,7 +239,7 @@ class Patches extends AgentSet {
   // Patches in circle radius (integer) from patch
   inRadius (patch, radius, meToo = true) {
     const rSq = radius * radius
-    const result = new AgentSet(0)
+    const result = new AgentArray()
     const sqDistance = util.sqDistance // 10% faster
     const pRect = this.patchRect(patch, radius, radius, meToo)
     for (let i = 0; i < pRect.length; i++) {
@@ -250,7 +251,7 @@ class Patches extends AgentSet {
   // Patches in cone from p in direction `angle`, with `coneAngle` and `radius`
   inCone (patch, radius, coneAngle, direction, meToo = true) {
     const pRect = this.patchRect(patch, radius, radius, meToo)
-    const result = new AgentSet(0)
+    const result = new AgentArray()
     for (let i = 0; i < pRect.length; i++) {
       const p = pRect[i]
       const isIn = util.inCone(p.x, p.y, radius, coneAngle, direction, patch.x, patch.y)
@@ -316,7 +317,6 @@ class Patches extends AgentSet {
         p.setColor(colorMap.scaleColor(p[v], min, max))
     }
   }
-
 }
 
 export default Patches
