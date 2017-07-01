@@ -1,7 +1,6 @@
 import util from './util.js'
 import AgentArray from './AgentArray.js'
 import AgentSet from './AgentSet.js'
-import ColorMap from './ColorMap.js'
 
 // Turtles are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
@@ -24,8 +23,10 @@ class Turtles extends AgentSet {
       const turtle = this.addAgent()
       turtle.theta = util.randomFloat(Math.PI * 2)
       initFcn(turtle)
-      if (!turtle.sprite)
-        turtle.setSprite('default', ColorMap.Basic16.randomColor().css)
+      if (!turtle.sprite) {
+        turtle.setSprite('default', this.randomColor())
+        // console.log('sprite color', turtle.sprite.color.css)
+      }
       a.push(turtle)
     })
   }

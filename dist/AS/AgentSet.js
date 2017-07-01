@@ -1,5 +1,5 @@
 import AgentArray from './AgentArray.js'
-import util from './util.js'
+import ColorMap from './ColorMap.js'
 
 // AgentSets are arrays that are factories for their own agents/objects.
 // They are the base for Patches, Turtles and Links.
@@ -108,6 +108,9 @@ class AgentSet extends AgentArray {
     this.remove(o, 'id')
     return this
   }
+
+  // AgentSets often need a random color. We use a standard shared ColorMap map.
+  randomColor () { return ColorMap.Basic16.randomColor() }
 
   // Get/Set default values for this agentset's agents.
   setDefault (name, value) { this.agentProto[name] = value }

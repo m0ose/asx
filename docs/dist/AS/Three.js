@@ -60,7 +60,7 @@ class Three {
 
   constructor (model, options = {}) {
     this.model = model
-    this.spriteSheet = model.spriteSheet // REMIND: Temp
+    // this.spriteSheet = model.spriteSheet // REMIND: Temp
 
     // Initialize options
     Object.assign(this, Three.defaultOptions) // install defaults

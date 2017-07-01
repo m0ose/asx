@@ -12,7 +12,7 @@ import util from './util.js'
 const turtleVariables = { // Core variables for patches. Not 'own' variables.
   x: 0,             // x, y, z in patchSize units.
   y: 0,             // Use turtles.setDefault('z', num) to change default height
-  z: 1,
+  z: 0,
   theta: 0,         // my euclidean direction, radians from x axis, counter-clockwise
   size: 1,          // size in patches, default to one patch
 
@@ -20,7 +20,9 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
   // links: null,   // the links having me as an end point .. lazy promoted below
   atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
                     // 'bounce', or a function, see handleEdge() method
-  sprite: null
+  sprite: null,
+  color: null,
+  shape: null
 
   // spriteFcn: 'default',
   // spriteColor: Color.newColor(255, 0, 0),
@@ -66,6 +68,7 @@ class Turtle {
   }
   // Getter for links for this turtle. REMIND: use new AgentSet(0)?
   // Uses lazy evaluation to promote links to instance variables.
+  // REMIND: Let links create the array as needed, less "tricky"
   get links () { // lazy promote neighbors from getter to instance prop.
     Object.defineProperty(this, 'links', {value: [], enumerable: true})
     return this.links
@@ -75,20 +78,20 @@ class Turtle {
   // REMIND: promote to default variable(s) if performance issue
   get patches () { return this.model.patches }
 
-  // Heading vs Euclidean Angles
+  // Heading vs Euclidean Angles. Direction for clarity when ambiguity.
   get heading () { return util.heading(this.theta) }
   set heading (heading) { this.theta = util.angle(heading) }
+  get direction () { return this.theta }
+  set direction (theta) { this.theta = theta }
 
   // Create my shape via src: sprite, fcn, string, or image/canvas
-  setSprite (src, color = 'red', strokeColor = 'black') {
+  setSprite (src, color = this.color, strokeColor = 'black') {
+    color = color || this.turtles.randomColor()
     if (src.sheet) { this.sprite = src; return } // src is a sprite
-    const ss = this.model.view.spriteSheet
+    const ss = this.model.spriteSheet
     this.sprite = ss.newSprite(src, color, strokeColor)
-    // this.sprite = util.isImageable(src)
-    //   ? ss.addImage(src)
-    //   : ss.addDrawing(src, color, strokeColor)
   }
-  setSize (size) { this.size = size * this.world.patchSize }
+  setSize (size) { this.size = size } // * this.world.patchSize }
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
@@ -97,7 +100,7 @@ class Turtle {
   // Call handleEdge(x, y) if x, y off-world.
   setxy (x, y, z = null) {
     const p0 = this.patch
-    if (z) this.z = z
+    if (z) this.z = z // don't promote z if null, use default z instead.
     if (this.world.isOnWorld(x, y)) {
       this.x = x
       this.y = y

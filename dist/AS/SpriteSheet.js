@@ -14,35 +14,8 @@ class SpriteSheet {
     this.ctx = util.createCtx(this.width, this.height)
     this.texture = null // THREE use optional
   }
-  // Return a sprite. Create it if not in sprites cache.
-  // Src can be: image, canvas, function name, function.
-  // If src is a canvas, it must have a src string w/o / or . chars.
-  // If src is function or name of path below, colors can be css
-  // or Color module's Color object.
-  newSprite (src, fillColor, strokeColor) {
-    // Normalize color names to hex
-    if (fillColor) fillColor = Color.toColor(fillColor).css
-    if (strokeColor) strokeColor = Color.toColor(strokeColor).css
-    const name = this.spriteName(src, fillColor, strokeColor)
 
-    if (this.sprites[name]) return this.sprites[name]
-    return util.isImageable(src)
-      ? this.addImage(src)
-      : this.addDrawing(src, fillColor, strokeColor)
-  }
-
-  // Install a new named function in the paths object below
-  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn }
-
-  // Return sprite's color/shape name if not an image sprite.
-  spriteShape (sprite) {
-    const match = sprite.name.match(/(.*)#(.*)/)
-    return match.length === 3
-      ? {shape: match[1], color: Color.toColor(match[2])} : null
-  }
-
-// These are internal, experts only, use newSprite above for normal use.
-
+  // getters for derived values.
   // width & height in pixels
   get width () { return this.spriteSize * this.cols }
   get height () { return this.spriteSize * this.rows }
@@ -52,55 +25,76 @@ class SpriteSheet {
   // id = number of sprites
   get id () { return Object.keys(this.sprites).length }
 
+  // REMIND: this is a place holder for deleting sheet and it's sprites.
+  // Non-trivial.
+  clear () {
+    Object.assign(this.ctx.canvas, {width: this.width, height: this.spriteSize})
+  }
+
+  // Return a sprite. Create it if not in sprites cache.
+  // Src can be: image, canvas, function name, function.
+  // If src is a canvas, it must have a src string w/o / or . chars.
+  // If src is function or name of path below, colors can be css
+  // or Color module's Color object.
+  newSprite (src, fillColor, strokeColor) {
+    // Normalize color names to hex
+    if (fillColor) fillColor = Color.toColor(fillColor)
+    if (strokeColor) strokeColor = Color.toColor(strokeColor)
+    const name = this.spriteName(src, fillColor)
+
+    if (this.sprites[name]) return this.sprites[name]
+    const sprite = util.isImageable(src)
+      ? this.addImage(src)
+      : this.addDrawing(src, fillColor, strokeColor)
+      // : this.addDrawing(src, fillColor.css, strokeColor ? strokeColor.css : undefined)
+    if (fillColor) {
+      sprite.color = fillColor
+      sprite.shape = name.replace(/#.*/, '') // drop #xxxxxx from name
+    }
+    this.sprites[name] = sprite
+    return sprite
+  }
+
+  // Install a new named function in the paths object below.
+  // Used to add "car", "thug", "spider" etc drawings.
+  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn }
+
+// These are internal, experts only, use newSprite above for normal use.
+
   // Make a unique, normalized sprite name. See note on src, colors above.
   // Color names are hex css formats, see newSprite's name transformation.
-  spriteName (src, fillColor, strokeColor) {
+  spriteName (src, fillColor) {
     // If src is an image, construct a name.
     if (util.isImageable(src)) {
       let name = src.src
       name = name.replace(/^.*\//, '') // remove path
-      name = name.replace(/\..*/, 'img') // replace .png/jpg/.. w/ "img"
+      name = name.replace(/\..*/, '.img') // replace .png/jpg/.. w/ ".img"
       return name
     }
     // ditto for draw function or name of function in paths obj below
     const name = src.name || src
-    return `${name}${fillColor}` // REMIND: strokeColor too if given?
+    return `${name}${fillColor.css}` // REMIND: strokeColor too if given?
   }
 
-  // REMIND: figure out how to have img be a path string & return its sprite
-  // spriteName (name, color1 = null, color2 = null) {
-  //   name = name.replace(/^.*\//, '')
-  //   return name.replace(/\./, 'img')
-  // }
-  // addImagePromise (url, fcn = (sprite) => {}) {
-  //   util.imagePromise(url).then((img) => { fcn(this.addImage(img)) })
-  // }
+  // Add an image/canvas to sprite sheet.
   addImage (img) {
-    const name = this.spriteName(img)
-    this.checkSheetSize() // Resize ctx if nextRow > rows
+    this.checkSheetSize() // Resize ctx if nextRow === rows
     const [x, y, size] = [this.nextX, this.nextY, this.spriteSize]
     this.ctx.drawImage(img, x, y, size, size)
     const id = this.id // Object.keys(this.sprites).length
     const {nextRow: row, nextCol: col} = this
-    const sprite = {id, name, x, y, row, col, size, sheet: this}
+    const sprite = {id, x, y, row, col, size, sheet: this}
     sprite.uvs = this.getUVs(sprite)
-    this.sprites[name] = sprite
     this.incrementRowCol()
     if (this.texture) this.texture.needsUpdate = true
     return sprite
   }
+  // Use above to add a drawing to sprite sheet
   addDrawing (drawFcn, fillColor, strokeColor, useHelpers = true) {
     const img = this.createFcnCanvas(drawFcn, fillColor, strokeColor, useHelpers)
     return this.addImage(img) // return sprite
   }
-  // newSprite (name) { return this.sprites[name] }
-  // Resize ctx if nextRow > rows
-  incrementRowCol () {
-    this.nextCol += 1
-    if (this.nextCol < this.cols) return
-    this.nextCol = 0
-    this.nextRow += 1
-  }
+
   // Resize ctx if too small for next row/col
   checkSheetSize () {
     if (this.nextRow === this.rows) { // this.nextCol should be 0
@@ -109,6 +103,13 @@ class SpriteSheet {
       // Recalculate existing sprite uvs.
       util.forEach(this.sprites, (sprite) => { sprite.uvs = this.getUVs(sprite) })
     }
+  }
+  // Advance nextCol/Row. Done after checkSheetSize enlarged ctx if needed.
+  incrementRowCol () {
+    this.nextCol += 1
+    if (this.nextCol < this.cols) return
+    this.nextCol = 0
+    this.nextRow += 1
   }
 
   // Create a sprite image. See [Drawing shapes with canvas](https://goo.gl/uBwxMq)
@@ -157,15 +158,25 @@ class SpriteSheet {
   //      -----
   //      0   1
   // I.e. botLeft, botRight, topRight, topLeft
-  getUVs (sprite) {
+  // getUVs (sprite) {
+  //   const {row, col} = sprite
+  //   const {rows, cols} = this
+  //   const x0 = col / cols
+  //   const y0 = row / rows
+  //   const x1 = (col + 1) / cols
+  //   const y1 = (row + 1) / rows
+  //   // return [[x0, y1], [x1, y1], [x1, y0], [x0, y0]]
+  //   return [x0, y1, x1, y1, x1, y0, x0, y0]
+  // }
+  getUVs (sprite) { // note v's are measured from the bottom.
     const {row, col} = sprite
     const {rows, cols} = this
-    const x0 = col / cols
-    const y0 = row / rows
-    const x1 = (col + 1) / cols
-    const y1 = (row + 1) / rows
+    const u0 = col / cols
+    const v0 = (rows - (row + 1)) / rows
+    const u1 = (col + 1) / cols
+    const v1 = (rows - row) / rows
     // return [[x0, y1], [x1, y1], [x1, y0], [x0, y0]]
-    return [x0, y1, x1, y1, x1, y0, x0, y0]
+    return [u0, v0, u1, v0, u1, v1, u0, v1]
   }
   // Return uv's object: {topLeft, topRight, botLeft, botRight}
   // getUVsObj (sprite) { // REMIND

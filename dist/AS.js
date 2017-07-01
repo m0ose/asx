@@ -997,6 +997,507 @@ class AgentArray extends Array {
   }
 }
 
+// A general color module, supporting css string colors, canvas2d pixel
+// colors, webgl and canvas2d Uint8ClampedArray r,g,b,a arrays.
+// Notice a JavaScript Array is **not** a color!
+
+const Color = {
+
+// ### CSS Color Strings.
+
+  // CSS colors in HTML are strings, see [Mozillas Color Reference](
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/color_value),
+  // taking one of 7 forms:
+  //
+  // * Names: over 140 color case-insensitive names like
+  //   Red, Green, CadetBlue, etc.
+  // * Hex, short and long form: #0f0, #ff10a0
+  // * RGB: rgb(255, 0, 0), rgba(255, 0, 0, 0.5)
+  // * HSL: hsl(120, 100%, 50%), hsla(120, 100%, 50%, 0.8)
+  //
+  // See [this wikipedia article](https://goo.gl/ev8Kw0)
+  // on differences between HSL and HSB/HSV.
+
+  // Convert 4 r,g,b,a ints in [0-255] ("a" defaulted to 255) to a
+  // css color string. Alpha "a" is converted to float in 0-1 for css string.
+  // We use alpha in [0-255] to be compatible with TypedArray conventions.
+  rgbaString (r, g, b, a = 255) {
+    a = a / 255; const a4 = a.toPrecision(4);
+    return (a === 1) ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a4})`
+  },
+
+  // Convert 4 ints, h,s,l,a, h in [0-360], s,l in [0-100]% a in [0-255] to a
+  // css color string. Alpha "a" is converted to float in 0-1 for css string.
+  //
+  // NOTE: h=0 and h=360 are the same, use h in 0-359 for unique colors.
+  hslString (h, s, l, a = 255) {
+    a = a / 255; const a4 = a.toPrecision(4);
+    return (a === 1) ? `hsl(${h},${s}%,${l}%)` : `hsla(${h},${s}%,${l}%,${a4})`
+  },
+
+  // Return a html/css hex color string for an r,g,b opaque color (a=255).
+  // Hex strings do not support alpha.
+  //
+  // Both #nnn and #nnnnnn forms supported.
+  // Default is to check for the short hex form.
+  hexString (r, g, b, shortOK = true) {
+    if (shortOK) {
+      const [r0, g0, b0] = [r / 17, g / 17, b / 17];
+      if (util.isInteger(r0) && util.isInteger(g0) && util.isInteger(b0))
+        return this.hexShortString(r0, g0, b0)
+    }
+    return `#${(0x1000000 | (b | g << 8 | r << 16)).toString(16).slice(-6)}`
+  },
+  // Return the 4 char short version of a hex color.  Each of the r,g,b values
+  // must be in [0-15].  The resulting color will be equivalent
+  // to `r*17`, `g*17`, `b*17`, resulting in the 16 values:
+  //
+  //     0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255
+  //
+  // This is equivalent util.aIntRamp(0,255,16), i.e. 16 values per rgb channel.
+  hexShortString (r, g, b) {
+    if ((r > 15) || (g > 15) || (b > 15)) {
+      throw Error(`hexShortString: one of ${[r, g, b]} > 15`)
+    }
+    return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
+  },
+
+  // Tristring is a hybrid string and is our standard.  It returns:
+  //
+  // * rgbaString if a not 255 (i.e. not opaque)
+  // * hexString otherwise
+  // * with the hexShortString if appropriate
+  triString (r, g, b, a = 255) {
+    return (a === 255) ? // eslint-disable-line
+      this.hexString(r, g, b, true) : this.rgbaString(r, g, b, a)
+  },
+
+// ### CSS String Conversions
+
+  // Return 4 element array given any legal CSS string color.
+  //
+  // Because strings vary widely: CadetBlue, #0f0, rgb(255,0,0),
+  // hsl(120,100%,50%), we do not parse strings, instead we let
+  // the browser do our work: we fill a 1x1 canvas with the css string color,
+  // returning the r,g,b,a canvas ImageData TypedArray.
+
+  // The shared 1x1 canvas 2D context.
+  sharedCtx1x1: util.createCtx(1, 1), // share across calls.
+  // Convert any css string to 4 element Uint8ClampedArray TypedArray.
+  // If you need a JavaScript Array, use `new Array(...TypedArray)`
+  stringToUint8s (string) {
+    this.sharedCtx1x1.clearRect(0, 0, 1, 1);
+    this.sharedCtx1x1.fillStyle = string;
+    this.sharedCtx1x1.fillRect(0, 0, 1, 1);
+    return this.sharedCtx1x1.getImageData(0, 0, 1, 1).data
+  },
+
+  // ### Typed Color
+  // A Color is a 4 element Uint8ClampedArray, with two properties:
+  //
+  // * pixelArray: A single element Uint32Array view on the Uint8ClampedArray
+  // * string: an optional, lazy evaluated, css color string.
+  //
+  // This provides a universal color, good for canvas2d pixels, webgl & image
+  // TypedArrays, and css/canvas2d strings.
+
+  // Create Color from r,g,b,a. Use `toColor()` below for strings etc.
+  newColor (r, g, b, a = 255) {
+    const u8array = new Uint8ClampedArray([r, g, b, a]);
+    u8array.pixelArray = new Uint32Array(u8array.buffer); // one element array
+    // Make this an instance of ColorProto
+    Object.setPrototypeOf(u8array, ColorProto);
+    return u8array
+  },
+  isColor (color) {
+    return color.constructor === Uint8ClampedArray && color.pixelArray
+  },
+  // Create a Color from a css string, pixel, JavaScript or Typed Array.
+  // Returns `any` if is Color already. Useful for
+  // ```
+  // css: `toColor('#ff0a00')`
+  // hsl: `toColor('hsl(200,100%,50%)')`
+  // named colors: `toColor('CadetBlue')`
+  // pixels: `toColor(4294945280)`
+  // JavaScript Arrays: `toColor([255,0,0])`
+  // ```
+  toColor (any) {
+    if (this.isColor(any)) return any
+    const tc = this.newColor(0, 0, 0, 0);
+    if (util.isInteger(any)) tc.setPixel(any);
+    else if (typeof any === 'string') tc.setCss(any);
+    else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any);
+    else if (util.isFloatArray(any)) tc.setWebgl(any);
+    else throw Error('toColor: invalid argument', any)
+    return tc
+  },
+  // Return a random rgb Color, a=255
+  randomTypedColor () {
+    const r255 = () => util.randomInt(256); // random int in [0,255]
+    return this.newColor(r255(), r255(), r255())
+  },
+  // A static transparent color, set at end of file
+  transparent: null
+};
+
+// Prototype for Color. Getters/setters for usability, may be slower.
+const ColorProto = {
+  // Inherit from Uint8ClampedArray
+  __proto__: Uint8ClampedArray.prototype,
+
+  // Set the Color to new rgba values.
+  setColor (r, g, b, a = 255) {
+    this.checkColorChange();
+    this[0] = r; this[1] = g; this[2] = b; this[3] = a;
+  },
+  // No real need for getColor, it *is* the typed Uint8 array
+  set rgb (rgbaArray) { this.setColor(...rgbaArray); },
+  get rgb () { return this },
+
+  // Set the Color to a new pixel value
+  setPixel (pixel) {
+    this.checkColorChange();
+    this.pixelArray[0] = pixel;
+  },
+  // Get the pixel value
+  getPixel () { return this.pixelArray[0] },
+  get pixel () { return this.getPixel() },
+  set pixel (pixel) { this.setPixel(pixel); },
+
+  // Set pixel/rgba values to equivalent of the css string.
+  // 'red', '#f00', 'ff0000', 'rgb(255,0,0)', etc.
+  //
+  // Does *not* set the chached this.string, which will be lazily evaluated
+  // to its common triString by getCss(). The above would all return '#f00'.
+  setCss (string) {
+    return this.setColor(...Color.stringToUint8s(string))
+  },
+  // Return the triString for this Color, cached in the @string value
+  getCss () {
+    if (this.string == null) this.string = Color.triString(...this);
+    return this.string
+  },
+  get css () { return this.getCss() },
+  set css (string) { this.setCss(string); },
+
+  // Note: webgl colors are 3 RGB floats (no A) if A is 255.
+  setWebgl (floatArray) {
+    this.setColor( // OK if float * 255 non-int, setColor stores into uint8 array
+      floatArray[0] * 255, floatArray[1] * 255, floatArray[2] * 255,
+      floatArray.length === 4 ? floatArray[3] * 255 : undefined);
+  },
+  getWebgl () {
+    if (this.floatArray == null) {
+      const floats = [this[0] / 255, this[1] / 255, this[2] / 255];
+      if (this[3] !== 255) floats.push(this[3] / 255);
+      this.floatArray = new Float32Array(floats);
+    }
+    return this.floatArray
+  },
+  get webgl () { return this.getWebgl() },
+  set webgl (floatArray) { this.setWebgl(floatArray); },
+
+  // Housekeeping when the color is modified.
+  checkColorChange () {
+    // Reset string & webgl on color change.
+    this.string = null; // will be lazy evaluated via getCss.
+    this.floatArray = null;
+  },
+  // Return true if color is same value as myself, comparing pixels
+  equals (color) { return this.getPixel() === color.getPixel() },
+  // Return a [distance metric](
+  // http://www.compuphase.com/cmetric.htm) between two colors.
+  // Max distance is roughly 765 (3*255), for black & white.
+  // For our purposes, omitting the sqrt will not effect our results
+  rgbDistance (r, g, b) {
+    const [r1, g1, b1] = this;
+    const rMean = Math.round((r1 + r) / 2);
+    const [dr, dg, db] = [r1 - r, g1 - g, b1 - b];
+    const [dr2, dg2, db2] = [dr * dr, dg * dg, db * db];
+    const distanceSq =
+      (((512 + rMean) * dr2) >> 8) + (4 * dg2) + (((767 - rMean) * db2) >> 8);
+    return distanceSq // Math.sqrt(distanceSq)
+  }
+};
+
+Color.transparent = Color.newColor(0, 0, 0, 0);
+
+// A colormap is simply an array of typedColors with several utilities such
+// as randomColor, closestColor etc.
+// This allows the colors to be simple integer indices
+// into the Array. They are also designed to be webgl-ready, being a
+// GLSL "Uniform" variable TypedArray for colors.
+
+const ColorMap = {
+// ### Color Array Utilities
+  // Several utilities for creating color arrays
+
+// ### Gradients
+
+  // Ask the browser to use the canvas gradient feature
+  // to create nColors given the gradient color stops and locs.
+  // See Mozilla [Gradient Doc](
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient),
+  //
+  // This is a powerful browser feature, can be
+  // used to create all the MatLab colormaps.
+  //
+  // Stops are css strings or rgba arrays.
+  // Locs are floats from 0-1, default is equally spaced.
+  gradientImageData (nColors, stops, locs) {
+    // Convert the color stops to css strings
+    stops = stops.map((c) => Array.isArray(c) ? Color.rgbaString(...c) : c);
+    const ctx = util.createCtx(nColors, 1);
+    // Install default locs if none provide
+    if (!locs) locs = util.aRamp(0, 1, stops.length);
+    // Create a new gradient and fill it with the color stops
+    const grad = ctx.createLinearGradient(0, 0, nColors, 0);
+    util.repeat(stops.length, (i) => grad.addColorStop(locs[i], stops[i]));
+    // Draw the gradient, returning the image data TypedArray
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, nColors, 1);
+    return util.ctxImageData(ctx).data
+  },
+
+// ### Array Conversion Utilities
+
+  // Convert a Uint8Array into Array of 4 element typedColors.
+  // Useful for converting ImageData objects like gradients to colormaps.
+  // WebGL ready: the array.typedArray is suitable for Uniforms.
+  typedArraytoColors (typedArray) {
+    const array = [];
+    util.step(typedArray.length, 4,
+      // Note: can't share subarray as color's typed array:
+      // it's buffer is for entire array, not just subarray.
+      (i) => array.push(Color.newColor(...typedArray.subarray(i, i + 4))));
+    array.typedArray = typedArray;
+    return array
+  },
+  // Convert an Array of Arrays to an Array of typedColors.
+  // Webgl ready as above.
+  arraysToColors (array) {
+    const typedArray = new Uint8ClampedArray(array.length * 4);
+    util.repeat(array.length, (i) => {
+      const a = array[i];
+      if (a.length === 3) a.push(255);
+      typedArray.set(a, i * 4);
+    });
+    return this.typedArraytoColors(typedArray)
+  },
+
+  // Permute the values of 3 arrays. Ex:
+  //
+  // [1,2],[3],[4,5] -> [ [1,3,4],[1,3,5],[2,3,4],[2,3,5] ]
+  permuteArrays (A1, A2 = A1, A3 = A1) {
+    const array = [];
+    for (const a3 of A3) // sorta odd const works with ths, but...
+      for (const a2 of A2)
+        for (const a1 of A1)
+          array.push([a1, a2, a3]);
+    return array
+  },
+  // Use permuteArrays to create uniformly spaced color ramp permutation.
+  // Ex: if numRs is 3, permuteArrays's A1 would be [0, 127, 255]
+  permuteRGBColors (numRs, numGs = numRs, numBs = numRs) {
+    const toRamp = (num) => util.aIntRamp(0, 255, num);
+    const ramps = [numRs, numGs, numBs].map(toRamp);
+    return this.permuteArrays(...ramps)
+  },
+
+// ### ColorMaps
+
+  // ColorMaps are Arrays of TypedColors with these additional methods. Webgl
+  // ready if made w/ `typedArraytoColors` or `arraysToColors` above.
+  // Used to be memory effecent (shared colors), webgl compatible,  and for
+  // MatLab-like color-as-data.
+  ColorMapProto: {
+    // Inherit from Array
+    __proto__: Array.prototype,
+    // Create a [sparse array](https://goo.gl/lQlq5k) of index[pixel] = pixel.
+    // Used by indexOf below for exact match of a color within the colormap.
+    createIndex () {
+      this.index = [];
+      util.repeat(this.length, (i) => {
+        const px = this[i].getPixel();
+        this.index[px] = i;
+        if (this.cssNames) this.index[this.cssNames[i]] = i;
+      });
+    },
+    // Return a random index into the colormap array
+    randomIndex () { return util.randomInt(this.length) },
+    // Return a random color within the colormap
+    randomColor () { return this[this.randomIndex()] },
+    // Return the index of a typedColor within the colormap,
+    // undefined if no exact match.
+    // Use the `closest` methods below for nearest, not exact, match.
+    indexOf (color) {
+      if (this.index) return this.index[color.getPixel()]
+      for (let i = 0; i < this.length; i++)
+        if (color.equals(this[i])) return i
+      return undefined
+    },
+    // Return color scaled by number within [min, max].
+    // A linear interpolation (util.lerp) in [0, length-1].
+    // Used to match data directly to a color as in MatLab.
+    //
+    // Ex: scaleColor(25, 0, 50) returns the color in the middle of the colormap
+    scaleColor (number, min, max) {
+      number = util.clamp(number, min, max);
+      const scale = util.lerpScale(number, min, max);
+      const index = Math.round(util.lerp(0, this.length - 1, scale));
+      return this[index]
+    },
+    // Return the Uint8 array used to create the typedColors,
+    // undefined if not webgl ready.
+    webglArray () { return this.typedArray },
+
+    // Debugging: Return a string with length and array of colors
+    toString () { return `${this.length} ${util.arraysToString(this)}` },
+
+    // Iterate through the colormap colors, returning the index of the
+    // min typedColor.rgbDistance value from r, g, b
+    rgbClosestIndex (r, g, b) {
+      let minDist = Infinity;
+      let ixMin = 0;
+      for (var i = 0; i < this.length; i++) {
+        const d = this[i].rgbDistance(r, g, b);
+        if (d < minDist) {
+          minDist = d;
+          ixMin = i;
+          if (d === 0) return ixMin
+        }
+      }
+      return ixMin
+    },
+    // Return the color with the rgbClosestIndex value
+    rgbClosestColor (r, g, b) { return this[this.rgbClosestIndex(r, g, b)] },
+
+    // Calculate the closest cube index for the given r, g, b values.
+    // Faster than rgbClosestIndex, does direct calculation, not iteration.
+    cubeClosestIndex (r, g, b) {
+      const cube = this.cube;
+      const rgbSteps = cube.map(c => 255 / (c - 1));
+      const rgbLocs = [r, g, b].map((c, i) => Math.round(c / rgbSteps[i]));
+      const [rLoc, gLoc, bLoc] = rgbLocs;
+      return (rLoc) + (gLoc * cube[0]) + (bLoc * cube[0] * cube[1])
+    },
+    cubeClosestColor (r, g, b) { return this[this.cubeClosestIndex(r, g, b)] },
+
+    // Choose the appropriate method for finding closest index.
+    // Lets the user specify any color, and let the colormap
+    // use the best match.
+    closestIndex (r, g, b) {
+      return this.cube ? // eslint-disable-line
+        this.cubeClosestIndex(r, g, b) : this.rgbClosestIndex(r, g, b)
+    },
+    // Choose the appropriate method for finding closest color
+    closestColor (r, g, b) { return this[this.closestIndex(r, g, b)] }
+  },
+
+// ### Utilities for constructing ColorMaps
+
+  // Convert an array of rgb(a) Arrays or TypedColors to a webgl-ready colormap.
+  basicColorMap (colors) {
+    colors = this.arraysToColors(colors);
+    Object.setPrototypeOf(colors, this.ColorMapProto);
+    return colors
+  },
+  // Create a gray map (gray: r=g=b)
+  // These are typically 256 entries but can be smaller
+  // by passing a size parameter and the min/max range.
+  grayColorMap (min = 0, max = 255, size = max - min + 1) {
+    const ramp = util.aIntRamp(min, max, size);
+    return this.basicColorMap(ramp.map((i) => [i, i, i]))
+  },
+
+  // Create a colormap by permuted rgb values.
+  //
+  // numRs, numGs, numBs are numbers, the number of steps beteen 0-255.
+  // Ex: numRs = 3, corresponds to 0, 128, 255.
+  // NOTE: the defaults: rgbColorCube(6) creates a `6 * 6 * 6` cube.
+  rgbColorCube (numRs, numGs = numRs, numBs = numRs) {
+    const array = this.permuteRGBColors(numRs, numGs, numBs);
+    const map = this.basicColorMap(array);
+    // Save the parameters for fast color calculations.
+    map.cube = [numRs, numGs, numBs];
+    return map
+  },
+  // Create a colormap by permuting the values of the given arrays.
+  // Similar to above but with arrays that may have arbitrary values.
+  rgbColorMap (R, G, B) {
+    const array = this.permuteArrays(R, G, B);
+    return this.basicColorMap(array)
+  },
+
+  // Create an hsl map, inputs are arrays to be permutted like rgbColorMap.
+  // Convert the HSL values to typedColors, default to bright hue ramp (L=50).
+  hslColorMap (H, S = [100], L = [50]) {
+    const hslArray = this.permuteArrays(H, S, L);
+    const array = hslArray.map(a => Color.toColor(Color.hslString(...a)));
+    return this.basicColorMap(array)
+  },
+
+  // Use gradient to build an rgba array, then convert to colormap.
+  // Stops are css strings or rgba arrays.
+  // locs defaults to evenly spaced, probably what you want.
+  //
+  // This easily creates all the MatLab colormaps like "jet" below.
+  gradientColorMap (nColors, stops, locs) {
+    const uint8arrays = this.gradientImageData(nColors, stops, locs);
+    const typedColors = this.typedArraytoColors(uint8arrays);
+    Object.setPrototypeOf(typedColors, this.ColorMapProto);
+    return typedColors
+  },
+  // The most popular MatLab gradient, "jet":
+  jetColors: [ [0, 0, 127], [0, 0, 255], [0, 127, 255], [0, 255, 255],
+    [127, 255, 127], [255, 255, 0], [255, 127, 0], [255, 0, 0], [127, 0, 0] ],
+  // Two other popular MatLab 'ramp' gradients are:
+  // * One color: from black/white to color, optionally back to white/black.
+  // stops = ['black', 'red'] or ['white', 'orange', 'black']
+  // The NetLogo map is a concatenation of 14 of these.
+  // * Two colors: stops = ['red', 'orange'] (blends the tow, center is white)
+
+  // The 16 unique [CSS Color Names](https://goo.gl/sxo36X), case insensitive.
+  // Aqua == Cyan and Fuchsia == Magenta, 18 total color names.
+  // These sorted by hue/saturation/light, hue in 0-300 degrees.
+  // In CSS 2.1, the color 'orange' was added to the 16 colors as a 17th color
+  // See [Mozilla Color Docs](https://goo.gl/tolSnS) for *lots* more!
+  basicColorNames: 'white silver gray black red maroon yellow orange olive lime green cyan teal blue navy magenta purple'.split(' '),
+  // Create a named colors colormap
+  cssColorMap (cssArray, createNameIndex = false) {
+    const array = cssArray.map(str => Color.stringToUint8s(str));
+    const map = this.basicColorMap(array);
+    map.cssNames = cssArray;
+    // REMIND: kinda tacky? Maybe map.name.yellow? Maybe generalize for other
+    // map types: map.closest(name)
+    if (createNameIndex) {
+      cssArray.forEach((name, ix) => { map[name] = map[ix]; });
+      if (map.cyan) map.aqua = map.cyan;
+      if (map.magenta) map.fuchsia = map.magenta;
+    }
+    return map
+  },
+
+// ### Shared Global ColorMaps
+
+  // The shared global colormaps are lazy evaluated to minimize memory use.
+  LazyMap (name, map) {
+    Object.defineProperty(this, name, {value: map, enumerable: true});
+    return map
+  },
+  get Gray () { return this.LazyMap('Gray', this.grayColorMap()) },
+  get LightGray () { return this.LazyMap('LightGray', this.grayColorMap(200)) },
+  get DarkGray () { return this.LazyMap('DarkGray', this.grayColorMap(0, 100)) },
+  get Jet () {
+    return this.LazyMap('Jet', this.gradientColorMap(256, this.jetColors))
+  },
+  get Rgb256 () { return this.LazyMap('Rgb256', this.rgbColorCube(8, 8, 4)) },
+  get Rgb () { return this.LazyMap('Rgb', this.rgbColorCube(16)) },
+  get Basic16 () { // 17 unique + 2 "aliases" = 19 names. "16" historic
+    return this.LazyMap('Basic16', this.cssColorMap(this.basicColorNames, true))
+  }
+};
+
 // AgentSets are arrays that are factories for their own agents/objects.
 // They are the base for Patches, Turtles and Links.
 
@@ -1104,6 +1605,9 @@ class AgentSet extends AgentArray {
     this.remove(o, 'id');
     return this
   }
+
+  // AgentSets often need a random color. We use a standard shared ColorMap map.
+  randomColor () { return ColorMap.Basic16.randomColor() }
 
   // Get/Set default values for this agentset's agents.
   setDefault (name, value) { this.agentProto[name] = value; }
@@ -1671,499 +2175,6 @@ class AscDataSet extends DataSet {
     Object.assign(this, options);
   }
 }
-
-// A general color module, supporting css string colors, canvas2d pixel
-// colors, webgl and canvas2d Uint8ClampedArray r,g,b,a arrays.
-// Notice a JavaScript Array is **not** a color!
-
-const Color = {
-
-// ### CSS Color Strings.
-
-  // CSS colors in HTML are strings, see [Mozillas Color Reference](
-  // https://developer.mozilla.org/en-US/docs/Web/CSS/color_value),
-  // taking one of 7 forms:
-  //
-  // * Names: over 140 color case-insensitive names like
-  //   Red, Green, CadetBlue, etc.
-  // * Hex, short and long form: #0f0, #ff10a0
-  // * RGB: rgb(255, 0, 0), rgba(255, 0, 0, 0.5)
-  // * HSL: hsl(120, 100%, 50%), hsla(120, 100%, 50%, 0.8)
-  //
-  // See [this wikipedia article](https://goo.gl/ev8Kw0)
-  // on differences between HSL and HSB/HSV.
-
-  // Convert 4 r,g,b,a ints in [0-255] ("a" defaulted to 255) to a
-  // css color string. Alpha "a" is converted to float in 0-1 for css string.
-  // We use alpha in [0-255] to be compatible with TypedArray conventions.
-  rgbaString (r, g, b, a = 255) {
-    a = a / 255; const a4 = a.toPrecision(4);
-    return (a === 1) ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a4})`
-  },
-
-  // Convert 4 ints, h,s,l,a, h in [0-360], s,l in [0-100]% a in [0-255] to a
-  // css color string. Alpha "a" is converted to float in 0-1 for css string.
-  //
-  // NOTE: h=0 and h=360 are the same, use h in 0-359 for unique colors.
-  hslString (h, s, l, a = 255) {
-    a = a / 255; const a4 = a.toPrecision(4);
-    return (a === 1) ? `hsl(${h},${s}%,${l}%)` : `hsla(${h},${s}%,${l}%,${a4})`
-  },
-
-  // Return a html/css hex color string for an r,g,b opaque color (a=255).
-  // Hex strings do not support alpha.
-  //
-  // Both #nnn and #nnnnnn forms supported.
-  // Default is to check for the short hex form.
-  hexString (r, g, b, shortOK = true) {
-    if (shortOK) {
-      const [r0, g0, b0] = [r / 17, g / 17, b / 17];
-      if (util.isInteger(r0) && util.isInteger(g0) && util.isInteger(b0))
-        return this.hexShortString(r0, g0, b0)
-    }
-    return `#${(0x1000000 | (b | g << 8 | r << 16)).toString(16).slice(-6)}`
-  },
-  // Return the 4 char short version of a hex color.  Each of the r,g,b values
-  // must be in [0-15].  The resulting color will be equivalent
-  // to `r*17`, `g*17`, `b*17`, resulting in the 16 values:
-  //
-  //     0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255
-  //
-  // This is equivalent util.aIntRamp(0,255,16), i.e. 16 values per rgb channel.
-  hexShortString (r, g, b) {
-    if ((r > 15) || (g > 15) || (b > 15)) {
-      throw Error(`hexShortString: one of ${[r, g, b]} > 15`)
-    }
-    return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
-  },
-
-  // Tristring is a hybrid string and is our standard.  It returns:
-  //
-  // * rgbaString if a not 255 (i.e. not opaque)
-  // * hexString otherwise
-  // * with the hexShortString if appropriate
-  triString (r, g, b, a = 255) {
-    return (a === 255) ? // eslint-disable-line
-      this.hexString(r, g, b, true) : this.rgbaString(r, g, b, a)
-  },
-
-// ### CSS String Conversions
-
-  // Return 4 element array given any legal CSS string color.
-  //
-  // Because strings vary widely: CadetBlue, #0f0, rgb(255,0,0),
-  // hsl(120,100%,50%), we do not parse strings, instead we let
-  // the browser do our work: we fill a 1x1 canvas with the css string color,
-  // returning the r,g,b,a canvas ImageData TypedArray.
-
-  // The shared 1x1 canvas 2D context.
-  sharedCtx1x1: util.createCtx(1, 1), // share across calls.
-  // Convert any css string to 4 element Uint8ClampedArray TypedArray.
-  // If you need a JavaScript Array, use `new Array(...TypedArray)`
-  stringToUint8s (string) {
-    this.sharedCtx1x1.clearRect(0, 0, 1, 1);
-    this.sharedCtx1x1.fillStyle = string;
-    this.sharedCtx1x1.fillRect(0, 0, 1, 1);
-    return this.sharedCtx1x1.getImageData(0, 0, 1, 1).data
-  },
-
-  // ### Typed Color
-  // A Color is a 4 element Uint8ClampedArray, with two properties:
-  //
-  // * pixelArray: A single element Uint32Array view on the Uint8ClampedArray
-  // * string: an optional, lazy evaluated, css color string.
-  //
-  // This provides a universal color, good for canvas2d pixels, webgl & image
-  // TypedArrays, and css/canvas2d strings.
-
-  // Create Color from r,g,b,a. Use `toColor()` below for strings etc.
-  newColor (r, g, b, a = 255) {
-    const u8array = new Uint8ClampedArray([r, g, b, a]);
-    u8array.pixelArray = new Uint32Array(u8array.buffer); // one element array
-    // Make this an instance of ColorProto
-    Object.setPrototypeOf(u8array, ColorProto);
-    return u8array
-  },
-  isColor (color) {
-    return color.constructor === Uint8ClampedArray && color.pixelArray
-  },
-  // Create a Color from a css string, pixel, JavaScript or Typed Array.
-  // Returns `any` if is Color already. Useful for
-  // ```
-  // css: `toColor('#ff0a00')`
-  // hsl: `toColor('hsl(200,100%,50%)')`
-  // named colors: `toColor('CadetBlue')`
-  // pixels: `toColor(4294945280)`
-  // JavaScript Arrays: `toColor([255,0,0])`
-  // ```
-  toColor (any) {
-    if (this.isColor(any)) return any
-    const tc = this.newColor(0, 0, 0, 0);
-    if (util.isInteger(any)) tc.setPixel(any);
-    else if (typeof any === 'string') tc.setCss(any);
-    else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any);
-    else if (util.isFloatArray(any)) tc.setWebgl(any);
-    else throw Error('toColor: invalid argument', any)
-    return tc
-  },
-  // Return a random rgb Color, a=255
-  randomTypedColor () {
-    const r255 = () => util.randomInt(256); // random int in [0,255]
-    return this.newColor(r255(), r255(), r255())
-  },
-  // A static transparent color, set at end of file
-  transparent: null
-};
-
-// Prototype for Color. Getters/setters for usability, may be slower.
-const ColorProto = {
-  // Inherit from Uint8ClampedArray
-  __proto__: Uint8ClampedArray.prototype,
-
-  // Set the Color to new rgba values.
-  setColor (r, g, b, a = 255) {
-    this.checkColorChange();
-    this[0] = r; this[1] = g; this[2] = b; this[3] = a;
-  },
-  // No real need for getColor, it *is* the typed Uint8 array
-  set rgb (rgbaArray) { this.setColor(...rgbaArray); },
-  get rgb () { return this },
-
-  // Set the Color to a new pixel value
-  setPixel (pixel) {
-    this.checkColorChange();
-    this.pixelArray[0] = pixel;
-  },
-  // Get the pixel value
-  getPixel () { return this.pixelArray[0] },
-  get pixel () { return this.getPixel() },
-  set pixel (pixel) { this.setPixel(pixel); },
-
-  // Set pixel/rgba values to equivalent of the css string.
-  // 'red', '#f00', 'ff0000', 'rgb(255,0,0)', etc.
-  //
-  // Does *not* set the chached this.string, which will be lazily evaluated
-  // to its common triString by getCss(). The above would all return '#f00'.
-  setCss (string) {
-    return this.setColor(...Color.stringToUint8s(string))
-  },
-  // Return the triString for this Color, cached in the @string value
-  getCss () {
-    if (this.string == null) this.string = Color.triString(...this);
-    return this.string
-  },
-  get css () { return this.getCss() },
-  set css (string) { this.setCss(string); },
-
-  // Note: webgl colors are 3 RGB floats (no A) if A is 255.
-  setWebgl (floatArray) {
-    this.setColor( // OK if float * 255 non-int, setColor stores into uint8 array
-      floatArray[0] * 255, floatArray[1] * 255, floatArray[2] * 255,
-      floatArray.length === 4 ? floatArray[3] * 255 : undefined);
-  },
-  getWebgl () {
-    if (this.floatArray == null) {
-      const floats = [this[0] / 255, this[1] / 255, this[2] / 255];
-      if (this[3] !== 255) floats.push(this[3] / 255);
-      this.floatArray = new Float32Array(floats);
-    }
-    return this.floatArray
-  },
-  get webgl () { return this.getWebgl() },
-  set webgl (floatArray) { this.setWebgl(floatArray); },
-
-  // Housekeeping when the color is modified.
-  checkColorChange () {
-    // Reset string & webgl on color change.
-    this.string = null; // will be lazy evaluated via getCss.
-    this.floatArray = null;
-  },
-  // Return true if color is same value as myself, comparing pixels
-  equals (color) { return this.getPixel() === color.getPixel() },
-  // Return a [distance metric](
-  // http://www.compuphase.com/cmetric.htm) between two colors.
-  // Max distance is roughly 765 (3*255), for black & white.
-  // For our purposes, omitting the sqrt will not effect our results
-  rgbDistance (r, g, b) {
-    const [r1, g1, b1] = this;
-    const rMean = Math.round((r1 + r) / 2);
-    const [dr, dg, db] = [r1 - r, g1 - g, b1 - b];
-    const [dr2, dg2, db2] = [dr * dr, dg * dg, db * db];
-    const distanceSq =
-      (((512 + rMean) * dr2) >> 8) + (4 * dg2) + (((767 - rMean) * db2) >> 8);
-    return distanceSq // Math.sqrt(distanceSq)
-  }
-};
-
-Color.transparent = Color.newColor(0, 0, 0, 0);
-
-// A colormap is simply an array of typedColors with several utilities such
-// as randomColor, closestColor etc.
-// This allows the colors to be simple integer indices
-// into the Array. They are also designed to be webgl-ready, being a
-// GLSL "Uniform" variable TypedArray for colors.
-
-const ColorMap = {
-// ### Color Array Utilities
-  // Several utilities for creating color arrays
-
-// ### Gradients
-
-  // Ask the browser to use the canvas gradient feature
-  // to create nColors given the gradient color stops and locs.
-  // See Mozilla [Gradient Doc](
-  // https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient),
-  //
-  // This is a powerful browser feature, can be
-  // used to create all the MatLab colormaps.
-  //
-  // Stops are css strings or rgba arrays.
-  // Locs are floats from 0-1, default is equally spaced.
-  gradientImageData (nColors, stops, locs) {
-    // Convert the color stops to css strings
-    stops = stops.map((c) => Array.isArray(c) ? Color.rgbaString(...c) : c);
-    const ctx = util.createCtx(nColors, 1);
-    // Install default locs if none provide
-    if (!locs) locs = util.aRamp(0, 1, stops.length);
-    // Create a new gradient and fill it with the color stops
-    const grad = ctx.createLinearGradient(0, 0, nColors, 0);
-    util.repeat(stops.length, (i) => grad.addColorStop(locs[i], stops[i]));
-    // Draw the gradient, returning the image data TypedArray
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, nColors, 1);
-    return util.ctxImageData(ctx).data
-  },
-
-// ### Array Conversion Utilities
-
-  // Convert a Uint8Array into Array of 4 element typedColors.
-  // Useful for converting ImageData objects like gradients to colormaps.
-  // WebGL ready: the array.typedArray is suitable for Uniforms.
-  typedArraytoColors (typedArray) {
-    const array = [];
-    util.step(typedArray.length, 4,
-      // Note: can't share subarray as color's typed array:
-      // it's buffer is for entire array, not just subarray.
-      (i) => array.push(Color.newColor(...typedArray.subarray(i, i + 4))));
-    array.typedArray = typedArray;
-    return array
-  },
-  // Convert an Array of Arrays to an Array of typedColors.
-  // Webgl ready as above.
-  arraysToColors (array) {
-    const typedArray = new Uint8ClampedArray(array.length * 4);
-    util.repeat(array.length, (i) => {
-      const a = array[i];
-      if (a.length === 3) a.push(255);
-      typedArray.set(a, i * 4);
-    });
-    return this.typedArraytoColors(typedArray)
-  },
-
-  // Permute the values of 3 arrays. Ex:
-  //
-  // [1,2],[3],[4,5] -> [ [1,3,4],[1,3,5],[2,3,4],[2,3,5] ]
-  permuteArrays (A1, A2 = A1, A3 = A1) {
-    const array = [];
-    for (const a3 of A3) // sorta odd const works with ths, but...
-      for (const a2 of A2)
-        for (const a1 of A1)
-          array.push([a1, a2, a3]);
-    return array
-  },
-  // Use permuteArrays to create uniformly spaced color ramp permutation.
-  // Ex: if numRs is 3, permuteArrays's A1 would be [0, 127, 255]
-  permuteRGBColors (numRs, numGs = numRs, numBs = numRs) {
-    const toRamp = (num) => util.aIntRamp(0, 255, num);
-    const ramps = [numRs, numGs, numBs].map(toRamp);
-    return this.permuteArrays(...ramps)
-  },
-
-// ### ColorMaps
-
-  // ColorMaps are Arrays of TypedColors with these additional methods. Webgl
-  // ready if made w/ `typedArraytoColors` or `arraysToColors` above.
-  // Used to be memory effecent (shared colors), webgl compatible,  and for
-  // MatLab-like color-as-data.
-  ColorMapProto: {
-    // Inherit from Array
-    __proto__: Array.prototype,
-    // Create a [sparse array](https://goo.gl/lQlq5k) of index[pixel] = pixel.
-    // Used by indexOf below for exact match of a color within the colormap.
-    createIndex () {
-      this.index = [];
-      util.repeat(this.length, (i) => {
-        const px = this[i].getPixel();
-        this.index[px] = i;
-        if (this.cssNames) this.index[this.cssNames[i]] = i;
-      });
-    },
-    // Return a random index into the colormap array
-    randomIndex () { return util.randomInt(this.length) },
-    // Return a random color within the colormap
-    randomColor () { return this[this.randomIndex()] },
-    // Return the index of a typedColor within the colormap,
-    // undefined if no exact match.
-    // Use the `closest` methods below for nearest, not exact, match.
-    indexOf (color) {
-      if (this.index) return this.index[color.getPixel()]
-      for (let i = 0; i < this.length; i++)
-        if (color.equals(this[i])) return i
-      return undefined
-    },
-    // Return color scaled by number within [min, max].
-    // A linear interpolation (util.lerp) in [0, length-1].
-    // Used to match data directly to a color as in MatLab.
-    //
-    // Ex: scaleColor(25, 0, 50) returns the color in the middle of the colormap
-    scaleColor (number, min, max) {
-      number = util.clamp(number, min, max);
-      const scale = util.lerpScale(number, min, max);
-      const index = Math.round(util.lerp(0, this.length - 1, scale));
-      return this[index]
-    },
-    // Return the Uint8 array used to create the typedColors,
-    // undefined if not webgl ready.
-    webglArray () { return this.typedArray },
-
-    // Debugging: Return a string with length and array of colors
-    toString () { return `${this.length} ${util.arraysToString(this)}` },
-
-    // Iterate through the colormap colors, returning the index of the
-    // min typedColor.rgbDistance value from r, g, b
-    rgbClosestIndex (r, g, b) {
-      let minDist = Infinity;
-      let ixMin = 0;
-      for (var i = 0; i < this.length; i++) {
-        const d = this[i].rgbDistance(r, g, b);
-        if (d < minDist) {
-          minDist = d;
-          ixMin = i;
-          if (d === 0) return ixMin
-        }
-      }
-      return ixMin
-    },
-    // Return the color with the rgbClosestIndex value
-    rgbClosestColor (r, g, b) { return this[this.rgbClosestIndex(r, g, b)] },
-
-    // Calculate the closest cube index for the given r, g, b values.
-    // Faster than rgbClosestIndex, does direct calculation, not iteration.
-    cubeClosestIndex (r, g, b) {
-      const cube = this.cube;
-      const rgbSteps = cube.map(c => 255 / (c - 1));
-      const rgbLocs = [r, g, b].map((c, i) => Math.round(c / rgbSteps[i]));
-      const [rLoc, gLoc, bLoc] = rgbLocs;
-      return (rLoc) + (gLoc * cube[0]) + (bLoc * cube[0] * cube[1])
-    },
-    cubeClosestColor (r, g, b) { return this[this.cubeClosestIndex(r, g, b)] },
-
-    // Choose the appropriate method for finding closest index.
-    // Lets the user specify any color, and let the colormap
-    // use the best match.
-    closestIndex (r, g, b) {
-      return this.cube ? // eslint-disable-line
-        this.cubeClosestIndex(r, g, b) : this.rgbClosestIndex(r, g, b)
-    },
-    // Choose the appropriate method for finding closest color
-    closestColor (r, g, b) { return this[this.closestIndex(r, g, b)] }
-  },
-
-// ### Utilities for constructing ColorMaps
-
-  // Convert an array of rgb(a) Arrays or TypedColors to a webgl-ready colormap.
-  basicColorMap (colors) {
-    colors = this.arraysToColors(colors);
-    Object.setPrototypeOf(colors, this.ColorMapProto);
-    return colors
-  },
-  // Create a gray map (gray: r=g=b)
-  // These are typically 256 entries but can be smaller
-  // by passing a size parameter and the min/max range.
-  grayColorMap (min = 0, max = 255, size = max - min + 1) {
-    const ramp = util.aIntRamp(min, max, size);
-    return this.basicColorMap(ramp.map((i) => [i, i, i]))
-  },
-
-  // Create a colormap by permuted rgb values.
-  //
-  // numRs, numGs, numBs are numbers, the number of steps beteen 0-255.
-  // Ex: numRs = 3, corresponds to 0, 128, 255.
-  // NOTE: the defaults: rgbColorCube(6) creates a `6 * 6 * 6` cube.
-  rgbColorCube (numRs, numGs = numRs, numBs = numRs) {
-    const array = this.permuteRGBColors(numRs, numGs, numBs);
-    const map = this.basicColorMap(array);
-    // Save the parameters for fast color calculations.
-    map.cube = [numRs, numGs, numBs];
-    return map
-  },
-  // Create a colormap by permuting the values of the given arrays.
-  // Similar to above but with arrays that may have arbitrary values.
-  rgbColorMap (R, G, B) {
-    const array = this.permuteArrays(R, G, B);
-    return this.basicColorMap(array)
-  },
-
-  // Create an hsl map, inputs are arrays to be permutted like rgbColorMap.
-  // Convert the HSL values to typedColors, default to bright hue ramp (L=50).
-  hslColorMap (H, S = [100], L = [50]) {
-    const hslArray = this.permuteArrays(H, S, L);
-    const array = hslArray.map(a => Color.toColor(Color.hslString(...a)));
-    return this.basicColorMap(array)
-  },
-
-  // Use gradient to build an rgba array, then convert to colormap.
-  // Stops are css strings or rgba arrays.
-  // locs defaults to evenly spaced, probably what you want.
-  //
-  // This easily creates all the MatLab colormaps like "jet" below.
-  gradientColorMap (nColors, stops, locs) {
-    const uint8arrays = this.gradientImageData(nColors, stops, locs);
-    const typedColors = this.typedArraytoColors(uint8arrays);
-    Object.setPrototypeOf(typedColors, this.ColorMapProto);
-    return typedColors
-  },
-  // The most popular MatLab gradient, "jet":
-  jetColors: [ [0, 0, 127], [0, 0, 255], [0, 127, 255], [0, 255, 255],
-    [127, 255, 127], [255, 255, 0], [255, 127, 0], [255, 0, 0], [127, 0, 0] ],
-  // Two other popular MatLab 'ramp' gradients are:
-  // * One color: from black/white to color, optionally back to white/black.
-  // stops = ['black', 'red'] or ['white', 'orange', 'black']
-  // The NetLogo map is a concatenation of 14 of these.
-  // * Two colors: stops = ['red', 'orange'] (blends the tow, center is white)
-
-  // The 16 unique [CSS Color Names](https://goo.gl/sxo36X), case insensitive.
-  // Aqua == Cyan and Fuchsia == Magenta, 18 total color names.
-  // These sorted by hue/saturation/light, hue in 0-300 degrees.
-  // See [Mozilla Color Docs](https://goo.gl/tolSnS) for *lots* more!
-  basicColorNames: 'white silver gray black red maroon yellow olive lime green cyan teal blue navy magenta purple'.split(' '),
-  // Create a named colors colormap
-  cssColorMap (cssArray) {
-    const array = cssArray.map(str => Color.stringToUint8s(str));
-    const map = this.basicColorMap(array);
-    map.cssNames = cssArray;
-    return map
-  },
-
-// ### Shared Global ColorMaps
-
-  // The shared global colormaps are lazy evaluated to minimize memory use.
-  LazyMap (name, map) {
-    Object.defineProperty(this, name, {value: map, enumerable: true});
-    return map
-  },
-  get Gray () { return this.LazyMap('Gray', this.grayColorMap()) },
-  get LightGray () { return this.LazyMap('LightGray', this.grayColorMap(200)) },
-  get DarkGray () { return this.LazyMap('DarkGray', this.grayColorMap(0, 100)) },
-  get Jet () {
-    return this.LazyMap('Jet', this.gradientColorMap(256, this.jetColors))
-  },
-  get Rgb256 () { return this.LazyMap('Rgb256', this.rgbColorCube(8, 8, 4)) },
-  get Rgb () { return this.LazyMap('Rgb', this.rgbColorCube(16)) },
-  get Basic16 () {
-    return this.LazyMap('Basic16', this.cssColorMap(this.basicColorNames))
-  }
-};
 
 // Export/Import DataSets
 // import DataSet from './DataSet.js'
@@ -2869,8 +2880,10 @@ class Turtles extends AgentSet {
       const turtle = this.addAgent();
       turtle.theta = util.randomFloat(Math.PI * 2);
       initFcn(turtle);
-      if (!turtle.sprite)
-        turtle.setSprite('default', ColorMap.Basic16.randomColor().css);
+      if (!turtle.sprite) {
+        turtle.setSprite('default', this.randomColor());
+        // console.log('sprite color', turtle.sprite.color.css)
+      }
       a.push(turtle);
     })
   }
@@ -2934,7 +2947,7 @@ class Turtles extends AgentSet {
 const turtleVariables = { // Core variables for patches. Not 'own' variables.
   x: 0,             // x, y, z in patchSize units.
   y: 0,             // Use turtles.setDefault('z', num) to change default height
-  z: 1,
+  z: 0,
   theta: 0,         // my euclidean direction, radians from x axis, counter-clockwise
   size: 1,          // size in patches, default to one patch
 
@@ -2942,7 +2955,9 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
   // links: null,   // the links having me as an end point .. lazy promoted below
   atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
                     // 'bounce', or a function, see handleEdge() method
-  sprite: null
+  sprite: null,
+  color: null,
+  shape: null
 
   // spriteFcn: 'default',
   // spriteColor: Color.newColor(255, 0, 0),
@@ -2988,6 +3003,7 @@ class Turtle {
   }
   // Getter for links for this turtle. REMIND: use new AgentSet(0)?
   // Uses lazy evaluation to promote links to instance variables.
+  // REMIND: Let links create the array as needed, less "tricky"
   get links () { // lazy promote neighbors from getter to instance prop.
     Object.defineProperty(this, 'links', {value: [], enumerable: true});
     return this.links
@@ -2997,20 +3013,20 @@ class Turtle {
   // REMIND: promote to default variable(s) if performance issue
   get patches () { return this.model.patches }
 
-  // Heading vs Euclidean Angles
+  // Heading vs Euclidean Angles. Direction for clarity when ambiguity.
   get heading () { return util.heading(this.theta) }
   set heading (heading) { this.theta = util.angle(heading); }
+  get direction () { return this.theta }
+  set direction (theta) { this.theta = theta; }
 
   // Create my shape via src: sprite, fcn, string, or image/canvas
-  setSprite (src, color = 'red', strokeColor = 'black') {
+  setSprite (src, color = this.color, strokeColor = 'black') {
+    color = color || this.turtles.randomColor();
     if (src.sheet) { this.sprite = src; return } // src is a sprite
-    const ss = this.model.view.spriteSheet;
+    const ss = this.model.spriteSheet;
     this.sprite = ss.newSprite(src, color, strokeColor);
-    // this.sprite = util.isImageable(src)
-    //   ? ss.addImage(src)
-    //   : ss.addDrawing(src, color, strokeColor)
   }
-  setSize (size) { this.size = size * this.world.patchSize; }
+  setSize (size) { this.size = size; } // * this.world.patchSize }
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
@@ -3019,7 +3035,7 @@ class Turtle {
   // Call handleEdge(x, y) if x, y off-world.
   setxy (x, y, z = null) {
     const p0 = this.patch;
-    if (z) this.z = z;
+    if (z) this.z = z; // don't promote z if null, use default z instead.
     if (this.world.isOnWorld(x, y)) {
       this.x = x;
       this.y = y;
@@ -3138,35 +3154,8 @@ class SpriteSheet {
     this.ctx = util.createCtx(this.width, this.height);
     this.texture = null; // THREE use optional
   }
-  // Return a sprite. Create it if not in sprites cache.
-  // Src can be: image, canvas, function name, function.
-  // If src is a canvas, it must have a src string w/o / or . chars.
-  // If src is function or name of path below, colors can be css
-  // or Color module's Color object.
-  newSprite (src, fillColor, strokeColor) {
-    // Normalize color names to hex
-    if (fillColor) fillColor = Color.toColor(fillColor).css;
-    if (strokeColor) strokeColor = Color.toColor(strokeColor).css;
-    const name = this.spriteName(src, fillColor, strokeColor);
 
-    if (this.sprites[name]) return this.sprites[name]
-    return util.isImageable(src)
-      ? this.addImage(src)
-      : this.addDrawing(src, fillColor, strokeColor)
-  }
-
-  // Install a new named function in the paths object below
-  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn; }
-
-  // Return sprite's color/shape name if not an image sprite.
-  spriteShape (sprite) {
-    const match = sprite.name.match(/(.*)#(.*)/);
-    return match.length === 3
-      ? {shape: match[1], color: Color.toColor(match[2])} : null
-  }
-
-// These are internal, experts only, use newSprite above for normal use.
-
+  // getters for derived values.
   // width & height in pixels
   get width () { return this.spriteSize * this.cols }
   get height () { return this.spriteSize * this.rows }
@@ -3176,55 +3165,76 @@ class SpriteSheet {
   // id = number of sprites
   get id () { return Object.keys(this.sprites).length }
 
+  // REMIND: this is a place holder for deleting sheet and it's sprites.
+  // Non-trivial.
+  clear () {
+    Object.assign(this.ctx.canvas, {width: this.width, height: this.spriteSize});
+  }
+
+  // Return a sprite. Create it if not in sprites cache.
+  // Src can be: image, canvas, function name, function.
+  // If src is a canvas, it must have a src string w/o / or . chars.
+  // If src is function or name of path below, colors can be css
+  // or Color module's Color object.
+  newSprite (src, fillColor, strokeColor) {
+    // Normalize color names to hex
+    if (fillColor) fillColor = Color.toColor(fillColor);
+    if (strokeColor) strokeColor = Color.toColor(strokeColor);
+    const name = this.spriteName(src, fillColor);
+
+    if (this.sprites[name]) return this.sprites[name]
+    const sprite = util.isImageable(src)
+      ? this.addImage(src)
+      : this.addDrawing(src, fillColor, strokeColor);
+      // : this.addDrawing(src, fillColor.css, strokeColor ? strokeColor.css : undefined)
+    if (fillColor) {
+      sprite.color = fillColor;
+      sprite.shape = name.replace(/#.*/, ''); // drop #xxxxxx from name
+    }
+    this.sprites[name] = sprite;
+    return sprite
+  }
+
+  // Install a new named function in the paths object below.
+  // Used to add "car", "thug", "spider" etc drawings.
+  installDrawing (fcn, name = fcn.name) { this.paths[name] = fcn; }
+
+// These are internal, experts only, use newSprite above for normal use.
+
   // Make a unique, normalized sprite name. See note on src, colors above.
   // Color names are hex css formats, see newSprite's name transformation.
-  spriteName (src, fillColor, strokeColor) {
+  spriteName (src, fillColor) {
     // If src is an image, construct a name.
     if (util.isImageable(src)) {
       let name = src.src;
       name = name.replace(/^.*\//, ''); // remove path
-      name = name.replace(/\..*/, 'img'); // replace .png/jpg/.. w/ "img"
+      name = name.replace(/\..*/, '.img'); // replace .png/jpg/.. w/ ".img"
       return name
     }
     // ditto for draw function or name of function in paths obj below
     const name = src.name || src;
-    return `${name}${fillColor}` // REMIND: strokeColor too if given?
+    return `${name}${fillColor.css}` // REMIND: strokeColor too if given?
   }
 
-  // REMIND: figure out how to have img be a path string & return its sprite
-  // spriteName (name, color1 = null, color2 = null) {
-  //   name = name.replace(/^.*\//, '')
-  //   return name.replace(/\./, 'img')
-  // }
-  // addImagePromise (url, fcn = (sprite) => {}) {
-  //   util.imagePromise(url).then((img) => { fcn(this.addImage(img)) })
-  // }
+  // Add an image/canvas to sprite sheet.
   addImage (img) {
-    const name = this.spriteName(img);
-    this.checkSheetSize(); // Resize ctx if nextRow > rows
+    this.checkSheetSize(); // Resize ctx if nextRow === rows
     const [x, y, size] = [this.nextX, this.nextY, this.spriteSize];
     this.ctx.drawImage(img, x, y, size, size);
     const id = this.id; // Object.keys(this.sprites).length
     const {nextRow: row, nextCol: col} = this;
-    const sprite = {id, name, x, y, row, col, size, sheet: this};
+    const sprite = {id, x, y, row, col, size, sheet: this};
     sprite.uvs = this.getUVs(sprite);
-    this.sprites[name] = sprite;
     this.incrementRowCol();
     if (this.texture) this.texture.needsUpdate = true;
     return sprite
   }
+  // Use above to add a drawing to sprite sheet
   addDrawing (drawFcn, fillColor, strokeColor, useHelpers = true) {
     const img = this.createFcnCanvas(drawFcn, fillColor, strokeColor, useHelpers);
     return this.addImage(img) // return sprite
   }
-  // newSprite (name) { return this.sprites[name] }
-  // Resize ctx if nextRow > rows
-  incrementRowCol () {
-    this.nextCol += 1;
-    if (this.nextCol < this.cols) return
-    this.nextCol = 0;
-    this.nextRow += 1;
-  }
+
   // Resize ctx if too small for next row/col
   checkSheetSize () {
     if (this.nextRow === this.rows) { // this.nextCol should be 0
@@ -3233,6 +3243,13 @@ class SpriteSheet {
       // Recalculate existing sprite uvs.
       util.forEach(this.sprites, (sprite) => { sprite.uvs = this.getUVs(sprite); });
     }
+  }
+  // Advance nextCol/Row. Done after checkSheetSize enlarged ctx if needed.
+  incrementRowCol () {
+    this.nextCol += 1;
+    if (this.nextCol < this.cols) return
+    this.nextCol = 0;
+    this.nextRow += 1;
   }
 
   // Create a sprite image. See [Drawing shapes with canvas](https://goo.gl/uBwxMq)
@@ -3281,15 +3298,25 @@ class SpriteSheet {
   //      -----
   //      0   1
   // I.e. botLeft, botRight, topRight, topLeft
-  getUVs (sprite) {
+  // getUVs (sprite) {
+  //   const {row, col} = sprite
+  //   const {rows, cols} = this
+  //   const x0 = col / cols
+  //   const y0 = row / rows
+  //   const x1 = (col + 1) / cols
+  //   const y1 = (row + 1) / rows
+  //   // return [[x0, y1], [x1, y1], [x1, y0], [x0, y0]]
+  //   return [x0, y1, x1, y1, x1, y0, x0, y0]
+  // }
+  getUVs (sprite) { // note v's are measured from the bottom.
     const {row, col} = sprite;
     const {rows, cols} = this;
-    const x0 = col / cols;
-    const y0 = row / rows;
-    const x1 = (col + 1) / cols;
-    const y1 = (row + 1) / rows;
+    const u0 = col / cols;
+    const v0 = (rows - (row + 1)) / rows;
+    const u1 = (col + 1) / cols;
+    const v1 = (rows - row) / rows;
     // return [[x0, y1], [x1, y1], [x1, y0], [x0, y0]]
-    return [x0, y1, x1, y1, x1, y0, x0, y0]
+    return [u0, v0, u1, v0, u1, v1, u0, v1]
   }
   // Return uv's object: {topLeft, topRight, botLeft, botRight}
   // getUVsObj (sprite) { // REMIND
@@ -3381,8 +3408,8 @@ const paths = {
 // instance to allow for differences in models on the same page.
 class BaseMesh { // static options(): https://goo.gl/sKdxoY
   constructor (view, options = this.constructor.options()) {
-    const { scene, model, spriteSheet } = view;
-    Object.assign(this, { scene, model, spriteSheet, view, options });
+    const { scene, model } = view;
+    Object.assign(this, { scene, model, view, options });
     this.mesh = null;
   }
   dispose () {
@@ -3403,11 +3430,11 @@ class BaseMesh { // static options(): https://goo.gl/sKdxoY
     return {vertices, indices}
   }
   get spriteSheetTexture () {
-    if (!this.spriteSheet.texture) {
-      const texture = new THREE.CanvasTexture(this.spriteSheet.ctx.canvas);
-      this.spriteSheet.texture = texture;
+    if (!this.model.spriteSheet.texture) {
+      const texture = new THREE.CanvasTexture(this.model.spriteSheet.ctx.canvas);
+      this.model.spriteSheet.texture = texture;
     }
-    return this.spriteSheet.texture
+    return this.model.spriteSheet.texture
   }
 }
 
@@ -3706,7 +3733,7 @@ class Three {
 
   constructor (model, options = {}) {
     this.model = model;
-    this.spriteSheet = model.spriteSheet; // REMIND: Temp
+    // this.spriteSheet = model.spriteSheet // REMIND: Temp
 
     // Initialize options
     Object.assign(this, Three.defaultOptions); // install defaults
@@ -3812,8 +3839,6 @@ class Model {
                rendererOptions = Three.defaultOptions()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div;
-    this.Renderer = rendererOptions.Renderer;
-    this.meshesOptions = rendererOptions.meshes;
     this.spriteSheet = new SpriteSheet();
 
     // Create this model's `world` object
@@ -3826,19 +3851,11 @@ class Model {
 
     // Initialize meshes.
     this.meshes = {};
-    for (const key in this.meshesOptions) {
-      const opts = this.meshesOptions[key];
-      const options = Meshes[opts.meshClass].options(); // default options
-      Object.assign(options, opts); // override by user's
-      this.meshes[key] = new Meshes[opts.meshClass](this.view, options);
-    }
-
-    this.patchesMesh = new Meshes.PatchesMesh(this.view);
-
-    // this.turtlesMesh = new Meshes.PointsMesh(this.view)
-    this.turtlesMesh = new Meshes.QuadSpritesMesh(this.view);
-
-    this.linksMesh = new Meshes.LinksMesh(this.view);
+    util.forEach(rendererOptions.meshes, (val, key) => {
+      const options = Meshes[val.meshClass].options(); // default options
+      Object.assign(options, val); // override by user's
+      this.meshes[key] = new Meshes[val.meshClass](this.view, options);
+    });
 
     // Create animator to handle draw/step.
     this.anim = new Animator(this);

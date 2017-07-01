@@ -239,13 +239,21 @@ const ColorMap = {
   // The 16 unique [CSS Color Names](https://goo.gl/sxo36X), case insensitive.
   // Aqua == Cyan and Fuchsia == Magenta, 18 total color names.
   // These sorted by hue/saturation/light, hue in 0-300 degrees.
+  // In CSS 2.1, the color 'orange' was added to the 16 colors as a 17th color
   // See [Mozilla Color Docs](https://goo.gl/tolSnS) for *lots* more!
-  basicColorNames: 'white silver gray black red maroon yellow olive lime green cyan teal blue navy magenta purple'.split(' '),
+  basicColorNames: 'white silver gray black red maroon yellow orange olive lime green cyan teal blue navy magenta purple'.split(' '),
   // Create a named colors colormap
-  cssColorMap (cssArray) {
+  cssColorMap (cssArray, createNameIndex = false) {
     const array = cssArray.map(str => Color.stringToUint8s(str))
     const map = this.basicColorMap(array)
     map.cssNames = cssArray
+    // REMIND: kinda tacky? Maybe map.name.yellow? Maybe generalize for other
+    // map types: map.closest(name)
+    if (createNameIndex) {
+      cssArray.forEach((name, ix) => { map[name] = map[ix] })
+      if (map.cyan) map.aqua = map.cyan
+      if (map.magenta) map.fuchsia = map.magenta
+    }
     return map
   },
 
@@ -264,8 +272,8 @@ const ColorMap = {
   },
   get Rgb256 () { return this.LazyMap('Rgb256', this.rgbColorCube(8, 8, 4)) },
   get Rgb () { return this.LazyMap('Rgb', this.rgbColorCube(16)) },
-  get Basic16 () {
-    return this.LazyMap('Basic16', this.cssColorMap(this.basicColorNames))
+  get Basic16 () { // 17 unique + 2 "aliases" = 19 names. "16" historic
+    return this.LazyMap('Basic16', this.cssColorMap(this.basicColorNames, true))
   }
 }
 

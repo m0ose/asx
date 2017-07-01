@@ -34,8 +34,6 @@ class Model {
                rendererOptions = Three.defaultOptions()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div
-    this.Renderer = rendererOptions.Renderer
-    this.meshesOptions = rendererOptions.meshes
     this.spriteSheet = new SpriteSheet()
 
     // Create this model's `world` object
@@ -48,19 +46,11 @@ class Model {
 
     // Initialize meshes.
     this.meshes = {}
-    for (const key in this.meshesOptions) {
-      const opts = this.meshesOptions[key]
-      const options = Meshes[opts.meshClass].options() // default options
-      Object.assign(options, opts) // override by user's
-      this.meshes[key] = new Meshes[opts.meshClass](this.view, options)
-    }
-
-    this.patchesMesh = new Meshes.PatchesMesh(this.view)
-
-    // this.turtlesMesh = new Meshes.PointsMesh(this.view)
-    this.turtlesMesh = new Meshes.QuadSpritesMesh(this.view)
-
-    this.linksMesh = new Meshes.LinksMesh(this.view)
+    util.forEach(rendererOptions.meshes, (val, key) => {
+      const options = Meshes[val.meshClass].options() // default options
+      Object.assign(options, val) // override by user's
+      this.meshes[key] = new Meshes[val.meshClass](this.view, options)
+    })
 
     // Create animator to handle draw/step.
     this.anim = new Animator(this)

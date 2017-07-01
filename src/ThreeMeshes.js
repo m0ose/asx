@@ -9,8 +9,8 @@ import THREE from '../dist/three.wrapper.js'
 // instance to allow for differences in models on the same page.
 export class BaseMesh { // static options(): https://goo.gl/sKdxoY
   constructor (view, options = this.constructor.options()) {
-    const { scene, model, spriteSheet } = view
-    Object.assign(this, { scene, model, spriteSheet, view, options })
+    const { scene, model } = view
+    Object.assign(this, { scene, model, view, options })
     this.mesh = null
   }
   dispose () {
@@ -31,11 +31,11 @@ export class BaseMesh { // static options(): https://goo.gl/sKdxoY
     return {vertices, indices}
   }
   get spriteSheetTexture () {
-    if (!this.spriteSheet.texture) {
-      const texture = new THREE.CanvasTexture(this.spriteSheet.ctx.canvas)
-      this.spriteSheet.texture = texture
+    if (!this.model.spriteSheet.texture) {
+      const texture = new THREE.CanvasTexture(this.model.spriteSheet.ctx.canvas)
+      this.model.spriteSheet.texture = texture
     }
-    return this.spriteSheet.texture
+    return this.model.spriteSheet.texture
   }
 }
 
