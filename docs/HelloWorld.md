@@ -132,18 +132,18 @@ At this point, your model is running. The console is useful for inspecting the m
 
 In the window/tab [the model](tutorial/?hello) is running, open the console .. ctl-j for Chrome/Canary, ctl-c for Safari. Or use the menus.
 
-Lets look at the patches, turtles, and links:
+Lets look at the patches, turtles, and links: <br />
 `let {patches, turtles, links} = model`
 
 Then, one at a time, type `patches`, `turtles`, `links`.
 
-To look at individual patches and turtles, this will give you a random one of each:
+To look at individual patches and turtles, this will give you a random one of each: <br />
 `let [p, t] = [turtles.oneOf(), patches.oneOf()]`
 
-We can be more dynamic too. To make the turtles 3 patches in size:
-`turtles.setDefault('size', 3)`
+We can be more dynamic too. To make the turtles 3 patches in size: <br />
+`turtles.setDefault('size', 3)` <br />
 ![](data/hello3.jpg)
 
-Use these for different edge behavior:
-`turtles.setDefault('atEdge', 'clamp')`
+Use these for different edge behavior: <br />
+`turtles.setDefault('atEdge', 'clamp')` <br />
 `turtles.setDefault('atEdge', 'wrap')`

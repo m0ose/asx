@@ -3832,9 +3832,10 @@ class Model {
     }
   }
 
-  // The Model constructor takes a DOM div and overrides for defaults
+  // The Model constructor takes a DOM div and model and renderer options.
+  // Default values are given for all constructor arguments.
   constructor (div = document.body,
-               modelOptions = {},
+               modelOptions = Model.defaultOptions(),
                rendererOptions = Three.defaultOptions()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div;
