@@ -24,15 +24,15 @@ class Three {
       meshes: {
         patches: {
           meshClass: 'PatchesMesh',
-          z: 0.0
+          z: 1.0
         },
         turtles: {
           meshClass: 'QuadSpritesMesh',
-          z: 0.1
+          z: 2.0
         },
         links: {
           meshClass: 'LinksMesh',
-          z: 0.05
+          z: 1.5
         }
       }
     }

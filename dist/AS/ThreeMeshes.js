@@ -84,7 +84,7 @@ export class PatchesMesh extends CanvasMesh {
         minFilter: 'NearestFilter',
         magFilter: 'NearestFilter'
       },
-      z: 0.0
+      z: 100
     }
   }
   init (patches) { // REMIND: pass in patches instead of canvas
@@ -101,7 +101,7 @@ export class PatchesMesh extends CanvasMesh {
 export class QuadSpritesMesh extends BaseMesh {
   static options () {
     return {
-      z: 0.1
+      z: 2.0
     }
   }
   constructor (view, options) {
@@ -175,7 +175,7 @@ export class PointsMesh extends BaseMesh {
     return {
       pointSize: 1,
       color: null,
-      z: 0.1
+      z: 2.0
     }
   }
   init () {
@@ -230,7 +230,7 @@ export class PointsMesh extends BaseMesh {
 export class LinksMesh extends BaseMesh {
   static options () {
     return {
-      z: 0.05
+      z: 1.0
     }
   }
   init () {

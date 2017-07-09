@@ -24,7 +24,8 @@ class Turtles extends AgentSet {
       turtle.theta = util.randomFloat(Math.PI * 2)
       initFcn(turtle)
       if (!turtle.sprite) {
-        turtle.setSprite('default', this.randomColor())
+        const shape = turtle.shape || 'default'
+        turtle.setSprite(shape, this.randomColor())
         // console.log('sprite color', turtle.sprite.color.css)
       }
       a.push(turtle)

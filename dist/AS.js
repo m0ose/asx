@@ -2881,7 +2881,8 @@ class Turtles extends AgentSet {
       turtle.theta = util.randomFloat(Math.PI * 2);
       initFcn(turtle);
       if (!turtle.sprite) {
-        turtle.setSprite('default', this.randomColor());
+        const shape = turtle.shape || 'default';
+        turtle.setSprite(shape, this.randomColor());
         // console.log('sprite color', turtle.sprite.color.css)
       }
       a.push(turtle);
@@ -3483,7 +3484,7 @@ class PatchesMesh extends CanvasMesh {
         minFilter: 'NearestFilter',
         magFilter: 'NearestFilter'
       },
-      z: 0.0
+      z: 100
     }
   }
   init (patches) { // REMIND: pass in patches instead of canvas
@@ -3500,7 +3501,7 @@ class PatchesMesh extends CanvasMesh {
 class QuadSpritesMesh extends BaseMesh {
   static options () {
     return {
-      z: 0.1
+      z: 2.0
     }
   }
   constructor (view, options) {
@@ -3574,7 +3575,7 @@ class PointsMesh extends BaseMesh {
     return {
       pointSize: 1,
       color: null,
-      z: 0.1
+      z: 2.0
     }
   }
   init () {
@@ -3629,7 +3630,7 @@ class PointsMesh extends BaseMesh {
 class LinksMesh extends BaseMesh {
   static options () {
     return {
-      z: 0.05
+      z: 1.0
     }
   }
   init () {
@@ -3697,15 +3698,15 @@ class Three {
       meshes: {
         patches: {
           meshClass: 'PatchesMesh',
-          z: 0.0
+          z: 1.0
         },
         turtles: {
           meshClass: 'QuadSpritesMesh',
-          z: 0.1
+          z: 2.0
         },
         links: {
           meshClass: 'LinksMesh',
-          z: 0.05
+          z: 1.5
         }
       }
     };
