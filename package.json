@@ -54,7 +54,7 @@
     "three": "latest"
   },
   "devDependencies": {
-    "butternut": "^0.4.5",
+    "butternut": "^0.4.6",
     "pako": "^1.0.5",
     "rollup": "^0.41.6",
     "sane": "^1.6.0",

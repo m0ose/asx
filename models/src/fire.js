@@ -1,15 +1,9 @@
-// import Color from '../../dist/AS/Color.js'
-// import ColorMap from '../../dist/AS/ColorMap.js'
-// import Model from '../../dist/AS/Model.js'
-// import util from '../../dist/AS/util.js'
 import {Color, ColorMap, Model, util} from '../../dist/AS.module.js'
-
 util.toWindow({ Color, ColorMap, Model, util })
 
 class FireModel extends Model {
   setup () {
     this.patchBreeds('fires embers')
-    // this.anim.setRate(60)
 
     this.fireColorMap = ColorMap.gradientColorMap(6, ['red', [128, 0, 0]])
     this.treeColor = Color.newColor(0, 255, 0)
@@ -73,19 +67,11 @@ class FireModel extends Model {
   }
 }
 
-// Test for container rather than entire window
-// const div = document.getElementById('model')
-// div.style = 'width:75%; height:500'
 const div = document.body
-const model = new FireModel(div, {
-  patchSize: 2,
-  minX: -125,
-  maxX: 125,
-  minY: -125,
-  maxY: 125
-}).start()
+const options = Model.defaultOptions(2, 125)
+const model = new FireModel(div, options).start()
+
 model.whenReady(() => {
   const {world, patches} = model
   util.toWindow({ world, patches, p: patches.oneOf(), model })
-  // util.addToDom(patches.pixels.ctx.canvas)
 })
