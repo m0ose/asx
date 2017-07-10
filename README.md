@@ -20,7 +20,7 @@ The repo has no "derived" files, other than the gh-page, see below, i.e. won't r
 
 A [gh-page](http://backspaces.github.io/asx/) is used for the site. It contains the master repo, including the derived files, and is our documentation.
 
-It uses [the docs/ simplification](https://help.github.com/articles/user-organization-and-project-pages/#project-pages) for gh-page creation. We use [Docsify](https://docsify.js.org/#/?id=docsify), a dynamic markdown based documentation system, which you'll see when you go to the gh-pages.
+It uses [the docs/ simplification](https://help.github.com/articles/user-organization-and-project-pages/#project-pages) for gh-page creation. We use [Docsify](https://docsify.js.org/#/?id=docsify), a dynamic markdown based documentation system, which you'll see when you go to the gh-page.
 
 The gh-page can be used to run example models:
 * [http://backspaces.github.io/asx/models?diffuse](http://backspaces.github.io/asx/models?diffuse)

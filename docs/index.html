@@ -50,16 +50,16 @@
     maxLevel: 4,
     subMaxLevel: 2,
     // routerMode: 'history', // default: 'hash'
-    plugins: [
-      function(hook, vm) {
-        hook.beforeEach((markdown) => {
-          const result = markdown.replace(/]\(tutorial\//g, `](${root}/tutorial/`)
-          // const result = markdown.replace('](tutorial/', `](${root}/tutorial/`)
-          // console.log('markdown', result)
-          return result
-        })
-      }
-    ],
+    // plugins: [
+    //   function(hook, vm) {
+    //     hook.beforeEach((markdown) => {
+    //       const result = markdown.replace(/]\(tutorial\//g, `](${root}/tutorial/`)
+    //       // const result = markdown.replace('](tutorial/', `](${root}/tutorial/`)
+    //       // console.log('markdown', result)
+    //       return result
+    //     })
+    //   }
+    // ],
   }
 
   console.log('window.$docsify', window.$docsify)

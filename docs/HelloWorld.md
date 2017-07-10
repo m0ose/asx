@@ -14,7 +14,7 @@ For now we'll simply use the defaults.
 
 ## Hello World model: hello.js
 
-Next, we create our first model, [hello world](tutorial/?hello).
+Next, we create our first model, [hello world](http://backspaces.github.io/asx//tutorial/?hello).
 
 ![](data/hello.jpg)
 
@@ -73,7 +73,7 @@ class Hello extends Model {
 
 The `setup()` method is called when your model starts. It is where you initialize your patches, turtles and links.
 
-The `step()` method is called each 'tick' of your model. It is called by the `model.anim` Animator class instance initialized by the Model constructor. The default is to call your step function 30 times per second, but you can change that in `setup()` if you wish.
+The `step()` method is called each 'tick' of your model. It is called by the `model.anim` Animator class instance initialized by the Model constructor. The default is to call your step function 60 times per second, but you can change that in `setup()` if you wish.
 
 ## Initializing and running a Model
 
@@ -130,7 +130,7 @@ step () {
 
 At this point, your model is running. The console is useful for inspecting the model and its parts, and interacting with it.
 
-In the window/tab [the model](tutorial/?hello) is running, open the console .. ctl-j for Chrome/Canary, ctl-c for Safari. Or use the menus.
+In the window/tab [the model](http://backspaces.github.io/asx//tutorial/?hello) is running, open the console .. ctl-j for Chrome/Canary, ctl-c for Safari. Or use the menus.
 
 Lets look at the patches, turtles, and links: <br />
 `let {patches, turtles, links} = model`
@@ -138,12 +138,34 @@ Lets look at the patches, turtles, and links: <br />
 Then, one at a time, type `patches`, `turtles`, `links`.
 
 To look at individual patches and turtles, this will give you a random one of each: <br />
-`let [p, t] = [turtles.oneOf(), patches.oneOf()]`
+`let [p, t] = [patches.oneOf(), turtles.oneOf()]`
 
-We can be more dynamic too. To make the turtles 3 patches in size: <br />
+We can be more dynamic too. To make all the turtles 3 patches in size: <br />
 `turtles.setDefault('size', 3)` <br />
 ![](data/hello3.jpg)
 
-Use these for different edge behavior: <br />
+Defaults can be overridden by setting a value for a particular agent. Let's set the random turtle's size back to 1: <br />
+`t.size = 1`
+
+If we now set the default size to 2, it will only impact the turtles without an assigned size. Turtle `t` will remain size 1: <br />
+`turtles.setDefault('size', 2)`
+
+We currently "bounce" when we come to an edge. Let's change `t`'s edge behavior to clamp at the Edge:  <br />
+`t.atEdge = 'clamp'`
+
+Use these for different default edge behavior. Again, they won't impact `t`. <br />
 `turtles.setDefault('atEdge', 'clamp')` <br />
 `turtles.setDefault('atEdge', 'wrap')`
+
+Let's free `t`: <br />
+`t.atEdge = 'bounce'`
+
+The difference between setting the default, vs setting a single agent's value is quite important.
+
+To stop/start the model: <br />
+`model.stop()` <br />
+`model.start()`
+
+To set the speed of the animation: <br />
+`model.anim.setRate(10)` <br />
+`model.anim.setRate(60)`
