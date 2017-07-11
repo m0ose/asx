@@ -1,8 +1,8 @@
-## AgentScript-next Repository
+# AgentScript-next Repository
 
 This is a repository for the next version of the [AgentScript 1.0](http://agentscript.org) Agent Based Modeling framework, converted into an es6 module based project using Three.js.
 
-### Developer Information
+## Developer Information
 
 To clone a fresh repo, for PRs or your own local verson:
 * cd to where you want the asx/ dir to appear.
@@ -12,11 +12,11 @@ To clone a fresh repo, for PRs or your own local verson:
 * npm run build # complete the install
 * open `http://<path to asx>/models` to run a model. Check console for messages
 
-All workflow is npm run scripts.  See package.json's scripts, or simply run `npm run` for a list.
+All workflow is npm run scripts.  See package.json's scripts, or simply run `npm run` for a list. [JavaScript Standard Style](https://standardjs.com/) is [used](https://github.com/backspaces/asx/blob/master/.eslintrc.json).
 
 The repo has no "derived" files, other than the gh-page, see below, i.e. won't run by just cloning. To complete the install, use `npm install` and `npm run build` which refreshes npm dependencies and does a clean build of the repo.
 
-### Github Pages
+## Github Pages
 
 A [gh-page](http://backspaces.github.io/asx/) is used for the site. It contains the master repo, including the derived files, and is our documentation.
 
@@ -27,7 +27,7 @@ The gh-page can be used to run example models:
 
 And as a CDN for modules and legacy bundles, see [**Modules and Bundles**](#modules-and-bundles) below.
 
-### Three.js
+## Three.js
 
 We have converted from layers of 2D canvases to a single WebGL canvas, currently managed by [Three.js](https://threejs.org/). This is a breaking change, primarily changing subclassing of class Model. Each of the prior layers is now a single Three Mesh within the Three scene graph.
 
@@ -43,9 +43,11 @@ constructor (div = document.body,
 
 The conversion of the [fire](http://backspaces.github.io/asx/models?fire) model, [source here](https://github.com/backspaces/asx/blob/master/models/src/fire.js), is an example of the minor changes needed in converting to Three.js.
 
-### Modules and Bundles
+## Modules and Bundles
 
-ASX is entirely es6 Modules based, and the dist/ dir includes both a [Rollup](https://rollupjs.org/) generated legacy [IIFE](http://adripofjavascript.com/blog/drips/an-introduction-to-iffes-immediately-invoked-function-expressions.html) global, window.AS, for script users, and the AS/ dir of the modules for direct native module implementations (Canary, Edge, FFox Nightly, iOS Safari and Safari Technology Preview), see the [CanIUse](http://caniuse.com/#search=modules) page for current browser support.
+ASX is an entirely es6 Modules based, dual deploy. By "dual" we mean that we support es6 Modules, along with legacy `<script>` tags, both in our models/index.html files and the individual demo models.
+
+The dist/ dir includes both a [Rollup](https://rollupjs.org/) generated legacy [IIFE](http://adripofjavascript.com/blog/drips/an-introduction-to-iffes-immediately-invoked-function-expressions.html) global, window.AS, for script users, and the AS/ dir of the modules for direct native module implementations (Canary, Edge, FFox Nightly, iOS Safari and Safari Technology Preview), see the [CanIUse](http://caniuse.com/#search=modules) page for current browser support.
 
 It can also be used as a CDN for all the es6 Modules:
 
@@ -58,12 +60,12 @@ Finally, they are also available as a traditional legacy IIFE Rollup bundle:
 * `<script src="`[http://backspaces.github.io/asx/dist/AS.js](http://backspaces.github.io/asx/dist/AS.js)`"></script>`
 
 
-### Files
+## Files
 
 Our directory layout is:
 ```
 bin: workflow scripts
-dist: AS bundle & AS/ es6 modules distribution
+dist: AS.js & AS.module.js bundles & AS/ es6 source.
 docs: gh-page
 models: sample models
 src: es6 modules for AS
@@ -82,7 +84,7 @@ The default directory is scripts/ for now, but will convert to es6 modules, src/
 
 The current sample models are: diffuse, exit, fire, links, turtles
 
-### License
+## License
 
 Copyright Owen Densmore, RedfishGroup LLC, 2012-2017<br>
 AgentScript may be freely distributed under the GPLv3 license:
