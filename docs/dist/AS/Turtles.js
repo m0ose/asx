@@ -58,9 +58,9 @@ class Turtles extends AgentSet {
     const aSet = this.inPatchRect(turtle, radius, radius, true)
     return aSet.inRadius(turtle, radius, meToo)
   }
-  inCone (turtle, radius, coneAngle, x0, y0, meToo = false) {
+  inCone (turtle, radius, coneAngle, meToo = false) {
     const aSet = this.inPatchRect(turtle, radius, radius, true)
-    return aSet.inCone(turtle, radius, coneAngle, turtle.theta, x0, y0, meToo)
+    return aSet.inCone(turtle, radius, coneAngle, turtle.theta, meToo)
   }
 
   // Circle Layout: position the turtles in this breed in an equally

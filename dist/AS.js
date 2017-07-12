@@ -862,6 +862,8 @@ class AgentArray extends Array {
   empty () { return this.length === 0 }
   // Return !empty()
   any () { return this.length !== 0 }
+  // Return first item in this array. Returns undefined if empty.
+  first () { return this[ 0 ] }
   // Return last item in this array. Returns undefined if empty.
   last () { return this[ this.length - 1 ] }
   // Return true if reporter true for all of this set's objects
@@ -882,7 +884,7 @@ class AgentArray extends Array {
 
   // Replacements for array methods to avoid calling AgentArray ctor
 
-  // Return shallow copy of a protion of this AgentArray
+  // Return shallow copy of a portion of this AgentArray
   // [See Array.slice](https://goo.gl/Ilgsok)
   // Default is to clone entire AgentArray
   clone (begin = 0, end = this.length) {
@@ -901,8 +903,8 @@ class AgentArray extends Array {
 
   // Return a random agent. Return undefined if empty.
   oneOf () { return util.oneOf(this) }
-  // Return a random agent, not equal to a
-  otherOneOf (item) { return util.otherOneOf(this, item) }
+  // Return a random agent, not equal to agent
+  otherOneOf (agent) { return util.otherOneOf(this, agent) }
   // otherOneOf: nOf good enough?
   // Return the first agent having the min/max of given value of f(agent).
   // If reporter is a string, convert to a fcn returning that property
@@ -987,7 +989,7 @@ class AgentArray extends Array {
 
   // As above, but also limited to the angle `coneAngle` around
   // a `direction` from object `o`.
-  inCone (o, radius, coneAngle, direction, x0, y0, meToo = false) {
+  inCone (o, radius, coneAngle, direction, meToo = false) {
     const agents = new AgentArray();
     this.ask(a => {
       if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y))
@@ -2915,9 +2917,9 @@ class Turtles extends AgentSet {
     const aSet = this.inPatchRect(turtle, radius, radius, true);
     return aSet.inRadius(turtle, radius, meToo)
   }
-  inCone (turtle, radius, coneAngle, x0, y0, meToo = false) {
+  inCone (turtle, radius, coneAngle, meToo = false) {
     const aSet = this.inPatchRect(turtle, radius, radius, true);
-    return aSet.inCone(turtle, radius, coneAngle, turtle.theta, x0, y0, meToo)
+    return aSet.inCone(turtle, radius, coneAngle, turtle.theta, meToo)
   }
 
   // Circle Layout: position the turtles in this breed in an equally
@@ -3129,8 +3131,8 @@ class Turtle {
   }
   // Return turtles/breeds within cone from me
   // Note: agentSet rather than turtles to allow for breeds
-  inCone (radius, meToo = false) {
-    return this.agentSet.inCone(this, radius, meToo)
+  inCone (radius, coneAngle, meToo = false) {
+    return this.agentSet.inCone(this, radius, coneAngle, this.theta, meToo)
   }
 
   // Link methods. Note: this.links returns all links linked to me.

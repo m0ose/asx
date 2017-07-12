@@ -193,8 +193,8 @@ class Turtle {
   }
   // Return turtles/breeds within cone from me
   // Note: agentSet rather than turtles to allow for breeds
-  inCone (radius, meToo = false) {
-    return this.agentSet.inCone(this, radius, meToo)
+  inCone (radius, coneAngle, meToo = false) {
+    return this.agentSet.inCone(this, radius, coneAngle, this.theta, meToo)
   }
 
   // Link methods. Note: this.links returns all links linked to me.
