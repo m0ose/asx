@@ -33,7 +33,7 @@ class AntModel extends Model {
   }
 }
 
-const options = Model.defaultOptions(6, 40)
+const options = Model.defaultWorld(6, 40)
 const model = new AntModel(document.body, options).start()
 // note that start above also uses so is safe. fine to include below too.
 model.whenReady(() => {

@@ -2383,6 +2383,43 @@ class Links extends AgentSet {
   }
 }
 
+// class World defines the coordinate system for the model.
+// It will be upgraded with methods converting from other
+// transforms like GIS and DataSets.
+
+class World {
+  static defaultOptions (size = 13, max = 16) {
+    return {
+      patchSize: size,
+      minX: -max,
+      maxX: max,
+      minY: -max,
+      maxY: max
+    }
+  }
+  // Initialize the world w/ defaults overridden w/ options.
+  constructor (options) {
+    Object.assign(this, World.defaultOptions()); // initial this w/ defaults
+    Object.assign(this, options); // override defaults with options
+    this.setWorld();
+  }
+  // Complete properties derived from patchSize, minX/Y, maxX/Y
+  setWorld () {
+    this.numX = this.maxX - this.minX + 1;
+    this.numY = this.maxY - this.minY + 1;
+    this.width = this.numX * this.patchSize;
+    this.height = this.numY * this.patchSize;
+    this.minXcor = this.minX - 0.5;
+    this.maxXcor = this.maxX + 0.5;
+    this.minYcor = this.minY - 0.5;
+    this.maxYcor = this.maxY + 0.5;
+  }
+  isOnWorld (x, y) {
+    return (this.minXcor <= x) && (x <= this.maxXcor) &&
+           (this.minYcor <= y) && (y <= this.maxYcor)
+  }
+}
+
 // Patches are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Patches extends AgentSet {
@@ -2391,10 +2428,11 @@ class Patches extends AgentSet {
     // model, name, baseSet, world: model.world, agentProto: new AgentProto
     // REMIND: agentProto: defaults, agentSet, world, [name]=agentSet.baseSet
     super(model, AgentProto, name, baseSet);
+
     // Skip if a basic Array ctor or a breedSet (don't rebuild patches!).
     // See AgentSet comments.
-    if (typeof model === 'number' || this.isBreedSet()) return
-    // this.world = model.world
+    if (this.isBreedSet()) return
+
     this.populate();
     this.setPixels();
     this.labels = []; // sparse array for labels
@@ -2481,10 +2519,12 @@ class Patches extends AgentSet {
     return as
   }
 
-  // Return a random valid float x,y point in patch space
+  // Return a random valid int x,y point in patch space
   randomPt () {
-    const {minXcor, maxXcor, minYcor, maxYcor} = this.world;
-    return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
+    // const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+    // return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
+    const {minX, maxX, minY, maxY} = this.world;
+    return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
   }
   // Return a random patch.
   randomPatch () { return this.oneOf() }
@@ -2575,24 +2615,28 @@ class Patches extends AgentSet {
   //   return (minXcor <= x) && (x <= maxXcor) && (minYcor <= y) && (y <= maxYcor)
   // }
   // Return the patch id/index given valid integer x,y in patch coords
-  patchXYToIndex (x, y) {
+  patchIndex (x, y) {
     const {minX, maxY, numX} = this.world;
     return (x - minX) + (numX * (maxY - y))
   }
-  // Return the patch x,y patch coords given a valid patches id/index
-  patchIndexToXY (ix) {
-    const {minX, maxY, numX} = this.world;
-    return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
-  }
-  // Convert to/from pixel coords & patch coords
-  pixelXYToPatchXY (x, y) {
-    const {patchSize, minXcor, maxYcor} = this.world;
-    return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
-  }
-  patchXYToPixelXY (x, y) {
-    const {patchSize, minXcor, maxYcor} = this.world;
-    return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
-  }
+  // patchXYToIndex (x, y) {
+  //   const {minX, maxY, numX} = this.world
+  //   return (x - minX) + (numX * (maxY - y))
+  // }
+  // // Return the patch x,y patch coords given a valid patches id/index
+  // patchIndexToXY (ix) {
+  //   const {minX, maxY, numX} = this.world
+  //   return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
+  // }
+  // // Convert to/from pixel coords & patch coords
+  // pixelXYToPatchXY (x, y) {
+  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
+  // }
+  // patchXYToPixelXY (x, y) {
+  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
+  // }
 
   // Utils for NetLogo patch location methods.
   // All return `undefined` if not onworld.
@@ -2610,7 +2654,7 @@ class Patches extends AgentSet {
     return this.patchXY(intX, intY)
   }
   // Return the patch at x,y where both are valid integer patch coordinates.
-  patchXY (x, y) { return this[this.patchXYToIndex(x, y)] }
+  patchXY (x, y) { return this[this.patchIndex(x, y)] }
 
   // Return patches within the patch rect, default is square & meToo
   // inRect (patch, dx, dy = dx, meToo = true) {
@@ -2775,7 +2819,7 @@ class Patch {
   // Manage colors by directly setting pixels in Patches pixels object.
   // With getter/setters, slight performance hit.
   setColor (typedColor) {
-    this.patches.pixels.data[this.id] = typedColor.getPixel();
+    this.patches.pixels.data[this.id] = Color.toColor(typedColor).getPixel();
   }
   // Optimization: If shared color provided, sharedColor is modified and
   // returned. Otherwise new color returned.
@@ -2788,7 +2832,7 @@ class Patch {
     return Color.toColor(pixel)
   }
   get color () { return this.getColor() }
-  set color (typedColor) { return this.setColor(typedColor) }
+  set color (typedColor) { this.setColor(typedColor); }
 
   // Set label. Erase label via setting to undefined.
   setLabel (label) {
@@ -2856,7 +2900,6 @@ class Patch {
       init(turtle);
     });
   }
-
 }
 
 // Turtles are the world other agentsets live on. They create a coord system
@@ -2891,6 +2934,14 @@ class Turtles extends AgentSet {
   // clear () {
   //   while (this.any()) this.last.die() // die a turtle method
   // }
+
+  // Return a random valid float x,y point in turtle coord space.
+  randomPt () {
+    const {minXcor, maxXcor, minYcor, maxYcor} = this.world;
+    return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
+    // const {minX, maxX, minY, maxY} = this.world
+    // return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
+  }
 
   // Return an array of this breed within the array of patchs
   inPatches (patches) {
@@ -3820,33 +3871,26 @@ class Three {
 // all the parts of a model. It also contains NetLogo's `observer` methods.
 class Model {
   // Static class methods for default settings.
-  // Default is centered, patchSize = 13, min/max = 16
-  static defaultOptions (size = 13, max = 16) {
-    return {
-      patchSize: size,
-      minX: -max,
-      maxX: max,
-      minY: -max,
-      maxY: max
-      // usePatches: true, // REMIND: Use these. Add Drawing? Labels?
-      // useTurtles: true,
-      // useLinks: true,
-    }
+  // Default world is centered, patchSize = 13, min/max = 16
+  static defaultWorld (size = 13, max = 16) {
+    return World.defaultOptions(size, max)
+  }
+  // Default renderer is Three.js
+  static defaultRenderer () {
+    return Three.defaultOptions()
   }
 
   // The Model constructor takes a DOM div and model and renderer options.
   // Default values are given for all constructor arguments.
   constructor (div = document.body,
-               modelOptions = Model.defaultOptions(),
-               rendererOptions = Three.defaultOptions()) {
+               worldOptions = Model.defaultWorld(),
+               rendererOptions = Model.defaultRenderer()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div;
     this.spriteSheet = new SpriteSheet();
 
     // Create this model's `world` object
-    this.world = Model.defaultOptions();
-    Object.assign(this.world, modelOptions);
-    this.setWorld();
+    this.world = new World(worldOptions);
 
     // Initialize view
     this.view = new rendererOptions.Renderer(this, rendererOptions);
@@ -3875,21 +3919,21 @@ class Model {
     util.waitOn(() => this.modelReady, () => fcn(this));
   }
   // Add additional world variables derived from constructor's `modelOptions`.
-  setWorld () {
-    const world = this.world;
-    // REMIND: change to xPatches, yPatches?
-    world.numX = world.maxX - world.minX + 1;
-    world.numY = world.maxY - world.minY + 1;
-    world.width = world.numX * world.patchSize;
-    world.height = world.numY * world.patchSize;
-    world.minXcor = world.minX - 0.5;
-    world.maxXcor = world.maxX + 0.5;
-    world.minYcor = world.minY - 0.5;
-    world.maxYcor = world.maxY + 0.5;
-    world.isOnWorld = (x, y) => // No braces, is lambda expression
-      (world.minXcor <= x) && (x <= world.maxXcor) &&
-      (world.minYcor <= y) && (y <= world.maxYcor);
-  }
+  // setWorld () {
+  //   const world = this.world
+  //   // REMIND: change to xPatches, yPatches?
+  //   world.numX = world.maxX - world.minX + 1
+  //   world.numY = world.maxY - world.minY + 1
+  //   world.width = world.numX * world.patchSize
+  //   world.height = world.numY * world.patchSize
+  //   world.minXcor = world.minX - 0.5
+  //   world.maxXcor = world.maxX + 0.5
+  //   world.minYcor = world.minY - 0.5
+  //   world.maxYcor = world.maxY + 0.5
+  //   world.isOnWorld = (x, y) => // No braces, is lambda expression
+  //     (world.minXcor <= x) && (x <= world.maxXcor) &&
+  //     (world.minYcor <= y) && (y <= world.maxYcor)
+  // }
   // createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
   //   const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z]
   //   const indices = [0, 1, 2, 0, 2, 3]
@@ -3898,7 +3942,7 @@ class Model {
   // (Re)initialize the model. REMIND: not quite right
   reset (restart = false) {
     this.anim.reset();
-    this.setWorld();
+    this.world.setWorld();
 
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true;
 

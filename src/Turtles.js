@@ -35,6 +35,14 @@ class Turtles extends AgentSet {
   //   while (this.any()) this.last.die() // die a turtle method
   // }
 
+  // Return a random valid float x,y point in turtle coord space.
+  randomPt () {
+    const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+    return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
+    // const {minX, maxX, minY, maxY} = this.world
+    // return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
+  }
+
   // Return an array of this breed within the array of patchs
   inPatches (patches) {
     let array = new AgentArray() // []

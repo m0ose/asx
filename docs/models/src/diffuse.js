@@ -41,10 +41,10 @@ class DiffuseModel extends Model {
   }
 }
 
-const opts = Model.defaultOptions(2, 100)
-opts.minX = 2 * opts.minX
-opts.maxX = 2 * opts.maxY
-const model = new DiffuseModel(document.body, opts).start()
+const options = Model.defaultWorld(2, 100)
+options.minX = 2 * options.minX
+options.maxX = 2 * options.maxY
+const model = new DiffuseModel(document.body, options).start()
 model.whenReady(() => {
   // debugging
   console.log('patches:', model.patches.length)

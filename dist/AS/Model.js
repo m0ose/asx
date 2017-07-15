@@ -1,3 +1,4 @@
+import World from './World.js'
 import Patches from './Patches.js'
 import Patch from './Patch.js'
 import Turtles from './Turtles.js'
@@ -14,33 +15,26 @@ import util from './util.js'
 // all the parts of a model. It also contains NetLogo's `observer` methods.
 class Model {
   // Static class methods for default settings.
-  // Default is centered, patchSize = 13, min/max = 16
-  static defaultOptions (size = 13, max = 16) {
-    return {
-      patchSize: size,
-      minX: -max,
-      maxX: max,
-      minY: -max,
-      maxY: max
-      // usePatches: true, // REMIND: Use these. Add Drawing? Labels?
-      // useTurtles: true,
-      // useLinks: true,
-    }
+  // Default world is centered, patchSize = 13, min/max = 16
+  static defaultWorld (size = 13, max = 16) {
+    return World.defaultOptions(size, max)
+  }
+  // Default renderer is Three.js
+  static defaultRenderer () {
+    return Three.defaultOptions()
   }
 
   // The Model constructor takes a DOM div and model and renderer options.
   // Default values are given for all constructor arguments.
   constructor (div = document.body,
-               modelOptions = Model.defaultOptions(),
-               rendererOptions = Three.defaultOptions()) {
+               worldOptions = Model.defaultWorld(),
+               rendererOptions = Model.defaultRenderer()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div
     this.spriteSheet = new SpriteSheet()
 
     // Create this model's `world` object
-    this.world = Model.defaultOptions()
-    Object.assign(this.world, modelOptions)
-    this.setWorld()
+    this.world = new World(worldOptions)
 
     // Initialize view
     this.view = new rendererOptions.Renderer(this, rendererOptions)
@@ -69,21 +63,21 @@ class Model {
     util.waitOn(() => this.modelReady, () => fcn(this))
   }
   // Add additional world variables derived from constructor's `modelOptions`.
-  setWorld () {
-    const world = this.world
-    // REMIND: change to xPatches, yPatches?
-    world.numX = world.maxX - world.minX + 1
-    world.numY = world.maxY - world.minY + 1
-    world.width = world.numX * world.patchSize
-    world.height = world.numY * world.patchSize
-    world.minXcor = world.minX - 0.5
-    world.maxXcor = world.maxX + 0.5
-    world.minYcor = world.minY - 0.5
-    world.maxYcor = world.maxY + 0.5
-    world.isOnWorld = (x, y) => // No braces, is lambda expression
-      (world.minXcor <= x) && (x <= world.maxXcor) &&
-      (world.minYcor <= y) && (y <= world.maxYcor)
-  }
+  // setWorld () {
+  //   const world = this.world
+  //   // REMIND: change to xPatches, yPatches?
+  //   world.numX = world.maxX - world.minX + 1
+  //   world.numY = world.maxY - world.minY + 1
+  //   world.width = world.numX * world.patchSize
+  //   world.height = world.numY * world.patchSize
+  //   world.minXcor = world.minX - 0.5
+  //   world.maxXcor = world.maxX + 0.5
+  //   world.minYcor = world.minY - 0.5
+  //   world.maxYcor = world.maxY + 0.5
+  //   world.isOnWorld = (x, y) => // No braces, is lambda expression
+  //     (world.minXcor <= x) && (x <= world.maxXcor) &&
+  //     (world.minYcor <= y) && (y <= world.maxYcor)
+  // }
   // createQuad (r, z = 0) { // r is radius of xy quad: [-r,+r], z is quad z
   //   const vertices = [-r, -r, z, r, -r, z, r, r, z, -r, r, z]
   //   const indices = [0, 1, 2, 0, 2, 3]
@@ -92,7 +86,7 @@ class Model {
   // (Re)initialize the model. REMIND: not quite right
   reset (restart = false) {
     this.anim.reset()
-    this.setWorld()
+    this.world.setWorld()
 
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true
 

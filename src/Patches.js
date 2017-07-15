@@ -11,10 +11,11 @@ class Patches extends AgentSet {
     // model, name, baseSet, world: model.world, agentProto: new AgentProto
     // REMIND: agentProto: defaults, agentSet, world, [name]=agentSet.baseSet
     super(model, AgentProto, name, baseSet)
+
     // Skip if a basic Array ctor or a breedSet (don't rebuild patches!).
     // See AgentSet comments.
-    if (typeof model === 'number' || this.isBreedSet()) return
-    // this.world = model.world
+    if (this.isBreedSet()) return
+
     this.populate()
     this.setPixels()
     this.labels = [] // sparse array for labels
@@ -101,10 +102,12 @@ class Patches extends AgentSet {
     return as
   }
 
-  // Return a random valid float x,y point in patch space
+  // Return a random valid int x,y point in patch space
   randomPt () {
-    const {minXcor, maxXcor, minYcor, maxYcor} = this.world
-    return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
+    // const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+    // return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
+    const {minX, maxX, minY, maxY} = this.world
+    return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
   }
   // Return a random patch.
   randomPatch () { return this.oneOf() }
@@ -195,24 +198,28 @@ class Patches extends AgentSet {
   //   return (minXcor <= x) && (x <= maxXcor) && (minYcor <= y) && (y <= maxYcor)
   // }
   // Return the patch id/index given valid integer x,y in patch coords
-  patchXYToIndex (x, y) {
+  patchIndex (x, y) {
     const {minX, maxY, numX} = this.world
     return (x - minX) + (numX * (maxY - y))
   }
-  // Return the patch x,y patch coords given a valid patches id/index
-  patchIndexToXY (ix) {
-    const {minX, maxY, numX} = this.world
-    return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
-  }
-  // Convert to/from pixel coords & patch coords
-  pixelXYToPatchXY (x, y) {
-    const {patchSize, minXcor, maxYcor} = this.world
-    return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
-  }
-  patchXYToPixelXY (x, y) {
-    const {patchSize, minXcor, maxYcor} = this.world
-    return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
-  }
+  // patchXYToIndex (x, y) {
+  //   const {minX, maxY, numX} = this.world
+  //   return (x - minX) + (numX * (maxY - y))
+  // }
+  // // Return the patch x,y patch coords given a valid patches id/index
+  // patchIndexToXY (ix) {
+  //   const {minX, maxY, numX} = this.world
+  //   return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
+  // }
+  // // Convert to/from pixel coords & patch coords
+  // pixelXYToPatchXY (x, y) {
+  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
+  // }
+  // patchXYToPixelXY (x, y) {
+  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
+  // }
 
   // Utils for NetLogo patch location methods.
   // All return `undefined` if not onworld.
@@ -230,7 +237,7 @@ class Patches extends AgentSet {
     return this.patchXY(intX, intY)
   }
   // Return the patch at x,y where both are valid integer patch coordinates.
-  patchXY (x, y) { return this[this.patchXYToIndex(x, y)] }
+  patchXY (x, y) { return this[this.patchIndex(x, y)] }
 
   // Return patches within the patch rect, default is square & meToo
   // inRect (patch, dx, dy = dx, meToo = true) {

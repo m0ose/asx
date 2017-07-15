@@ -80,7 +80,7 @@ class ExitModel extends Model {
   }
 }
 
-const options = Model.defaultOptions(7, 35)
+const options = Model.defaultWorld(7, 35)
 const model = new ExitModel(document.body, options).start()
 // note that start above also uses so is safe. fine to include below too.
 model.whenReady(() => {

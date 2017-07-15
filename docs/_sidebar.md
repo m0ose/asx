@@ -4,3 +4,9 @@
 - **Documentation**
   - [AS.js](AS.md)
   - [AgentArray.js](AgentArray.md)
+  - [AgentSet.js](AgentSet.md)
+  - [Patches.js](Patches.md)
+  - [Patch.js](Patch.md)
+  - [Turtles.js](Turtles.md)
+  - [Turtle.js](Turtle.md)
+  - [World.js](World.md)

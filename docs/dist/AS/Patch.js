@@ -77,7 +77,7 @@ class Patch {
   // Manage colors by directly setting pixels in Patches pixels object.
   // With getter/setters, slight performance hit.
   setColor (typedColor) {
-    this.patches.pixels.data[this.id] = typedColor.getPixel()
+    this.patches.pixels.data[this.id] = Color.toColor(typedColor).getPixel()
   }
   // Optimization: If shared color provided, sharedColor is modified and
   // returned. Otherwise new color returned.
@@ -90,7 +90,7 @@ class Patch {
     return Color.toColor(pixel)
   }
   get color () { return this.getColor() }
-  set color (typedColor) { return this.setColor(typedColor) }
+  set color (typedColor) { this.setColor(typedColor) }
 
   // Set label. Erase label via setting to undefined.
   setLabel (label) {
@@ -158,7 +158,6 @@ class Patch {
       init(turtle)
     })
   }
-
 }
 
 export default Patch

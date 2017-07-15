@@ -68,7 +68,7 @@ class FireModel extends Model {
 }
 
 const div = document.body
-const options = Model.defaultOptions(2, 125)
+const options = Model.defaultWorld(2, 125)
 const model = new FireModel(div, options).start()
 
 model.whenReady(() => {

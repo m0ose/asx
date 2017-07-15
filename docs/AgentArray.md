@@ -1,16 +1,24 @@
 # AgentArray.js
 
-AgentArray is a subclass of Array which contains Objects, in particular Agent Objects. Thus the patches array contains patch objects, etc for turtles and links. The words `agent` and `object` are interchangeable.
+AgentArray is a subclass of Array which contains Objects, generally called Agents. Thus the patches array contains patch objects, etc for turtles and links. The words `agent` and `object` are interchangeable.
 
 Because Agents contain common values such as `id`, `x,y,z`, and so on, a few methods assume these values are present.
 
 Note the term `reporter` below means a function that returns a value. Similarly, we use NetLogo method names which have JavaScript Array equivalents.
 
-## Methods
+## Statics
 
 > `static fromArray (array)`
 
 A static method to convert an Array to an AgentArray. Called like this: `AgentArray.fromArray(array)`
+
+Note that the Array.isArray static: `Array.isArray(patches)` returns `true`
+
+## Constructor
+
+None. It inherits Array's constructor.
+
+## Methods
 
 > `toArray ()`
 
@@ -88,7 +96,7 @@ Return n random unique agents as AgentArray. Error if n > length of array.
 
 Return a new AgentArray of the n min/max agents of the value of reporter, in ascending order. If reporter is a string, convert to a fcn returning that property NOTE: we do not manage ties, see NetLogo docs.
 
-## Geometry Methods
+### Geometry Methods
 
 These methods are for patches, turtles, and other AgentArrays whose agents have x,y. Return all agents within rect, radius, cone from given agent. If meToo, include given agent, default is false. Typically the AgentArray is a subset of larger AgentArrays, reducing the size, then uses these inRect, inRadius or inCone methods.
 
@@ -103,3 +111,21 @@ Return all agents in AgentArray within d distance from given agent.
 > `inCone (agent, radius, coneAngle, direction, meToo = false)`
 
 As `inRadius`, but also limited to the angle `coneAngle` around a `direction` from given agent.
+
+### Inherited Methods
+
+All Array methods: see [MDN Document](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array).
+
+## Properties
+
+None
+
+### Inherited Properties
+
+> `length`
+
+Array.length: patches.length works as with any Array or Array subclass.
+
+## Code
+
+Code is [here](https://github.com/backspaces/asx/blob/master/src/AgentArray.js).

@@ -63,3 +63,7 @@ Modules: <br />
 `import {ColorMap, DataSet, Model, util} from 'path/to/AS.module.js'`
 
 This allows us to easily convert es6 module based sample models to script based models.
+
+## Code
+
+Code is [here](https://github.com/backspaces/asx/blob/master/src/AS.js).
