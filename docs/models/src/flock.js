@@ -105,7 +105,6 @@ class FlockModel extends Model {
     const dy = headings.map((theta) => Math.sin(theta)).reduce((x, y) => x + y)
     return Math.sqrt(dx * dx + dy * dy) / this.population
   }
-
 }
 
 const model = new FlockModel(document.body).start()

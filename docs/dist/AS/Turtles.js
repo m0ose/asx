@@ -55,7 +55,7 @@ class Turtles extends AgentSet {
   // patch based, not turtle based.
   inPatchRect (turtle, dx, dy = dx, meToo = false) {
     // meToo: true for patches, could have several turtles on patch
-    const patches = this.model.patches.patchRect(turtle.patch, dx, dy, true)
+    const patches = this.model.patches.inRect(turtle.patch, dx, dy, true)
     const aSet = this.inPatches(patches)
     if (!meToo) util.removeItem(aSet, turtle) // don't use aSet.removeAgent: breeds
     return aSet // this.inPatches(patches)

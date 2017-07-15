@@ -71,10 +71,6 @@ Ex: Patch x values are random ints in minX, maxX. Turtle x values are random flo
 
 Return a random patch.
 
-> `patchRect (p, dx, dy = dx, meToo = true)`
-
-Return all patches in rectangle dx, dy from p, dx, dy integers. Include p itself if meToo is true.
-
 > `installPixels ()`
 
 This is a "fine point". The patch colors are installed in an ImageData object, a raw set of pixels. This functions "pushes" the pixels back into the canvas object itself so it can be used as an image. Used to update a Three.js texture, for example.
@@ -105,7 +101,51 @@ Return patch at x,y float values (i.e. turtle coordinates). Return undefined if 
 
 Return the patch at x,y where both are valid integer patch coordinates.
 
+> `inRect (p, dx, dy = dx, meToo = true)`
+
+Return all patches in rectangle dx, dy from p, dx, dy integers. Include p itself if meToo is true.
+
+Overrides AgentArray's inRect, taking advantage of the regular layout of the patches.
+
+If called with a breed, returns the same values as if called with patches. Does not limit itself to only breeds in result.
+
+> `cacheRect (dx, dy = dx, meToo = true)`
+
+Install a cached version of inRect(p, dx, dy, meToo).
+
+If called by a breed, only caches inRect of the breed's current patches.
+
+> `inRadius (patch, radius, meToo = true)`
+
+Return all patches within radius from given agent.
+
+Overrides AgentArray's inRadius, using patches.inRect, then super.inRadius.
+
+> `inCone (patch, radius, coneAngle, direction, meToo = true)`
+
+Return patches in cone from p in direction `angle`, with `coneAngle` width and `radius` distance from p.
+
+> `patchAtAngleAndDistance (obj, angle, distance)`
+
+Return patch at distance and angle from obj's (patch or turtle) x, y (floats). If off world, return undefined.
+
+To use heading rather than euclidean angle: `patchAtAngleAndDistance(obj, util.angle(heading), distance)`
+
+> `diffuse (v, rate, colorMap = null, min = 0, max = 1)`
+
+Diffuse the value of patch variable `p.v` by distributing `rate` percent of each patch's value of `v` to its neighbors.
+
+If a color map is given, scale the patch color via p.v's value where min/max are the min/max values for p.v.
+
+If the patch is on edge, return the left over value to the p.v
+
+> `diffuse4 (v, rate, colorMap = null, min = 0, max = 1)`
+
+A neighbor4 version of the above.
+
 ## Properties
+
+None.
 
 ## Code
 

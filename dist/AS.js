@@ -2477,7 +2477,7 @@ class Patches extends AgentSet {
   }
 
   // Return the offsets from a patch for its 8 element neighbors.
-  // Specialized to be faster than patchRect below.
+  // Specialized to be faster than inRect below.
   neighborsOffsets (x, y) {
     const {minX, maxX, minY, maxY, numX} = this.world;
     if (x === minX) {
@@ -2530,26 +2530,6 @@ class Patches extends AgentSet {
   }
   // Return a random patch.
   randomPatch () { return this.oneOf() }
-
-  // Patches in rectangle dx, dy from p, dx, dy integers.
-  // Both dx & dy are half width/height of rect
-  patchRect (p, dx, dy = dx, meToo = true) {
-    // Return cached rect if one exists.
-    if (p.pRect && p.pRect.length === dx * dy) return p.pRect
-    const rect = new AgentArray();
-    let {minX, maxX, minY, maxY} = this.world;
-    minX = Math.max(minX, p.x - dx);
-    maxX = Math.min(maxX, p.x + dx);
-    minY = Math.max(minY, p.y - dy);
-    maxY = Math.min(maxY, p.y + dy);
-    for (let y = minY; y <= maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        const pnext = this.patchXY(x, y);
-        if (p !== pnext || meToo) rect.push(pnext);
-      }
-    }
-    return rect
-  }
 
   installPixels () {
     const pixels = this.pixels;
@@ -2658,49 +2638,90 @@ class Patches extends AgentSet {
   // Return the patch at x,y where both are valid integer patch coordinates.
   patchXY (x, y) { return this[this.patchIndex(x, y)] }
 
-  // Return patches within the patch rect, default is square & meToo
+  // Patches in rectangle dx, dy from p, dx, dy integers.
+  // Both dx & dy are half width/height of rect
+  inRect (p, dx, dy = dx, meToo = true) {
+    // Return cached rect if one exists.
+    // if (p.pRect && p.pRect.length === dx * dy) return p.pRect
+    if (p.rectCache) {
+      const rect = p.rectCache[dx * dy + meToo ? 0 : -1];
+      if (rect) return rect
+    }
+    const rect = new AgentArray();
+    let {minX, maxX, minY, maxY} = this.world;
+    minX = Math.max(minX, p.x - dx);
+    maxX = Math.min(maxX, p.x + dx);
+    minY = Math.max(minY, p.y - dy);
+    maxY = Math.min(maxY, p.y + dy);
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const pnext = this.patchXY(x, y);
+        if (p !== pnext || meToo) rect.push(pnext);
+      }
+    }
+    return rect
+  }
+
+  // Performance: create a cached rect of this size.
+  // inRect will use this if matches dx, dy, meToo.
+  cacheRect (dx, dy = dx, meToo = true) {
+    this.ask(p => {
+      if (!p.rectCache) p.rectCache = [];
+      const rect = this.inRect(p, dx, dy, meToo);
+      p.rectCache[rect.length] = rect;
+    });
+  }
+
+// Return patches within the patch rect, default is square & meToo
   // inRect (patch, dx, dy = dx, meToo = true) {
-  //   return this.patchRect(patch, dx, dy, meToo)
+  //   return this.inRect(patch, dx, dy, meToo)
   // }
   // Patches in circle radius (integer) from patch
+  // inRadius (patch, radius, meToo = true) {
+  //   const rSq = radius * radius
+  //   const result = new AgentArray()
+  //   const sqDistance = util.sqDistance // 10% faster
+  //   const pRect = this.inRect(patch, radius, radius, meToo)
+  //   for (let i = 0; i < pRect.length; i++) {
+  //     const p = pRect[i]
+  //     if (sqDistance(patch.x, patch.y, p.x, p.y) <= rSq) result.push(p)
+  //   }
+  //   return result
+  // }
   inRadius (patch, radius, meToo = true) {
-    const rSq = radius * radius;
-    const result = new AgentArray();
-    const sqDistance = util.sqDistance; // 10% faster
-    const pRect = this.patchRect(patch, radius, radius, meToo);
-    for (let i = 0; i < pRect.length; i++) {
-      const p = pRect[i];
-      if (sqDistance(patch.x, patch.y, p.x, p.y) <= rSq) result.push(p);
-    }
-    return result
+    const pRect = this.inRect(patch, radius, radius, meToo);
+    return pRect.inRadius(patch, radius, meToo)
   }
   // Patches in cone from p in direction `angle`, with `coneAngle` and `radius`
   inCone (patch, radius, coneAngle, direction, meToo = true) {
-    const pRect = this.patchRect(patch, radius, radius, meToo);
-    const result = new AgentArray();
-    for (let i = 0; i < pRect.length; i++) {
-      const p = pRect[i];
-      const isIn = util.inCone(p.x, p.y, radius, coneAngle, direction, patch.x, patch.y);
-      if (isIn && (patch !== p || meToo)) result.push(p);
-    }
-    return result
+    const pRect = this.inRect(patch, radius, radius, meToo);
+    return pRect.inCone(patch, radius, coneAngle, direction, meToo)
+
+    // const result = new AgentArray()
+    // for (let i = 0; i < pRect.length; i++) {
+    //   const p = pRect[i]
+    //   const isIn = util.inCone(p.x, p.y, radius, coneAngle, direction, patch.x, patch.y)
+    //   if (isIn && (patch !== p || meToo)) result.push(p)
+    // }
+    // return result
   }
 
   // Return patch at distance and angle from obj's (patch or turtle)
   // x, y (floats). If off world, return undefined.
   // To use heading: patchAtAngleAndDistance(obj, util.angle(heading), distance)
+  // Does not take into account the angle of the obj .. turtle.theta for example.
   patchAtAngleAndDistance (obj, angle, distance) {
     let {x, y} = obj;
     x = x + distance * Math.cos(angle);
     y = y + distance * Math.sin(angle);
     return this.patch(x, y)
   }
-  patchLeftAndAhead (dTheta, distance) {
-    return this.patchAtAngleAndDistance(dTheta, distance)
-  }
-  patchRightAndAhead (dTheta, distance) {
-    return this.patchAtAngleAndDistance(-dTheta, distance)
-  }
+  // patchLeftAndAhead (dTheta, distance) {
+  //   return this.patchAtAngleAndDistance(dTheta, distance)
+  // }
+  // patchRightAndAhead (dTheta, distance) {
+  //   return this.patchAtAngleAndDistance(-dTheta, distance)
+  // }
 
   // Diffuse the value of patch variable `p.v` by distributing `rate` percent
   // of each patch's value of `v` to its neighbors.
@@ -2957,7 +2978,7 @@ class Turtles extends AgentSet {
   // patch based, not turtle based.
   inPatchRect (turtle, dx, dy = dx, meToo = false) {
     // meToo: true for patches, could have several turtles on patch
-    const patches = this.model.patches.patchRect(turtle.patch, dx, dy, true);
+    const patches = this.model.patches.inRect(turtle.patch, dx, dy, true);
     const aSet = this.inPatches(patches);
     if (!meToo) util.removeItem(aSet, turtle); // don't use aSet.removeAgent: breeds
     return aSet // this.inPatches(patches)

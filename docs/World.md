@@ -20,7 +20,7 @@ Use the 5 option properties to initialize the world. The options are easily made
 
 > `setWorld ()`
 
-Used by the constructor to add several derived properties:
+Used by the constructor to add eight derived properties:
 
 * numX, numY: number of horizontal/vertical patches
 * width, height: number of horizontal/vertical pixels
@@ -34,11 +34,11 @@ Return true if the float x,y values are inside the edges of the world.
 
 ## Properties
 
-From the constructor options:
+From the constructor options (5):
 * patchSize, minX/Y, maxX/Y
 
-From setWorld:
-* numX, numY, width, height, minX/Ycor, maxX/Ycor
+From setWorld (8):
+* numX, numY, width, height, minXcor, minYcor, maxXcor, maxYcor
 
 ## Code
 
