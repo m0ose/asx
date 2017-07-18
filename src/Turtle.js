@@ -37,7 +37,7 @@ class Turtle {
     // this.defaults = this
     // this.agentSet = agentSet
     // this.model = agentSet.model
-    // this.world = agentSet.world
+    // this.model.world = agentSet.world
     // this.turtles = agentSet.baseSet
 
     // this.sprite = this.turtles.model.spriteSheet.addDrawing('default')
@@ -91,7 +91,7 @@ class Turtle {
     const ss = this.model.spriteSheet
     this.sprite = ss.newSprite(src, color, strokeColor)
   }
-  setSize (size) { this.size = size } // * this.world.patchSize }
+  setSize (size) { this.size = size } // * this.model.world.patchSize }
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
@@ -101,12 +101,12 @@ class Turtle {
   setxy (x, y, z = null) {
     const p0 = this.patch
     if (z) this.z = z // don't promote z if null, use default z instead.
-    if (this.world.isOnWorld(x, y)) {
+    if (this.model.world.isOnWorld(x, y)) {
       this.x = x
       this.y = y
     } else {
       this.handleEdge(x, y)
-      // const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+      // const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
       // if (this.wrap) {
       //   this.x = util.wrap(x, minXcor, maxXcor)
       //   this.y = util.wrap(y, minYcor, maxYcor)
@@ -124,7 +124,7 @@ class Turtle {
   // Handle turtle if x,y off-world
   handleEdge (x, y) {
     if (util.isString(this.atEdge)) {
-      const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+      const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
       if (this.atEdge === 'wrap') {
         this.x = util.wrap(x, minXcor, maxXcor)
         this.y = util.wrap(y, minYcor, maxYcor)

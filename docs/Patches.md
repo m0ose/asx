@@ -1,6 +1,6 @@
 # Patches.js
 
-Patches is the AgentSet subset for the grid "world" of an ABM. They use thoe coordinate system defined by [class World](World).
+Patches is the [AgentSet](AgentSet) subset for the grid "world" of an ABM. They use thoe coordinate system defined by [class World](World).
 
 They create the patch world other AgentSets live on, using the patchSize, minX, maxX, minY, maxY in the model.world instance created by class Model's constructor.
 
@@ -10,7 +10,7 @@ None
 
 ## Constructor
 
-> `constructor (model, AgentProto, name, baseSet = null)`
+> `constructor (model, AgentClass, name)`
 
 Identical to AgentSet's [constructor](AgentSet?id=constructor).
 
@@ -35,11 +35,11 @@ Used to set/get labels for the given patch. Not currently implemented.
 > `neighborsOffsets (x, y)` <br />
 > `neighbors4Offsets (x, y)`
 
-Utilities for the two following methods. Returns the AgentArray indices for the given x, y values.
+Utilities for the two following methods. Returns an array of neighbor offsets within the Patches AgentArray for the given x, y values.
 
 > `neighbors (patch)`
 
-Returns the [Moore neighborhood](https://en.wikipedia.org/wiki/Moore_neighborhood) for the given patch, using the `neighborsOffsets` utility.
+Returns an AgentArray of the patches of the [Moore neighborhood](https://en.wikipedia.org/wiki/Moore_neighborhood) for the given patch, using the `neighborsOffsets` utility.
 
 This is used by the Patch agents: p.neighbors() calls p.patches.neighbors(this)
 
@@ -47,6 +47,8 @@ For patches not on the edge of the world, returns 8 patches. For corner patches,
 
 This can be useful for finding the boundary patches:
 `const edgePatches = patches.with(p => p.neighbors.length < 8)`
+or for setting variables:
+`patches.patch(0,0).neighbors.ask(n => {n.color = 'red'})`
 
 > `neighbors4 (patch)`
 
@@ -56,20 +58,18 @@ This is used by the Patch agents: p.neighbors4() calls p.patches.neighbors4(this
 
 For patches not on the edge of the world, returns 4 patches. For corner patches, returns 2 patches. For edge patches, returns 3 patches.
 
-As for `neighbors`, this can be useful for finding the boundary patches:
-`const edgePatches = patches.with(p => p.neighbors4.length < 4)`
+As for `neighbors`, this can be useful for finding the corner patches:
+`const cornerPatches = patches.with(p => p.neighbors4.length === 2)`
 
 > `randomPt ()`
 
 Return a random valid int x,y point in patch space. Note this differs from turtles.randomPt which returns a valid turtle float x,y point.
 
-Ex: Patch x values are random ints in minX, maxX. Turtle x values are random floats in minX - 0.5, maxX + 0.5.
+Note: Patch x values are random ints in minX, maxX. Turtle x values are random floats in minX - 0.5, maxX + 0.5. Ditto  for Y.
 
-`patches.randomPt` corresponds to NetLogo's random-pxcor, random-pycor
+Corresponds to NetLogo's random-pxcor, random-pycor
 
-> `randomPatch ()`
-
-Return a random patch.
+Note: to get a random patch use AgentArray's oneOf: `patches.oneOf()`.
 
 > `installPixels ()`
 
@@ -101,19 +101,23 @@ Return patch at x,y float values (i.e. turtle coordinates). Return undefined if 
 
 Return the patch at x,y where both are valid integer patch coordinates.
 
-> `inRect (p, dx, dy = dx, meToo = true)`
+> `patchRect (p, dx, dy = dx, meToo = true)`
 
 Return all patches in rectangle dx, dy from p, dx, dy integers. Include p itself if meToo is true.
-
-Overrides AgentArray's inRect, taking advantage of the regular layout of the patches.
 
 If called with a breed, returns the same values as if called with patches. Does not limit itself to only breeds in result.
 
 > `cacheRect (dx, dy = dx, meToo = true)`
 
-Install a cached version of inRect(p, dx, dy, meToo).
+Install a cached version of patchRect(p, dx, dy, meToo). This increases the performance of `patchRect` when a cached rect is available.
 
-If called by a breed, only caches inRect of the breed's current patches.
+> `inRect (p, dx, dy = dx, meToo = true)`
+
+Return all patches/breeds in rectangle dx, dy from p, dx, dy integers. Include p itself if meToo is true.
+
+Overrides AgentArray's inRect, taking advantage of the regular layout of the patches.
+
+If called with a breed, returns the breeds in the rect. Otherwise the same as patchRect.
 
 > `inRadius (patch, radius, meToo = true)`
 
@@ -137,7 +141,7 @@ Diffuse the value of patch variable `p.v` by distributing `rate` percent of each
 
 If a color map is given, scale the patch color via p.v's value where min/max are the min/max values for p.v.
 
-If the patch is on edge, return the left over value to the p.v
+If the patch is on edge, return the leftover value to the p.v
 
 > `diffuse4 (v, rate, colorMap = null, min = 0, max = 1)`
 
@@ -145,7 +149,14 @@ A neighbor4 version of the above.
 
 ## Properties
 
-None.
+* pixels: An object for managing pixel data for patch colors:
+  * pixels.ctx: A numX x numY canvas context object, one pixel per patch
+  * pixels.imageData: The ctx's ImageData object
+  * pixels.data8: The ImageData's rgba Uint8Array
+  * pixels.data: A Uint32Array view onto data8. Pixel values.
+
+* labels: A collection of patch labels. Not currently implemented.
+* _diffuseNext: A temporary patch variable used by the diffuse, diffuse4 methods.
 
 ## Code
 

@@ -15,72 +15,71 @@ class AgentSet extends AgentArray {
   // Create an empty `AgentSet` and initialize the `ID` counter for add().
   // If baseSet is supplied, the new agentset is a subarray of baseSet.
   // This sub-array feature is how breeds are managed, see class `Model`
-  constructor (model, AgentProto, name, baseSet = null) {
-    // Because es6 JavaScript Array itself calls the Array ctor
-    // (ex: slice() returning a new array), skip if not AgentSet ctor.
-    if (model == null) model = 0 // model is null or undefined
-    if (typeof model === 'number') {
-      console.log('AgentSet ctor called for AgentArray/Array.')
-      super(model) // model is a number, return AgentArray of that size
+  constructor (model, AgentClass, name, baseSet = null) {
+    super() // create empty AgentArray
+    baseSet = baseSet || this // if not a breed, set baseSet to this
+    // AgentSets know their model, name, baseSet, world.
+    // Object.assign(this, {model, name, baseSet, AgentClass, world: model.world})
+    Object.assign(this, {model, name, baseSet, AgentClass})
+    // BaseSets know their breeds and keep the ID global
+    if (this.isBaseSet()) {
+      this.breeds = {} // will contain breedname: breed entries
+      this.ID = 0
+    // Breeds add themselves to baseSet.
     } else {
-      super() // create empty AgentArray
-      baseSet = baseSet || this // if not a breed, set baseSet to this
-      // AgentSets know their model, name, baseSet, world.
-      Object.assign(this, {model, name, baseSet, world: model.world})
-      // // Link our agents to us
-      // this.agentProto.agentSet = this
-      // BaseSets know their breeds and keep the ID global
-      if (this.isBaseSet()) {
-        this.breeds = {} // will contain breedname: breed entries
-        this.ID = 0
-      // Breeds add themselves to baseSet.
-      } else {
-        this.baseSet.breeds[name] = this
-      }
-      // Keep a list of this set's variables; see `own` below
-      this.ownVariables = []
-      // Create a proto for our agents by having a defaults and instance layer
-      // this.AgentProto = AgentProto
-      this.agentProto = new AgentProto(this)
-      this.protoMixin()
+      this.baseSet.breeds[name] = this
     }
+    // Keep a list of this set's variables; see `own` below
+    this.ownVariables = []
+    // Create a proto for our agents by having a defaults and instance layer
+    // this.AgentClass = AgentClass
+    this.agentProto = new AgentClass(this)
+    this.protoMixin(this.agentProto, AgentClass)
+    // }
   }
   // All agents have:
   // vars: id, agentSet, model, world, breed (getter)
   //   baseSet by name: turtles/patches/links
   // methods: setBreed, getBreed, isBreed
   // getter/setter: breed
-  protoMixin () {
-    const agentProto = this.agentProto
+  protoMixin (agentProto, AgentClass) {
     Object.assign(agentProto, {
-      // defaults: agentProto,
       agentSet: this,
-      model: this.model,
-      world: this.world
-      // this.turtles = agentSet.baseSet
+      model: this.model
+      // world: this.world
     })
     agentProto[this.baseSet.name] = this.baseSet
 
-    // const AgentProto = this.AgentProto
-    const AgentProto = Object.getPrototypeOf(agentProto)
-    // if (this.isBaseSet()) {
-    if (!AgentProto.setBreed) {
-      // const AgentProto = Object.getPrototypeOf(agentProto)
-      // const AgentProto = this.AgentProto
-      Object.assign(AgentProto, {
+    if (this.isBaseSet()) {
+      Object.assign(AgentClass.prototype, {
         setBreed (breed) { breed.setBreed(this) },
         getBreed () { return this.agentSet },
         isBreed (breed) { return this.agentSet === breed }
       })
-      Object.defineProperty(AgentProto, 'breed', {
+      Object.defineProperty(AgentClass.prototype, 'breed', {
         get: function () { return this.agentSet }
       })
     }
   }
 
+  // Create a subarray of this AgentSet. Example: create a people breed of turtles:
+  // `people = turtles.newBreed('people')`
+  newBreed (name) {
+    return new AgentSet(this.model, this.AgentClass, name, this)
+  }
+
   // Is this a baseSet or a derived "breed"
   isBreedSet () { return this.baseSet !== this }
   isBaseSet () { return this.baseSet === this }
+
+  // with (reporter) { return this.filter(reporter) }
+  // if (this.isBreedSet()) array = array.filter((a) => a.agentSet === this)
+
+  // Return breeds in a subset of an AgentSet.
+  // Ex: patches.inRect(5).withBreed(houses)
+  withBreed (breed) {
+    return this.with(a => a.agentSet === breed)
+  }
 
   // Abstract method used by subclasses to create and add their instances.
   create () { console.log(`AgentSet: Abstract method called: ${this}`) }

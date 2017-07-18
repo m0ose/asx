@@ -37,8 +37,8 @@ To configure the Three parameters, we've introduced a second configuration objec
 // The Model constructor takes a DOM div and model and renderer options.
 // Default values are given for all constructor arguments.
 constructor (div = document.body,
-             modelOptions = Model.defaultOptions(),
-             rendererOptions = Three.defaultOptions()) {
+             modelOptions = Model.defaultWorld(),
+             rendererOptions = Model.defaultRenderer()) {
 ```
 
 The conversion of the [fire](http://backspaces.github.io/asx/models?fire) model, [source here](https://github.com/backspaces/asx/blob/master/models/src/fire.js), is an example of the minor changes needed in converting to Three.js.

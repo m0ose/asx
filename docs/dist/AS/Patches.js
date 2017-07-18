@@ -6,14 +6,13 @@ import DataSet from './DataSet.js'
 // Patches are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Patches extends AgentSet {
-  constructor (model, AgentProto, name, baseSet = null) {
+  constructor (model, AgentClass, name) {
     // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world, agentProto: new AgentProto
+    // model, name, baseSet, world: model.world, agentProto: new AgentClass
     // REMIND: agentProto: defaults, agentSet, world, [name]=agentSet.baseSet
-    super(model, AgentProto, name, baseSet)
+    super(model, AgentClass, name)
 
-    // Skip if a basic Array ctor or a breedSet (don't rebuild patches!).
-    // See AgentSet comments.
+    // Skip if a breedSet (don't rebuild patches!).
     if (this.isBreedSet()) return
 
     this.populate()
@@ -22,13 +21,13 @@ class Patches extends AgentSet {
   }
   // Set up all the patches.
   populate () {
-    util.repeat(this.world.numX * this.world.numY, (i) => {
+    util.repeat(this.model.world.numX * this.model.world.numY, (i) => {
       this.addAgent() // Object.create(this.agentProto))
     })
   }
   // Setup pixels ctx used for patch.color: `draw` and `importColors`
   setPixels () {
-    const {numX, numY} = this.world
+    const {numX, numY} = this.model.world
     // const ctx = this.model.contexts.patches
     // const pixels = this.pixels = {are1x1: patchSize === 1}
     // pixels.ctx = pixels.are1x1 ? ctx : util.createCtx(numX, numY)
@@ -60,7 +59,7 @@ class Patches extends AgentSet {
   // Return the offsets from a patch for its 8 element neighbors.
   // Specialized to be faster than inRect below.
   neighborsOffsets (x, y) {
-    const {minX, maxX, minY, maxY, numX} = this.world
+    const {minX, maxX, minY, maxY, numX} = this.model.world
     if (x === minX) {
       if (y === minY) return [-numX, -numX + 1, 1]
       if (y === maxY) return [1, numX + 1, numX]
@@ -77,7 +76,7 @@ class Patches extends AgentSet {
   }
   // Return the offsets from a patch for its 4 element neighbors (N,S,E,W)
   neighbors4Offsets (x, y) {
-    const numX = this.world.numX
+    const numX = this.model.world.numX
     return this.neighborsOffsets(x, y)
       .filter((n) => Math.abs(n) === 1 || Math.abs(n) === numX) // slightly faster
       // .filter((n) => [1, -1, numX, -numX].indexOf(n) >= 0)
@@ -104,13 +103,11 @@ class Patches extends AgentSet {
 
   // Return a random valid int x,y point in patch space
   randomPt () {
-    // const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+    // const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
     // return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
-    const {minX, maxX, minY, maxY} = this.world
+    const {minX, maxX, minY, maxY} = this.model.world
     return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
   }
-  // Return a random patch.
-  randomPatch () { return this.oneOf() }
 
   installPixels () {
     const pixels = this.pixels
@@ -156,48 +153,54 @@ class Patches extends AgentSet {
   // Import/export DataSet to/from patch variable `patchVar`.
   // `useNearest`: true for fast rounding to nearest; false for bi-linear.
   importDataSet (dataSet, patchVar, useNearest = false) {
-    if (this.isBreedSet()) // REMIND: error
+    if (this.isBreedSet()) { // REMIND: error
+      console.log('warning: exportDataSet called with breed, using patches')
       this.baseSet.importDataSet(dataSet, patchVar, useNearest)
-    const {numX, numY} = this.world
+    }
+    const {numX, numY} = this.model.world
     const dataset = dataSet.resample(numX, numY, useNearest)
-    // REMIND: Needs test.
     this.ask(p => { p[patchVar] = dataset.data[p.id] })
     // for (const patch of this)
     //   patch[patchVar] = dataset.data[patch.id]
   }
   exportDataSet (patchVar, Type = Array) {
-    const {numX, numY} = this.world
-    let data = util.arrayProps(this, patchVar)
+    if (this.isBreedSet()) {
+      console.log('warning: exportDataSet called with breed, using patches')
+      this.baseSet.exportDataSet(patchVar, Type)
+    }
+    const {numX, numY} = this.model.world
+    // let data = util.arrayProps(this, patchVar)
+    let data = this.props(this, patchVar)
     data = util.convertArray(data, Type)
     return new DataSet(numX, numY, data)
   }
 
   // Return true if x,y floats are within patch world.
   // isOnWorld (x, y) {
-  //   const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+  //   const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
   //   return (minXcor <= x) && (x <= maxXcor) && (minYcor <= y) && (y <= maxYcor)
   // }
   // Return the patch id/index given valid integer x,y in patch coords
   patchIndex (x, y) {
-    const {minX, maxY, numX} = this.world
+    const {minX, maxY, numX} = this.model.world
     return (x - minX) + (numX * (maxY - y))
   }
   // patchXYToIndex (x, y) {
-  //   const {minX, maxY, numX} = this.world
+  //   const {minX, maxY, numX} = this.model.world
   //   return (x - minX) + (numX * (maxY - y))
   // }
   // // Return the patch x,y patch coords given a valid patches id/index
   // patchIndexToXY (ix) {
-  //   const {minX, maxY, numX} = this.world
+  //   const {minX, maxY, numX} = this.model.world
   //   return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
   // }
   // // Convert to/from pixel coords & patch coords
   // pixelXYToPatchXY (x, y) {
-  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   const {patchSize, minXcor, maxYcor} = this.model.world
   //   return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
   // }
   // patchXYToPixelXY (x, y) {
-  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   const {patchSize, minXcor, maxYcor} = this.model.world
   //   return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
   // }
 
@@ -209,11 +212,11 @@ class Patches extends AgentSet {
   // Return patch at x,y float values according to topology.
   // Return undefined if off-world
   patch (x, y) {
-    if (!this.world.isOnWorld(x, y)) return undefined
-    const intX = x === this.world.maxXcor
-      ? this.world.maxX : Math.round(x) // handle n.5 round up to n + 1
-    const intY = y === this.world.maxYcor
-      ? this.world.maxY : Math.round(y)
+    if (!this.model.world.isOnWorld(x, y)) return undefined
+    const intX = x === this.model.world.maxXcor
+      ? this.model.world.maxX : Math.round(x) // handle n.5 round up to n + 1
+    const intY = y === this.model.world.maxYcor
+      ? this.model.world.maxY : Math.round(y)
     return this.patchXY(intX, intY)
   }
   // Return the patch at x,y where both are valid integer patch coordinates.
@@ -221,7 +224,7 @@ class Patches extends AgentSet {
 
   // Patches in rectangle dx, dy from p, dx, dy integers.
   // Both dx & dy are half width/height of rect
-  inRect (p, dx, dy = dx, meToo = true) {
+  patchRect (p, dx, dy = dx, meToo = true) {
     // Return cached rect if one exists.
     // if (p.pRect && p.pRect.length === dx * dy) return p.pRect
     if (p.rectCache) {
@@ -229,7 +232,7 @@ class Patches extends AgentSet {
       if (rect) return rect
     }
     const rect = new AgentArray()
-    let {minX, maxX, minY, maxY} = this.world
+    let {minX, maxX, minY, maxY} = this.model.world
     minX = Math.max(minX, p.x - dx)
     maxX = Math.min(maxX, p.x + dx)
     minY = Math.max(minY, p.y - dy)
@@ -244,7 +247,7 @@ class Patches extends AgentSet {
   }
 
   // Performance: create a cached rect of this size.
-  // inRect will use this if matches dx, dy, meToo.
+  // patchRect will use this if matches dx, dy, meToo.
   cacheRect (dx, dy = dx, meToo = true) {
     this.ask(p => {
       if (!p.rectCache) p.rectCache = []
@@ -269,6 +272,11 @@ class Patches extends AgentSet {
   //   }
   //   return result
   // }
+  inRect (patch, dx, dy = dx, meToo = true) {
+    const pRect = this.patchRect(patch, dx, dy, meToo)
+    if (this.isBaseSet) return pRect
+    return pRect.withBreed(this)
+  }
   inRadius (patch, radius, meToo = true) {
     const pRect = this.inRect(patch, radius, radius, meToo)
     return pRect.inRadius(patch, radius, meToo)

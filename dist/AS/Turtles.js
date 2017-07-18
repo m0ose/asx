@@ -5,15 +5,15 @@ import AgentSet from './AgentSet.js'
 // Turtles are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Turtles extends AgentSet {
-  constructor (model, AgentProto, name, baseSet = null) {
+  constructor (model, AgentClass, name, baseSet = null) {
     // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world & agentProto: new AgentProto
-    super(model, AgentProto, name, baseSet)
+    // model, name, baseSet, world: model.world & agentProto: new AgentClass
+    super(model, AgentClass, name, baseSet)
     // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
 
     // if (typeof model === 'number' || this.isBreedSet()) return
 
-    // this.world = model.world
+    // this.model.world = model.world
     // this.labels = [] // sparse array for labels
     // this.spriteSheet = new SpriteSheet()
     // this.colorMap = ColorMap.Basic16
@@ -37,9 +37,9 @@ class Turtles extends AgentSet {
 
   // Return a random valid float x,y point in turtle coord space.
   randomPt () {
-    const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+    const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
     return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
-    // const {minX, maxX, minY, maxY} = this.world
+    // const {minX, maxX, minY, maxY} = this.model.world
     // return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
   }
 

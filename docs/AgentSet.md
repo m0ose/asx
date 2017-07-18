@@ -2,11 +2,11 @@
 
 AgentSets are subclasses of [AgentArray](AgentArray.md) that are factories for their own agents/objects. Thus the Foos subclass of AgentSet will create all of its own Foo elements.
 
-AgentSet is the superclass for Patches, Turtles and Links which contain Patch, Turtle, and Link agents. You will primarily work with these subclasses, not directly with AgentSet.
+AgentSet is the superclass for Patches, Turtles and Links. They contain Patch, Turtle, and Link Agents. The AgentSet will call the Agent constructor for you.
 
-AgentSets can have sub-arrays called `breeds`. Thus Turtles could have `person` and `car` breeds.
+AgentSets can have sub-arrays called `breeds`. Thus the Turtles instance could have `person` and `car` breeds.
 
-Breeds can have their own default values which differ from their baseSet. So Turtles have properties like `size`, `color` and `shape`. Any Turtle breed can have their own, different, default for these. See [this article](https://medium.com/dailyjs/two-headed-es6-classes-fe369c50b24) for a detailed discussion.
+Breeds can have their own default values which differ from their baseSet. So Turtles have properties like `size`, `color` and `shape`. Any Turtle breed can have their own, different, default for these, their own color default. See [this article](https://medium.com/dailyjs/two-headed-es6-classes-fe369c50b24) for a detailed discussion.
 
 ## Statics
 
@@ -18,12 +18,12 @@ Thus any AgentSet with iterators will return AgentArrays rather than instances o
 
 ## Constructor
 
-> `constructor (model, AgentProto, name, baseSet = null)`
+> `constructor (model, AgentClass, name, baseSet = null)`
 
 * model: Class Model integrates all AgentSet Modules into a single [Agent Based Model](https://en.wikipedia.org/wiki/Agent-based_model) (ABM). There can be multiple models in a page.
-* AgentProto: an instance of the Agent class managed by this AgentSet. It is this that is used by the factory method creating Agents for this AgentSet.
+* AgentClass: the Agent class managed by this AgentSet. It is this that is used by the factory method creating Agents for this AgentSet.
 * name: a string used to identify the AgentSet: patches, turtles, links. Breeds also are named: buildings, parks (patches breeds); people, cars (turtle breeds); and streets, rivers (links).
-* baseSet: Only used by breeds to identify which AgentSet they are a sub-array of.
+* baseSet: Only used by breeds to identify which AgentSet they are a sub-array of. Managed for you by `newBreed` method below.
 
 ## Statics
 
@@ -33,11 +33,21 @@ This is magic to have AgentSet iterators return AgentArray's rather than AgentSe
 
 Thus any AgentSet with iterators will return AgentArrays rather than instances of the AgentSet. Unbelievably useful!
 
-## Methods
+## Subclass Methods
+
+These methods are primarily "private", used by subclasses.
 
 > `protoMixin()`
 
-Used by the constructor to add several variables to the AgentProto. Not used elsewhere.
+Used by the constructor to add several variables to the AgentClass. Not used elsewhere.
+
+> `newBreed (name)`
+
+Create a breed/subarray of this AgentSet. Example: create a people breed of turtles:
+`const people = turtles.newBreed('people')`
+This is called for you by class Model's three built-ins:
+`patchBreeds, turtleBreeds, linkBreeds`
+
 
 > `isBaseSet ()` <br />
 > `isBreedSet ()`
@@ -54,7 +64,13 @@ Used by `create` to add an agent to itself. Adds an ID property
 
 > `removeAgent (agent)`
 
-Remove an agent from this AgentSet, returning the AgentSet for chaining. If the AgentSet is a breed, removes agent from both the BaseSet and BreedSet.
+Remove an agent from this AgentSet, returning the AgentSet for chaining.
+
+If the AgentSet is a breed, removes agent from both the BaseSet and BreedSet. Removing a people agent will also remove it from the turtles AgentSet.
+
+## Methods
+
+These methods are inherited by subclasses for general use.
 
 > `clear ()`
 
@@ -79,7 +95,32 @@ Move an agent from its AgentSet/BreedSet to be in this AgentSet/BreedSet.
 
 ## Properties
 
-None
+BaseSet properties:
+* ID: A unique integer given to each new agent. ID incremented each use.
+* breeds: An array of this baseSet's breeds.
+
+General properties:
+* model, AgentClass, name, baseSet: Constructor arguments
+* agentProto: a singleton instance of AgentClass. The "defaults" layer.
+* ownVariables: The variables declared by the `own` method
+
+## AgentClass mixin
+
+The protoMixin() method mixes these into:
+
+The agentProto (default values) by protoMixin() method:
+* agentSet: `this`, the agentSet creating the agent,
+* world: this.world
+* `<name>`: this.baseSet. `<name>` is one of patches, turtles, links
+
+The AgentClass:
+* setBreed (breed): Convert this agent to belong to the breed agentSet
+* getBreed (): Get the breed/agentSet for this agent
+* isBreed (breed): Return true if this agent is a member of the given breed
+* getter breed: alias for agent.breed === agent.getBreed()
+
+Added by addAgent:
+* id: Set to the baseSet ID++
 
 ## Code
 

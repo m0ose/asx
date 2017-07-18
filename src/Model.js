@@ -170,20 +170,23 @@ class Model {
     if (this.view.stats) this.view.stats.update()
   }
 
-  // Breeds: create subarrays of Patches, Agentss, Links
+  // Breeds: create breeds/subarrays of Patches, Agents, Links
   patchBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Patches(this, Patch, breedName, this.patches)
+      // this[breedName] = new Patches(this, Patch, breedName, this.patches)
+      this[breedName] = this.patches.newBreed(breedName)
     }
   }
   turtleBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Turtles(this, Turtle, breedName, this.turtles)
+      // this[breedName] = new Turtles(this, Turtle, breedName, this.turtles)
+      this[breedName] = this.turtles.newBreed(breedName)
     }
   }
   linkBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Links(this, Link, breedName, this.links)
+      // this[breedName] = new Links(this, Link, breedName, this.links)
+      this[breedName] = this.links.newBreed(breedName)
     }
   }
 }

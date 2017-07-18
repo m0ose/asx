@@ -2,10 +2,10 @@ import AgentSet from './AgentSet.js'
 
 // Links are a collection of all the Link objects between turtles.
 class Links extends AgentSet {
-  constructor (model, AgentProto, name, baseSet = null) {
+  constructor (model, AgentClass, name, baseSet = null) {
     // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world & agentProto: new AgentProto
-    super(model, AgentProto, name, baseSet)
+    // model, name, baseSet, world: model.world & agentProto: new AgentClass
+    super(model, AgentClass, name, baseSet)
     // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
     // if (typeof model === 'number' || this.isBreedSet()) return
 

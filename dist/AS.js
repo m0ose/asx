@@ -1514,72 +1514,71 @@ class AgentSet extends AgentArray {
   // Create an empty `AgentSet` and initialize the `ID` counter for add().
   // If baseSet is supplied, the new agentset is a subarray of baseSet.
   // This sub-array feature is how breeds are managed, see class `Model`
-  constructor (model, AgentProto, name, baseSet = null) {
-    // Because es6 JavaScript Array itself calls the Array ctor
-    // (ex: slice() returning a new array), skip if not AgentSet ctor.
-    if (model == null) model = 0; // model is null or undefined
-    if (typeof model === 'number') {
-      console.log('AgentSet ctor called for AgentArray/Array.');
-      super(model); // model is a number, return AgentArray of that size
+  constructor (model, AgentClass, name, baseSet = null) {
+    super(); // create empty AgentArray
+    baseSet = baseSet || this; // if not a breed, set baseSet to this
+    // AgentSets know their model, name, baseSet, world.
+    // Object.assign(this, {model, name, baseSet, AgentClass, world: model.world})
+    Object.assign(this, {model, name, baseSet, AgentClass});
+    // BaseSets know their breeds and keep the ID global
+    if (this.isBaseSet()) {
+      this.breeds = {}; // will contain breedname: breed entries
+      this.ID = 0;
+    // Breeds add themselves to baseSet.
     } else {
-      super(); // create empty AgentArray
-      baseSet = baseSet || this; // if not a breed, set baseSet to this
-      // AgentSets know their model, name, baseSet, world.
-      Object.assign(this, {model, name, baseSet, world: model.world});
-      // // Link our agents to us
-      // this.agentProto.agentSet = this
-      // BaseSets know their breeds and keep the ID global
-      if (this.isBaseSet()) {
-        this.breeds = {}; // will contain breedname: breed entries
-        this.ID = 0;
-      // Breeds add themselves to baseSet.
-      } else {
-        this.baseSet.breeds[name] = this;
-      }
-      // Keep a list of this set's variables; see `own` below
-      this.ownVariables = [];
-      // Create a proto for our agents by having a defaults and instance layer
-      // this.AgentProto = AgentProto
-      this.agentProto = new AgentProto(this);
-      this.protoMixin();
+      this.baseSet.breeds[name] = this;
     }
+    // Keep a list of this set's variables; see `own` below
+    this.ownVariables = [];
+    // Create a proto for our agents by having a defaults and instance layer
+    // this.AgentClass = AgentClass
+    this.agentProto = new AgentClass(this);
+    this.protoMixin(this.agentProto, AgentClass);
+    // }
   }
   // All agents have:
   // vars: id, agentSet, model, world, breed (getter)
   //   baseSet by name: turtles/patches/links
   // methods: setBreed, getBreed, isBreed
   // getter/setter: breed
-  protoMixin () {
-    const agentProto = this.agentProto;
+  protoMixin (agentProto, AgentClass) {
     Object.assign(agentProto, {
-      // defaults: agentProto,
       agentSet: this,
-      model: this.model,
-      world: this.world
-      // this.turtles = agentSet.baseSet
+      model: this.model
+      // world: this.world
     });
     agentProto[this.baseSet.name] = this.baseSet;
 
-    // const AgentProto = this.AgentProto
-    const AgentProto = Object.getPrototypeOf(agentProto);
-    // if (this.isBaseSet()) {
-    if (!AgentProto.setBreed) {
-      // const AgentProto = Object.getPrototypeOf(agentProto)
-      // const AgentProto = this.AgentProto
-      Object.assign(AgentProto, {
+    if (this.isBaseSet()) {
+      Object.assign(AgentClass.prototype, {
         setBreed (breed) { breed.setBreed(this); },
         getBreed () { return this.agentSet },
         isBreed (breed) { return this.agentSet === breed }
       });
-      Object.defineProperty(AgentProto, 'breed', {
+      Object.defineProperty(AgentClass.prototype, 'breed', {
         get: function () { return this.agentSet }
       });
     }
   }
 
+  // Create a subarray of this AgentSet. Example: create a people breed of turtles:
+  // `people = turtles.newBreed('people')`
+  newBreed (name) {
+    return new AgentSet(this.model, this.AgentClass, name, this)
+  }
+
   // Is this a baseSet or a derived "breed"
   isBreedSet () { return this.baseSet !== this }
   isBaseSet () { return this.baseSet === this }
+
+  // with (reporter) { return this.filter(reporter) }
+  // if (this.isBreedSet()) array = array.filter((a) => a.agentSet === this)
+
+  // Return breeds in a subset of an AgentSet.
+  // Ex: patches.inRect(5).withBreed(houses)
+  withBreed (breed) {
+    return this.with(a => a.agentSet === breed)
+  }
 
   // Abstract method used by subclasses to create and add their instances.
   create () { console.log(`AgentSet: Abstract method called: ${this}`); }
@@ -2361,10 +2360,10 @@ class Link {
 
 // Links are a collection of all the Link objects between turtles.
 class Links extends AgentSet {
-  constructor (model, AgentProto, name, baseSet = null) {
+  constructor (model, AgentClass, name, baseSet = null) {
     // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world & agentProto: new AgentProto
-    super(model, AgentProto, name, baseSet);
+    // model, name, baseSet, world: model.world & agentProto: new AgentClass
+    super(model, AgentClass, name, baseSet);
     // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
     // if (typeof model === 'number' || this.isBreedSet()) return
 
@@ -2425,14 +2424,13 @@ class World {
 // Patches are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Patches extends AgentSet {
-  constructor (model, AgentProto, name, baseSet = null) {
+  constructor (model, AgentClass, name) {
     // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world, agentProto: new AgentProto
+    // model, name, baseSet, world: model.world, agentProto: new AgentClass
     // REMIND: agentProto: defaults, agentSet, world, [name]=agentSet.baseSet
-    super(model, AgentProto, name, baseSet);
+    super(model, AgentClass, name);
 
-    // Skip if a basic Array ctor or a breedSet (don't rebuild patches!).
-    // See AgentSet comments.
+    // Skip if a breedSet (don't rebuild patches!).
     if (this.isBreedSet()) return
 
     this.populate();
@@ -2441,13 +2439,13 @@ class Patches extends AgentSet {
   }
   // Set up all the patches.
   populate () {
-    util.repeat(this.world.numX * this.world.numY, (i) => {
+    util.repeat(this.model.world.numX * this.model.world.numY, (i) => {
       this.addAgent(); // Object.create(this.agentProto))
     });
   }
   // Setup pixels ctx used for patch.color: `draw` and `importColors`
   setPixels () {
-    const {numX, numY} = this.world;
+    const {numX, numY} = this.model.world;
     // const ctx = this.model.contexts.patches
     // const pixels = this.pixels = {are1x1: patchSize === 1}
     // pixels.ctx = pixels.are1x1 ? ctx : util.createCtx(numX, numY)
@@ -2479,7 +2477,7 @@ class Patches extends AgentSet {
   // Return the offsets from a patch for its 8 element neighbors.
   // Specialized to be faster than inRect below.
   neighborsOffsets (x, y) {
-    const {minX, maxX, minY, maxY, numX} = this.world;
+    const {minX, maxX, minY, maxY, numX} = this.model.world;
     if (x === minX) {
       if (y === minY) return [-numX, -numX + 1, 1]
       if (y === maxY) return [1, numX + 1, numX]
@@ -2496,7 +2494,7 @@ class Patches extends AgentSet {
   }
   // Return the offsets from a patch for its 4 element neighbors (N,S,E,W)
   neighbors4Offsets (x, y) {
-    const numX = this.world.numX;
+    const numX = this.model.world.numX;
     return this.neighborsOffsets(x, y)
       .filter((n) => Math.abs(n) === 1 || Math.abs(n) === numX) // slightly faster
       // .filter((n) => [1, -1, numX, -numX].indexOf(n) >= 0)
@@ -2523,13 +2521,11 @@ class Patches extends AgentSet {
 
   // Return a random valid int x,y point in patch space
   randomPt () {
-    // const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+    // const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
     // return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
-    const {minX, maxX, minY, maxY} = this.world;
+    const {minX, maxX, minY, maxY} = this.model.world;
     return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
   }
-  // Return a random patch.
-  randomPatch () { return this.oneOf() }
 
   installPixels () {
     const pixels = this.pixels;
@@ -2575,48 +2571,54 @@ class Patches extends AgentSet {
   // Import/export DataSet to/from patch variable `patchVar`.
   // `useNearest`: true for fast rounding to nearest; false for bi-linear.
   importDataSet (dataSet, patchVar, useNearest = false) {
-    if (this.isBreedSet()) // REMIND: error
+    if (this.isBreedSet()) { // REMIND: error
+      console.log('warning: exportDataSet called with breed, using patches');
       this.baseSet.importDataSet(dataSet, patchVar, useNearest);
-    const {numX, numY} = this.world;
+    }
+    const {numX, numY} = this.model.world;
     const dataset = dataSet.resample(numX, numY, useNearest);
-    // REMIND: Needs test.
     this.ask(p => { p[patchVar] = dataset.data[p.id]; });
     // for (const patch of this)
     //   patch[patchVar] = dataset.data[patch.id]
   }
   exportDataSet (patchVar, Type = Array) {
-    const {numX, numY} = this.world;
-    let data = util.arrayProps(this, patchVar);
+    if (this.isBreedSet()) {
+      console.log('warning: exportDataSet called with breed, using patches');
+      this.baseSet.exportDataSet(patchVar, Type);
+    }
+    const {numX, numY} = this.model.world;
+    // let data = util.arrayProps(this, patchVar)
+    let data = this.props(this, patchVar);
     data = util.convertArray(data, Type);
     return new DataSet(numX, numY, data)
   }
 
   // Return true if x,y floats are within patch world.
   // isOnWorld (x, y) {
-  //   const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+  //   const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
   //   return (minXcor <= x) && (x <= maxXcor) && (minYcor <= y) && (y <= maxYcor)
   // }
   // Return the patch id/index given valid integer x,y in patch coords
   patchIndex (x, y) {
-    const {minX, maxY, numX} = this.world;
+    const {minX, maxY, numX} = this.model.world;
     return (x - minX) + (numX * (maxY - y))
   }
   // patchXYToIndex (x, y) {
-  //   const {minX, maxY, numX} = this.world
+  //   const {minX, maxY, numX} = this.model.world
   //   return (x - minX) + (numX * (maxY - y))
   // }
   // // Return the patch x,y patch coords given a valid patches id/index
   // patchIndexToXY (ix) {
-  //   const {minX, maxY, numX} = this.world
+  //   const {minX, maxY, numX} = this.model.world
   //   return [(ix % numX) + minX, maxY - Math.floor(ix / numX)]
   // }
   // // Convert to/from pixel coords & patch coords
   // pixelXYToPatchXY (x, y) {
-  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   const {patchSize, minXcor, maxYcor} = this.model.world
   //   return [minXcor + (x / patchSize), maxYcor - (y / patchSize)]
   // }
   // patchXYToPixelXY (x, y) {
-  //   const {patchSize, minXcor, maxYcor} = this.world
+  //   const {patchSize, minXcor, maxYcor} = this.model.world
   //   return [(x - minXcor) * patchSize, (maxYcor - y) * patchSize]
   // }
 
@@ -2628,11 +2630,11 @@ class Patches extends AgentSet {
   // Return patch at x,y float values according to topology.
   // Return undefined if off-world
   patch (x, y) {
-    if (!this.world.isOnWorld(x, y)) return undefined
-    const intX = x === this.world.maxXcor
-      ? this.world.maxX : Math.round(x); // handle n.5 round up to n + 1
-    const intY = y === this.world.maxYcor
-      ? this.world.maxY : Math.round(y);
+    if (!this.model.world.isOnWorld(x, y)) return undefined
+    const intX = x === this.model.world.maxXcor
+      ? this.model.world.maxX : Math.round(x); // handle n.5 round up to n + 1
+    const intY = y === this.model.world.maxYcor
+      ? this.model.world.maxY : Math.round(y);
     return this.patchXY(intX, intY)
   }
   // Return the patch at x,y where both are valid integer patch coordinates.
@@ -2640,7 +2642,7 @@ class Patches extends AgentSet {
 
   // Patches in rectangle dx, dy from p, dx, dy integers.
   // Both dx & dy are half width/height of rect
-  inRect (p, dx, dy = dx, meToo = true) {
+  patchRect (p, dx, dy = dx, meToo = true) {
     // Return cached rect if one exists.
     // if (p.pRect && p.pRect.length === dx * dy) return p.pRect
     if (p.rectCache) {
@@ -2648,7 +2650,7 @@ class Patches extends AgentSet {
       if (rect) return rect
     }
     const rect = new AgentArray();
-    let {minX, maxX, minY, maxY} = this.world;
+    let {minX, maxX, minY, maxY} = this.model.world;
     minX = Math.max(minX, p.x - dx);
     maxX = Math.min(maxX, p.x + dx);
     minY = Math.max(minY, p.y - dy);
@@ -2663,7 +2665,7 @@ class Patches extends AgentSet {
   }
 
   // Performance: create a cached rect of this size.
-  // inRect will use this if matches dx, dy, meToo.
+  // patchRect will use this if matches dx, dy, meToo.
   cacheRect (dx, dy = dx, meToo = true) {
     this.ask(p => {
       if (!p.rectCache) p.rectCache = [];
@@ -2688,6 +2690,11 @@ class Patches extends AgentSet {
   //   }
   //   return result
   // }
+  inRect (patch, dx, dy = dx, meToo = true) {
+    const pRect = this.patchRect(patch, dx, dy, meToo);
+    if (this.isBaseSet) return pRect
+    return pRect.withBreed(this)
+  }
   inRadius (patch, radius, meToo = true) {
     const pRect = this.inRect(patch, radius, radius, meToo);
     return pRect.inRadius(patch, radius, meToo)
@@ -2775,19 +2782,19 @@ class Patches extends AgentSet {
 // optimally by the Patches AgentSet. Similarly `x` & `y` are derived from id.
 // The neighbors and neighbors4 variables are initially getters that
 // are "promoted" to instance variables if used.
-const patchVariables = { // Core variables for patches. Not 'own' variables.
-  // id: null,             // unique id, promoted by agentset's add() method
-  // defaults: null,       // pointer to defaults/proto object
-  // agentSet: null,       // my agentset/breed
-  // model: null,          // my model
-  // world: null,          // my agent/agentset's world
-  // patches: null,        // my patches/baseSet, set by ctor
-
-  turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
-  labelOffset: [0, 0],  // text pixel offset from the patch center
-  labelColor: Color.newColor(0, 0, 0) // the label color
-  // Getter variables: label, color, x, y, neighbors, neighbors4
-};
+// const patchVariables = { // Core variables for patches. Not 'own' variables.
+//   // id: null,             // unique id, promoted by agentset's add() method
+//   // defaults: null,       // pointer to defaults/proto object
+//   // agentSet: null,       // my agentset/breed
+//   // model: null,          // my model
+//   // world: null,          // my agent/agentset's world
+//   // patches: null,        // my patches/baseSet, set by ctor
+//
+//   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
+//   labelOffset: [0, 0],  // text pixel offset from the patch center
+//   labelColor: Color.newColor(0, 0, 0) // the label color
+//   // Getter variables: label, color, x, y, neighbors, neighbors4
+// }
 
 // Flyweight object creation:
 // Objects within AgentSets use "prototypal inheritance" via Object.create().
@@ -2796,21 +2803,31 @@ const patchVariables = { // Core variables for patches. Not 'own' variables.
 // The flyweight Patch objects are created via Object.create(protoObject),
 // This lets the new Patch(agentset) obhect be "defaults".
 class Patch {
+  static variables () { // Core variables for patches. Not 'own' variables.
+    return {
+      // id: null,             // unique id, promoted by agentset's add() method
+      // defaults: null,       // pointer to defaults/proto object
+      // agentSet: null,       // my agentset/breed
+      // model: null,          // my model
+      // world: null,          // my agent/agentset's world
+      // patches: null,        // my patches/baseSet, set by ctor
+
+      turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
+      labelOffset: [0, 0],  // text pixel offset from the patch center
+      labelColor: Color.newColor(0, 0, 0) // the label color
+      // Getter variables: label, color, x, y, neighbors, neighbors4
+    }
+  }
   // Initialize a Patch given its Patches AgentSet.
   constructor (agentSet) {
-    Object.assign(this, patchVariables);
-    // this.defaults = this
-    // this.agentSet = agentSet
-    // this.model = agentSet.model
-    // this.world = agentSet.world
-    // this.patches = agentSet.baseSet
+    Object.assign(this, Patch.variables());
   }
   // Getter for x,y derived from patch id, thus no setter.
   get x () {
-    return (this.id % this.world.numX) + this.world.minX
+    return (this.id % this.model.world.numX) + this.model.world.minX
   }
   get y () {
-    return this.world.maxY - Math.floor(this.id / this.world.numX)
+    return this.model.world.maxY - Math.floor(this.id / this.model.world.numX)
   }
   isOnEdge () {
     const {x, y, world} = this;
@@ -2928,15 +2945,15 @@ class Patch {
 // Turtles are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Turtles extends AgentSet {
-  constructor (model, AgentProto, name, baseSet = null) {
+  constructor (model, AgentClass, name, baseSet = null) {
     // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world & agentProto: new AgentProto
-    super(model, AgentProto, name, baseSet);
+    // model, name, baseSet, world: model.world & agentProto: new AgentClass
+    super(model, AgentClass, name, baseSet);
     // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
 
     // if (typeof model === 'number' || this.isBreedSet()) return
 
-    // this.world = model.world
+    // this.model.world = model.world
     // this.labels = [] // sparse array for labels
     // this.spriteSheet = new SpriteSheet()
     // this.colorMap = ColorMap.Basic16
@@ -2960,9 +2977,9 @@ class Turtles extends AgentSet {
 
   // Return a random valid float x,y point in turtle coord space.
   randomPt () {
-    const {minXcor, maxXcor, minYcor, maxYcor} = this.world;
+    const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world;
     return [util.randomFloat2(minXcor, maxXcor), util.randomFloat2(minYcor, maxYcor)]
-    // const {minX, maxX, minY, maxY} = this.world
+    // const {minX, maxX, minY, maxY} = this.model.world
     // return [util.randomInt2(minX, maxX), util.randomInt2(minY, maxY)]
   }
 
@@ -3047,7 +3064,7 @@ class Turtle {
     // this.defaults = this
     // this.agentSet = agentSet
     // this.model = agentSet.model
-    // this.world = agentSet.world
+    // this.model.world = agentSet.world
     // this.turtles = agentSet.baseSet
 
     // this.sprite = this.turtles.model.spriteSheet.addDrawing('default')
@@ -3101,7 +3118,7 @@ class Turtle {
     const ss = this.model.spriteSheet;
     this.sprite = ss.newSprite(src, color, strokeColor);
   }
-  setSize (size) { this.size = size; } // * this.world.patchSize }
+  setSize (size) { this.size = size; } // * this.model.world.patchSize }
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
@@ -3111,12 +3128,12 @@ class Turtle {
   setxy (x, y, z = null) {
     const p0 = this.patch;
     if (z) this.z = z; // don't promote z if null, use default z instead.
-    if (this.world.isOnWorld(x, y)) {
+    if (this.model.world.isOnWorld(x, y)) {
       this.x = x;
       this.y = y;
     } else {
       this.handleEdge(x, y);
-      // const {minXcor, maxXcor, minYcor, maxYcor} = this.world
+      // const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world
       // if (this.wrap) {
       //   this.x = util.wrap(x, minXcor, maxXcor)
       //   this.y = util.wrap(y, minYcor, maxYcor)
@@ -3134,7 +3151,7 @@ class Turtle {
   // Handle turtle if x,y off-world
   handleEdge (x, y) {
     if (util.isString(this.atEdge)) {
-      const {minXcor, maxXcor, minYcor, maxYcor} = this.world;
+      const {minXcor, maxXcor, minYcor, maxYcor} = this.model.world;
       if (this.atEdge === 'wrap') {
         this.x = util.wrap(x, minXcor, maxXcor);
         this.y = util.wrap(y, minYcor, maxYcor);
@@ -4049,20 +4066,23 @@ class Model {
     if (this.view.stats) this.view.stats.update();
   }
 
-  // Breeds: create subarrays of Patches, Agentss, Links
+  // Breeds: create breeds/subarrays of Patches, Agents, Links
   patchBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Patches(this, Patch, breedName, this.patches);
+      // this[breedName] = new Patches(this, Patch, breedName, this.patches)
+      this[breedName] = this.patches.newBreed(breedName);
     }
   }
   turtleBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Turtles(this, Turtle, breedName, this.turtles);
+      // this[breedName] = new Turtles(this, Turtle, breedName, this.turtles)
+      this[breedName] = this.turtles.newBreed(breedName);
     }
   }
   linkBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      this[breedName] = new Links(this, Link, breedName, this.links);
+      // this[breedName] = new Links(this, Link, breedName, this.links)
+      this[breedName] = this.links.newBreed(breedName);
     }
   }
 }

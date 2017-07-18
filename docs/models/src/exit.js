@@ -87,6 +87,6 @@ model.whenReady(() => {
   // model.start()
   console.log('patches:', model.patches.length)
   console.log('turtles:', model.turtles.length)
-  const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, model })
+  const {world, patches, turtles, links, exits, inside, wall} = model
+  util.toWindow({ world, patches, turtles, links, exits, inside, wall, model })
 })

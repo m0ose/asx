@@ -10,19 +10,19 @@ import Color from './Color.js'
 // optimally by the Patches AgentSet. Similarly `x` & `y` are derived from id.
 // The neighbors and neighbors4 variables are initially getters that
 // are "promoted" to instance variables if used.
-const patchVariables = { // Core variables for patches. Not 'own' variables.
-  // id: null,             // unique id, promoted by agentset's add() method
-  // defaults: null,       // pointer to defaults/proto object
-  // agentSet: null,       // my agentset/breed
-  // model: null,          // my model
-  // world: null,          // my agent/agentset's world
-  // patches: null,        // my patches/baseSet, set by ctor
-
-  turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
-  labelOffset: [0, 0],  // text pixel offset from the patch center
-  labelColor: Color.newColor(0, 0, 0) // the label color
-  // Getter variables: label, color, x, y, neighbors, neighbors4
-}
+// const patchVariables = { // Core variables for patches. Not 'own' variables.
+//   // id: null,             // unique id, promoted by agentset's add() method
+//   // defaults: null,       // pointer to defaults/proto object
+//   // agentSet: null,       // my agentset/breed
+//   // model: null,          // my model
+//   // world: null,          // my agent/agentset's world
+//   // patches: null,        // my patches/baseSet, set by ctor
+//
+//   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
+//   labelOffset: [0, 0],  // text pixel offset from the patch center
+//   labelColor: Color.newColor(0, 0, 0) // the label color
+//   // Getter variables: label, color, x, y, neighbors, neighbors4
+// }
 
 // Flyweight object creation:
 // Objects within AgentSets use "prototypal inheritance" via Object.create().
@@ -31,21 +31,31 @@ const patchVariables = { // Core variables for patches. Not 'own' variables.
 // The flyweight Patch objects are created via Object.create(protoObject),
 // This lets the new Patch(agentset) obhect be "defaults".
 class Patch {
+  static variables () { // Core variables for patches. Not 'own' variables.
+    return {
+      // id: null,             // unique id, promoted by agentset's add() method
+      // defaults: null,       // pointer to defaults/proto object
+      // agentSet: null,       // my agentset/breed
+      // model: null,          // my model
+      // world: null,          // my agent/agentset's world
+      // patches: null,        // my patches/baseSet, set by ctor
+
+      turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
+      labelOffset: [0, 0],  // text pixel offset from the patch center
+      labelColor: Color.newColor(0, 0, 0) // the label color
+      // Getter variables: label, color, x, y, neighbors, neighbors4
+    }
+  }
   // Initialize a Patch given its Patches AgentSet.
   constructor (agentSet) {
-    Object.assign(this, patchVariables)
-    // this.defaults = this
-    // this.agentSet = agentSet
-    // this.model = agentSet.model
-    // this.world = agentSet.world
-    // this.patches = agentSet.baseSet
+    Object.assign(this, Patch.variables())
   }
   // Getter for x,y derived from patch id, thus no setter.
   get x () {
-    return (this.id % this.world.numX) + this.world.minX
+    return (this.id % this.model.world.numX) + this.model.world.minX
   }
   get y () {
-    return this.world.maxY - Math.floor(this.id / this.world.numX)
+    return this.model.world.maxY - Math.floor(this.id / this.model.world.numX)
   }
   isOnEdge () {
     const {x, y, world} = this
