@@ -12,7 +12,7 @@ Note the term `reporter` below means a function that returns a value. Similarly,
 
 A static method to convert an Array to an AgentArray. Called like this: `AgentArray.fromArray(array)`
 
-Note that the Array.isArray static: `Array.isArray(patches)` returns `true`
+Note Array.isArray `Array.isArray(agentArray)` returns `true`
 
 ## Constructor
 

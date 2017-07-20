@@ -1549,7 +1549,9 @@ class AgentSet extends AgentArray {
     });
     agentProto[this.baseSet.name] = this.baseSet;
 
-    if (this.isBaseSet()) {
+    // if (this.isBaseSet()) {
+    // Model.reset should not redefine these.
+    if (!AgentClass.prototype.setBreed) {
       Object.assign(AgentClass.prototype, {
         setBreed (breed) { breed.setBreed(this); },
         getBreed () { return this.agentSet },
@@ -4069,19 +4071,16 @@ class Model {
   // Breeds: create breeds/subarrays of Patches, Agents, Links
   patchBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      // this[breedName] = new Patches(this, Patch, breedName, this.patches)
       this[breedName] = this.patches.newBreed(breedName);
     }
   }
   turtleBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      // this[breedName] = new Turtles(this, Turtle, breedName, this.turtles)
       this[breedName] = this.turtles.newBreed(breedName);
     }
   }
   linkBreeds (breedNames) {
     for (const breedName of breedNames.split(' ')) {
-      // this[breedName] = new Links(this, Link, breedName, this.links)
       this[breedName] = this.links.newBreed(breedName);
     }
   }

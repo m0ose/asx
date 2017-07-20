@@ -22,14 +22,27 @@
     "node_modules/dat.gui/build/dat.gui.min.js"
   ],
   "wraplibs": [
-    ["libs/three.min.js", "THREE"],
-    ["libs/OrbitControls.js", "THREE.OrbitControls"],
-    ["libs/dat.gui.min.js", "dat"],
-    ["libs/stats.min.js", "Stats"]
+    [
+      "libs/three.min.js",
+      "THREE"
+    ],
+    [
+      "libs/OrbitControls.js",
+      "THREE.OrbitControls"
+    ],
+    [
+      "libs/dat.gui.min.js",
+      "dat"
+    ],
+    [
+      "libs/stats.min.js",
+      "Stats"
+    ]
   ],
   "docsfiles": [
     "dist",
-    "models"
+    "models",
+    "README.md"
   ],
   "mkdirs": [
     "dist",

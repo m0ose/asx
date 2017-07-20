@@ -5,6 +5,7 @@
   - [AS.js](AS.md)
   - [AgentArray.js](AgentArray.md)
   - [AgentSet.js](AgentSet.md)
+  - [Model.js](Model.md)
   - [Patches.js](Patches.md)
   - [Patch.js](Patch.md)
   - [Turtles.js](Turtles.md)

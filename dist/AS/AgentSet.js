@@ -50,7 +50,9 @@ class AgentSet extends AgentArray {
     })
     agentProto[this.baseSet.name] = this.baseSet
 
-    if (this.isBaseSet()) {
+    // if (this.isBaseSet()) {
+    // Model.reset should not redefine these.
+    if (!AgentClass.prototype.setBreed) {
       Object.assign(AgentClass.prototype, {
         setBreed (breed) { breed.setBreed(this) },
         getBreed () { return this.agentSet },

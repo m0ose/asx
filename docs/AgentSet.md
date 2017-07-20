@@ -25,14 +25,6 @@ Thus any AgentSet with iterators will return AgentArrays rather than instances o
 * name: a string used to identify the AgentSet: patches, turtles, links. Breeds also are named: buildings, parks (patches breeds); people, cars (turtle breeds); and streets, rivers (links).
 * baseSet: Only used by breeds to identify which AgentSet they are a sub-array of. Managed for you by `newBreed` method below.
 
-## Statics
-
-> `static get [Symbol.species] () { return AgentArray }`
-
-This is magic to have AgentSet iterators return AgentArray's rather than AgentSets. See the `Symbol.species` [documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/species).
-
-Thus any AgentSet with iterators will return AgentArrays rather than instances of the AgentSet. Unbelievably useful!
-
 ## Subclass Methods
 
 These methods are primarily "private", used by subclasses.

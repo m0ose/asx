@@ -2,42 +2,32 @@
 
 const fs = require('fs')
 
-const args = process.argv
-const file = args[2]
-// default name for path/foo.min.js is foo
-const name = args[3] || file.replace(/.*\//, '').replace(/\..*/, '')
+const file = process.argv[2]
+const name = process.argv[3]
 const errMsg = `wrapper failed, file: ${file} name: ${name}`
 const inWinMsg = // eslint-disable-line
   `wrapper: window.${name} exists; exporting it.`
 
 const debug = true
 const debugCode = debug
-  ? `console.log('wraplib ${file} ${name}', {global: ${name}, return: returnVal})`
+  ? `console.log('wraplib ${file} ${name}', typeof window.${name})`
   : ''
 
-const code = fs.readFileSync(file)
+const code = fs.readFileSync(file) // .toString().replace(/.use strict.;/g, '')
 
 const wrapper = `// Programmatically created by wraplib.js
-let returnVal
-let result
-
 if (window.${name}) {
   console.log("${inWinMsg}")
-  result = window.${name}
 } else {
-
   function wrap () {
-
-    returnVal =
     ${code}
-
-    if (typeof returnVal === "boolean") returnVal = undefined
   }
   wrap.call(window)
-  ${debugCode}
-  result = window.${name} || returnVal
-  if (!result) throw Error("${errMsg}")
 }
+
+const result = window.${name}
+if (!result) throw Error("${errMsg}")
+${debugCode}
 
 export default result
 `
