@@ -2329,14 +2329,9 @@ const linkVariables = { // Core variables for patches. Not 'own' variables.
   width: 1
 };
 class Link {
-  // Initialize a Link given its Links AgentSet.
-  constructor (agentSet) {
+  // Initialize a Link
+  constructor () {
     Object.assign(this, linkVariables);
-    // this.defaults = this
-    // this.agentSet = agentSet
-    // this.model = agentSet.model
-    // this.world = agentSet.world
-    // this.links = agentSet.baseSet
   }
   init (from, to) {
     this.end0 = from;
@@ -2694,7 +2689,7 @@ class Patches extends AgentSet {
   // }
   inRect (patch, dx, dy = dx, meToo = true) {
     const pRect = this.patchRect(patch, dx, dy, meToo);
-    if (this.isBaseSet) return pRect
+    if (this.isBaseSet()) return pRect
     return pRect.withBreed(this)
   }
   inRadius (patch, radius, meToo = true) {
@@ -2717,19 +2712,19 @@ class Patches extends AgentSet {
 
   // Return patch at distance and angle from obj's (patch or turtle)
   // x, y (floats). If off world, return undefined.
-  // To use heading: patchAtAngleAndDistance(obj, util.angle(heading), distance)
+  // To use heading: patchAtDirectionAndDistance(obj, util.angle(heading), distance)
   // Does not take into account the angle of the obj .. turtle.theta for example.
-  patchAtAngleAndDistance (obj, angle, distance) {
+  patchAtDirectionAndDistance (obj, angle, distance) {
     let {x, y} = obj;
     x = x + distance * Math.cos(angle);
     y = y + distance * Math.sin(angle);
     return this.patch(x, y)
   }
   // patchLeftAndAhead (dTheta, distance) {
-  //   return this.patchAtAngleAndDistance(dTheta, distance)
+  //   return this.patchAtDirectionAndDistance(dTheta, distance)
   // }
   // patchRightAndAhead (dTheta, distance) {
-  //   return this.patchAtAngleAndDistance(-dTheta, distance)
+  //   return this.patchAtDirectionAndDistance(-dTheta, distance)
   // }
 
   // Diffuse the value of patch variable `p.v` by distributing `rate` percent
@@ -2808,20 +2803,18 @@ class Patch {
   static variables () { // Core variables for patches. Not 'own' variables.
     return {
       // id: null,             // unique id, promoted by agentset's add() method
-      // defaults: null,       // pointer to defaults/proto object
       // agentSet: null,       // my agentset/breed
       // model: null,          // my model
-      // world: null,          // my agent/agentset's world
       // patches: null,        // my patches/baseSet, set by ctor
 
-      turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
+      turtles: undefined,      // the turtles on me. Laxy evalued, see turtlesHere below
       labelOffset: [0, 0],  // text pixel offset from the patch center
       labelColor: Color.newColor(0, 0, 0) // the label color
       // Getter variables: label, color, x, y, neighbors, neighbors4
     }
   }
   // Initialize a Patch given its Patches AgentSet.
-  constructor (agentSet) {
+  constructor () {
     Object.assign(this, Patch.variables());
   }
   // Getter for x,y derived from patch id, thus no setter.
@@ -2832,9 +2825,9 @@ class Patch {
     return this.model.world.maxY - Math.floor(this.id / this.model.world.numX)
   }
   isOnEdge () {
-    const {x, y, world} = this;
-    return x === world.minX || x === world.maxX ||
-      y === world.minY || y === world.maxY
+    const {x, y, model} = this;
+    const {minX, maxX, minY, maxY} = model.world;
+    return x === minX || x === maxX || y === minY || y === maxY
   }
 
   // Getter for neighbors of this patch.
@@ -2884,7 +2877,7 @@ class Patch {
     this.patches.getLabel(this);
   }
   get label () { return this.getLabel() }
-  set label (label) { return this.setColor(label) }
+  set label (label) { return this.setLabel(label) }
 
   // Promote this.turtles on first call to turtlesHere.
   turtlesHere () {
@@ -2903,9 +2896,11 @@ class Patch {
     }
     return this.turtles
   }
+  // Returns above but returning only turtles of this breed.
   breedsHere (breed) {
     const turtles = this.turtlesHere();
-    return turtles.filter((turtle) => turtle.agentSet === breed)
+    return turtles.withBreed(breed)
+    // return turtles.filter((turtle) => turtle.agentSet === breed)
   }
 
   // 6 methods in both Patch & Turtle modules
@@ -2920,27 +2915,32 @@ class Patch {
   // Return patch w/ given parameters. Return undefined if off-world.
   // Return patch dx, dy from my position.
   patchAt (dx, dy) { return this.patches.patch(this.x + dx, this.y + dy) }
-  patchAtAngleAndDistance (angle, distance) {
-    return this.patches.patchAtAngleAndDistance(this, angle, distance)
+  patchAtDirectionAndDistance (direction, distance) {
+    return this.patches.patchAtDirectionAndDistance(this, direction, distance)
   }
 
-  inRadius (radius, meToo = true) { // radius is integer
-    return this.patches.inRadius(this, radius, meToo)
-  }
-  inCone (radius, coneAngle, direction, meToo = true) {
-    return this.patches.inRadius(this, radius, coneAngle, direction, meToo)
-  }
+  // Use the agentset versions so that breeds can considered.
+  // Otherwise we'd have to use the patch breed just to be consistant.
+  // inRect (patch, dx, dy = dx, meToo = true) {
+  //   return this.patches.inRect(this, dx, dy, meToo)
+  // }
+  // inRadius (radius, meToo = true) { // radius is integer
+  //   return this.patches.inRadius(this, radius, meToo)
+  // }
+  // inCone (radius, coneAngle, direction, meToo = true) {
+  //   return this.patches.inRadius(this, radius, coneAngle, direction, meToo)
+  // }
 
   // Breed get/set mathods and getter/setter versions.
   // setBreed (breed) { breed.setBreed(this) }
   // get breed () { return this.agentSet }
   // isBreed (name) { return this.agentSet.name === name }
 
-  sprout (num = 1, breed = this.model.turtles, init = util.noop) {
-    breed.create(num, (turtle) => {
+  sprout (num = 1, breed = this.model.turtles, initFcn = (turtle) => {}) {
+    return breed.create(num, (turtle) => {
       turtle.setxy(this.x, this.y);
-      init(turtle);
-    });
+      initFcn(turtle);
+    })
   }
 }
 
@@ -2989,6 +2989,7 @@ class Turtles extends AgentSet {
   inPatches (patches) {
     let array = new AgentArray(); // []
     for (const p of patches) array.push(...p.turtlesHere());
+    // REMIND: can't use withBreed .. its not an AgentSet. Move to AgentArray
     if (this.isBreedSet()) array = array.filter((a) => a.agentSet === this);
     return array
   }
@@ -3061,16 +3062,8 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
 };
 class Turtle {
   // Initialize a Turtle given its Turtles AgentSet.
-  constructor (agentSet) {
+  constructor () {
     Object.assign(this, turtleVariables);
-    // this.defaults = this
-    // this.agentSet = agentSet
-    // this.model = agentSet.model
-    // this.model.world = agentSet.world
-    // this.turtles = agentSet.baseSet
-
-    // this.sprite = this.turtles.model.spriteSheet.addDrawing('default')
-    // this.sprite = this.turtles.spriteSheet.add('default', 'red')
   }
   die () {
     this.agentSet.removeAgent(this); // remove me from my baseSet and breed
@@ -3188,7 +3181,7 @@ class Turtle {
   // "direction" is euclidean radians.
   face (agent) { this.theta = this.towards(agent); }
   faceXY (x, y) { this.theta = this.towardsXY(x, y); }
-  patchAhead (distance) { return this.patchAtAngleAndDistance(this.theta, distance) }
+  patchAhead (distance) { return this.patchAtDirectionAndDistance(this.theta, distance) }
   canMove (distance) { return this.patchAhead(distance) != null } // null / undefined
 
   // 6 methods in both Patch & Turtle modules
@@ -3206,25 +3199,26 @@ class Turtle {
   patchAt (dx, dy) { return this.patches.patch(this.x + dx, this.y + dy) }
   // Note: angle is absolute, w/o regard to existing angle of turtle.
   // Use Left/Right versions below
-  patchAtAngleAndDistance (angle, distance) {
-    return this.patches.patchAtAngleAndDistance(this, angle, distance)
+  patchAtDirectionAndDistance (angle, distance) {
+    return this.patches.patchAtDirectionAndDistance(this, angle, distance)
   }
 
   patchLeftAndAhead (angle, distance) {
-    return this.patchAtAngleAndDistance(angle + this.theta, distance)
+    return this.patchAtDirectionAndDistance(angle + this.theta, distance)
   }
   patchRightAndAhead (angle, distance) {
-    return this.patchAtAngleAndDistance(angle - this.theta, distance)
+    return this.patchAtDirectionAndDistance(angle - this.theta, distance)
   }
-  // Return turtles/breeds within radius from me
-  inRadius (radius, meToo = false) {
-    return this.agentSet.inRadius(this, radius, meToo)
-  }
-  // Return turtles/breeds within cone from me
-  // Note: agentSet rather than turtles to allow for breeds
-  inCone (radius, coneAngle, meToo = false) {
-    return this.agentSet.inCone(this, radius, coneAngle, this.theta, meToo)
-  }
+
+  // // Return turtles/breeds within radius from me
+  // inRadius (radius, meToo = false) {
+  //   return this.agentSet.inRadius(this, radius, meToo)
+  // }
+  // // Return turtles/breeds within cone from me
+  // // Note: agentSet rather than turtles to allow for breeds
+  // inCone (radius, coneAngle, meToo = false) {
+  //   return this.agentSet.inCone(this, radius, coneAngle, this.theta, meToo)
+  // }
 
   // Link methods. Note: this.links returns all links linked to me.
   // See links getter above.

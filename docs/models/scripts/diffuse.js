@@ -11,7 +11,8 @@ class DiffuseModel extends Model {
     this.patches.own('ran ds')
     this.turtles.setDefault('speed', 0.5)
     this.turtles.setDefault('atEdge', 'wrap')
-    this.population = 1
+    this.turtles.setDefault('size', 5)
+    this.population = 2
     this.radius = 6
 
     // this.cmap = ColorMap.Jet
@@ -32,8 +33,8 @@ class DiffuseModel extends Model {
     this.turtles.ask((t) => {
       t.theta += util.randomCentered(0.1)
       t.forward(t.speed)
-      t.patch.inRadius(this.radius, true).ask(p => {
-        p.ran = Math.min(p.ran + 0.1, 0.6)
+      this.patches.inRadius(t.patch, this.radius, true).ask(p => {
+        p.ran = Math.min(p.ran + 0.1, 0.8)
       })
     })
 

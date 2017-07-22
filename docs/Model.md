@@ -77,7 +77,7 @@ Draws the model's patches, turtles, and links etc using the Renderer setting in 
 > `turtleBreeds (breedNames)` <br />
 > `linkBreeds (breedNames)`
 
-Given a string of space-separated names, creates breads of that name. So for turtles, `turtleBreeds('foxes rabbits')` would create two turtles breeds, foxes & rabbits.
+Given a string of space-separated names, creates breads of that name. So for turtles, `turtleBreeds('foxes rabbits')` would create two new turtles breeds, foxes & rabbits via `turtles.newBreed('foxes')` & `turtles.newBreed('rabbits')`
 
 ## Properties
 
@@ -90,4 +90,4 @@ Given a string of space-separated names, creates breads of that name. So for tur
 
 ## Code
 
-Code is [here](https://github.com/backspaces/asx/blob/master/src/Foo.js).
+Code is [here](https://github.com/backspaces/asx/blob/master/src/Model.js).

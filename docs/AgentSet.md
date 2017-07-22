@@ -88,31 +88,41 @@ Move an agent from its AgentSet/BreedSet to be in this AgentSet/BreedSet.
 ## Properties
 
 BaseSet properties:
-* ID: A unique integer given to each new agent. ID incremented each use.
-* breeds: An array of this baseSet's breeds.
+* `ID`: A unique integer given to each new agent. ID incremented each use.
+* `breeds`: An array of this baseSet's breeds.
 
 General properties:
-* model, AgentClass, name, baseSet: Constructor arguments
-* agentProto: a singleton instance of AgentClass. The "defaults" layer.
-* ownVariables: The variables declared by the `own` method
+* `model`, `AgentClass`, `name`, `baseSet`: Constructor arguments
+* `agentProto`: a singleton instance of AgentClass. The "defaults" layer.
+* `ownVariables`: The variables declared by the `own` method
 
 ## AgentClass mixin
 
-The protoMixin() method mixes these into:
-
-The agentProto (default values) by protoMixin() method:
-* agentSet: `this`, the agentSet creating the agent,
-* world: this.world
-* `<name>`: this.baseSet. `<name>` is one of patches, turtles, links
+The protoMixin() method mixes these into the AgentClass & agentProto instance:
 
 The AgentClass:
-* setBreed (breed): Convert this agent to belong to the breed agentSet
-* getBreed (): Get the breed/agentSet for this agent
-* isBreed (breed): Return true if this agent is a member of the given breed
-* getter breed: alias for agent.breed === agent.getBreed()
+* `setBreed (breed)`: Convert this agent to belong to the breed agentSet
+* `getBreed ()`: Get the breed/agentSet for this agent
+* `isBreed (breed)`: Return true if this agent is a member of the given breed
+* `getter breed`: alias for agent.breed === agent.getBreed()
 
-Added by addAgent:
-* id: Set to the baseSet ID++
+The agentProto singleton instance of AgentClass:
+* `agentSet`: `this`, the agentSet creating the agent,
+* `<name>`: this.baseSet. `<name>` is one of patches, turtles, links
+
+Added by addAgent(agent):
+* `id`: Set to the baseSet ID++
+
+This is the idea behind "agentsets are factories for their agents".
+
+Indeed, all agent constructors are the same. For Patch it looks like:
+```
+constructor () {
+  Object.assign(this, Patch.variables())
+}
+```
+Where `Patch.variables()` is a static method returning an object containing the patch's default variables.
+
 
 ## Code
 

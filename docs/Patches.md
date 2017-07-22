@@ -12,7 +12,7 @@ None
 
 > `constructor (model, AgentClass, name)`
 
-Identical to AgentSet's [constructor](AgentSet?id=constructor).
+Identical to AgentSet's [constructor](AgentSet?id=constructor). Patches are created in class Model: `new Patches(model, Patch, 'patches')`
 
 In addition, the constructor:
 * Creates its Patch "agents".
@@ -129,11 +129,11 @@ Overrides AgentArray's inRadius, using patches.inRect, then super.inRadius.
 
 Return patches in cone from p in direction `angle`, with `coneAngle` width and `radius` distance from p.
 
-> `patchAtAngleAndDistance (obj, angle, distance)`
+> `patchAtDirectionAndDistance (obj, angle, distance)`
 
 Return patch at distance and angle from obj's (patch or turtle) x, y (floats). If off world, return undefined.
 
-To use heading rather than euclidean angle: `patchAtAngleAndDistance(obj, util.angle(heading), distance)`
+To use heading rather than euclidean angle: `patchAtDirectionAndDistance(obj, util.angle(heading), distance)`
 
 > `diffuse (v, rate, colorMap = null, min = 0, max = 1)`
 

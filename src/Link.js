@@ -26,14 +26,9 @@ const linkVariables = { // Core variables for patches. Not 'own' variables.
   width: 1
 }
 class Link {
-  // Initialize a Link given its Links AgentSet.
-  constructor (agentSet) {
+  // Initialize a Link
+  constructor () {
     Object.assign(this, linkVariables)
-    // this.defaults = this
-    // this.agentSet = agentSet
-    // this.model = agentSet.model
-    // this.world = agentSet.world
-    // this.links = agentSet.baseSet
   }
   init (from, to) {
     this.end0 = from

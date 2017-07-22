@@ -274,7 +274,7 @@ class Patches extends AgentSet {
   // }
   inRect (patch, dx, dy = dx, meToo = true) {
     const pRect = this.patchRect(patch, dx, dy, meToo)
-    if (this.isBaseSet) return pRect
+    if (this.isBaseSet()) return pRect
     return pRect.withBreed(this)
   }
   inRadius (patch, radius, meToo = true) {
@@ -297,19 +297,19 @@ class Patches extends AgentSet {
 
   // Return patch at distance and angle from obj's (patch or turtle)
   // x, y (floats). If off world, return undefined.
-  // To use heading: patchAtAngleAndDistance(obj, util.angle(heading), distance)
+  // To use heading: patchAtDirectionAndDistance(obj, util.angle(heading), distance)
   // Does not take into account the angle of the obj .. turtle.theta for example.
-  patchAtAngleAndDistance (obj, angle, distance) {
+  patchAtDirectionAndDistance (obj, angle, distance) {
     let {x, y} = obj
     x = x + distance * Math.cos(angle)
     y = y + distance * Math.sin(angle)
     return this.patch(x, y)
   }
   // patchLeftAndAhead (dTheta, distance) {
-  //   return this.patchAtAngleAndDistance(dTheta, distance)
+  //   return this.patchAtDirectionAndDistance(dTheta, distance)
   // }
   // patchRightAndAhead (dTheta, distance) {
-  //   return this.patchAtAngleAndDistance(-dTheta, distance)
+  //   return this.patchAtDirectionAndDistance(-dTheta, distance)
   // }
 
   // Diffuse the value of patch variable `p.v` by distributing `rate` percent

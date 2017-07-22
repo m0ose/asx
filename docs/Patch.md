@@ -1,14 +1,104 @@
 # Patch.js
 
-discussion
+The patches instance of class Patches creates Patch instances and places them in the patches AgentArray. This class itself is an argument to `new Patches(model, Patch, 'patches')`
 
 ## Statics
 
+> `static variables ()`
+
+Returns an object with defaulted variables for the patch.
+
 ## Constructor
+
+> `constructor ()`
+
+Called by patches.add(), you won't need this.
+
+Simply does: `Object.assign(this, Patch.variables())`
+
+Note that the patches [AgentSet adds several properties](AgentSet?id=agentclass-mixin) and methods that are shared by all AgentSet agents.
 
 ## Methods
 
-## Code
+> `x` <br />
+> `y`
+
+Getter/setter pair for patch location, derived from `id` and world properties.
+
+> `isOnEdge ()`
+
+Return true if this patch is on the edge of the world. Example: color the edges 'red'
+
+patches.ask(p => {if (p.isOnEdge()) p.color = 'red'})
+
+> `neighbors` <br />
+> `neighbors4`
+
+Return the neighbors of this patch.
+
+These initially are getters, which, when called, promote their data to the patch variables. Why? Many models do not use these, thus we do not instantiate them until used.
+
+Hint: If you don't need the performance created by this "lazy evaluation" technique, you can simply call `patches.neighbors(this)` giving the same result without instantiate the data.
+
+> `turtlesHere ()`
+
+Return the turtles on this patch. This uses the lazy evaluation approach as `neighbors`. The first time it is called, it caches the turtles on this patch in `p.turtles`. Then as turtles move, they add/remove themselves from the cache as needed. Otherwise the turtles do not use the cache.
+
+This is used in geometry methods like `patches.inRadius(...)` as a form of quad tree.
+
+> `breedsHere (breed)`
+
+As above but returning only turtles of this breed
+
+> `setColor (color)`
+
+Set this patch's color. The color can be any color type, but will be converted to Color.newColor().pixel and stored in a pixel array for fast rendering.
+
+> `getColor (sharedColor = null)`
+
+Return color as a Color.newColor() with the correct pixel value. If a shared newColor is given, it's pixel is simply set. This can be a performance win.
+
+> `setLabel (label)` (labels currently unimplemented)
+
+Set this patch's label. Uses patches.setLabel(this, label) for a label cache.
+
+To delete the label, pass null or undefined, or simply call p.setLabel().
+
+> `getLabel ()`
+
+Return the label or undefined if no label set.
+
+> `distanceXY (x, y)`
+
+Distance between this patch and the x, y coordinates. Both must be on-world.
+
+> `distance (agent)`
+
+Same using the agent.x/y values. Agent can be patch or turtle .. both have x,y.
+
+> `towardsXY (x, y)`
+
+Return the direction  from this patch towards the x,y coordinates.
+
+> `towards (agent)`
+
+Ditto for the direction angle from this patch towards the agent (patch or turtle).
+
+> `patchAt (dx, dy)`
+
+Return patch w/ given *relative* dx, dy (floats) from this patch. Return undefined if off-world.
+
+Note: this is not the same as patches.patch(x, y) which gives the patch at the *absolute* x,y coordinates.
+
+> `patchAtDirectionAndDistance (direction, distance)`
+
+Return the patch at the given direction and distance from this patch.
+
+> `sprout (num = 1, breed = this.model.turtles, initFcn = (turtle) => {})`
+
+Factory method for creating turtles at this patch's location. It is identical to `Turtles.create(num, initFcn)` with the exception that the turtles initial x,y values are this patch's. The initFcn is called with each newly created turtle.
+
+Returns an AgentArray of the new turtles.
 
 ## Properties
 
@@ -16,9 +106,18 @@ discussion
 
 The unique ID for this patch. Assigned by AgentSet.add(). Is equal to patch's Array index due to patches being fixed length.
 
-> `x` <br />
-> `y`
+> `color`
 
-Getter/setter pair for patch location, derived from `id` and world properties.
+Getter/setter pair for `getColor`, `setColor` methods.
+
+> `label`
+
+Getter/setter pair for `getLabel`, `setLabel` methods.
+
+> `turtles` (private)
+
+The turtles currently on me, lazily created by `turtlesHere ()` above.
+
+## Code
 
 Code is [here](https://github.com/backspaces/asx/blob/master/src/Patch.js).

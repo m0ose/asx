@@ -1,6 +1,12 @@
 # World.js
 
-Class World defines the coordinate system for the model. It is a grid specified by 5 properties: patchSize, minX/Y, maxX/Y. The grid squares are called `patches`
+Class World defines the coordinate system for the model. It is a grid specified by 5 properties: patchSize, minX/Y, maxX/Y. The grid squares are called `patches`.
+
+The grid world is euclidean: the usual x,y axes with angles (theta) in radians, measured counter clockwise from the +x axis. We also support z in the Three renderer. It follows the so-called [right-hand rule](https://en.wikipedia.org/wiki/Right-hand_rule).
+
+Some terminology:
+* Direction/Angle: The euclidean angle, or theta, in radians.
+* Heading: A world transform with angles measured in degrees from +Y (up/north), clockwise.
 
 ## Statics
 

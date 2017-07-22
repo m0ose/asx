@@ -34,20 +34,18 @@ class Patch {
   static variables () { // Core variables for patches. Not 'own' variables.
     return {
       // id: null,             // unique id, promoted by agentset's add() method
-      // defaults: null,       // pointer to defaults/proto object
       // agentSet: null,       // my agentset/breed
       // model: null,          // my model
-      // world: null,          // my agent/agentset's world
       // patches: null,        // my patches/baseSet, set by ctor
 
-      turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
+      turtles: undefined,      // the turtles on me. Laxy evalued, see turtlesHere below
       labelOffset: [0, 0],  // text pixel offset from the patch center
       labelColor: Color.newColor(0, 0, 0) // the label color
       // Getter variables: label, color, x, y, neighbors, neighbors4
     }
   }
   // Initialize a Patch given its Patches AgentSet.
-  constructor (agentSet) {
+  constructor () {
     Object.assign(this, Patch.variables())
   }
   // Getter for x,y derived from patch id, thus no setter.
@@ -58,9 +56,9 @@ class Patch {
     return this.model.world.maxY - Math.floor(this.id / this.model.world.numX)
   }
   isOnEdge () {
-    const {x, y, world} = this
-    return x === world.minX || x === world.maxX ||
-      y === world.minY || y === world.maxY
+    const {x, y, model} = this
+    const {minX, maxX, minY, maxY} = model.world
+    return x === minX || x === maxX || y === minY || y === maxY
   }
 
   // Getter for neighbors of this patch.
@@ -110,7 +108,7 @@ class Patch {
     this.patches.getLabel(this)
   }
   get label () { return this.getLabel() }
-  set label (label) { return this.setColor(label) }
+  set label (label) { return this.setLabel(label) }
 
   // Promote this.turtles on first call to turtlesHere.
   turtlesHere () {
@@ -129,9 +127,11 @@ class Patch {
     }
     return this.turtles
   }
+  // Returns above but returning only turtles of this breed.
   breedsHere (breed) {
     const turtles = this.turtlesHere()
-    return turtles.filter((turtle) => turtle.agentSet === breed)
+    return turtles.withBreed(breed)
+    // return turtles.filter((turtle) => turtle.agentSet === breed)
   }
 
   // 6 methods in both Patch & Turtle modules
@@ -146,26 +146,31 @@ class Patch {
   // Return patch w/ given parameters. Return undefined if off-world.
   // Return patch dx, dy from my position.
   patchAt (dx, dy) { return this.patches.patch(this.x + dx, this.y + dy) }
-  patchAtAngleAndDistance (angle, distance) {
-    return this.patches.patchAtAngleAndDistance(this, angle, distance)
+  patchAtDirectionAndDistance (direction, distance) {
+    return this.patches.patchAtDirectionAndDistance(this, direction, distance)
   }
 
-  inRadius (radius, meToo = true) { // radius is integer
-    return this.patches.inRadius(this, radius, meToo)
-  }
-  inCone (radius, coneAngle, direction, meToo = true) {
-    return this.patches.inRadius(this, radius, coneAngle, direction, meToo)
-  }
+  // Use the agentset versions so that breeds can considered.
+  // Otherwise we'd have to use the patch breed just to be consistant.
+  // inRect (patch, dx, dy = dx, meToo = true) {
+  //   return this.patches.inRect(this, dx, dy, meToo)
+  // }
+  // inRadius (radius, meToo = true) { // radius is integer
+  //   return this.patches.inRadius(this, radius, meToo)
+  // }
+  // inCone (radius, coneAngle, direction, meToo = true) {
+  //   return this.patches.inRadius(this, radius, coneAngle, direction, meToo)
+  // }
 
   // Breed get/set mathods and getter/setter versions.
   // setBreed (breed) { breed.setBreed(this) }
   // get breed () { return this.agentSet }
   // isBreed (name) { return this.agentSet.name === name }
 
-  sprout (num = 1, breed = this.model.turtles, init = util.noop) {
-    breed.create(num, (turtle) => {
+  sprout (num = 1, breed = this.model.turtles, initFcn = (turtle) => {}) {
+    return breed.create(num, (turtle) => {
       turtle.setxy(this.x, this.y)
-      init(turtle)
+      initFcn(turtle)
     })
   }
 }

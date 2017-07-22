@@ -32,16 +32,8 @@ const turtleVariables = { // Core variables for patches. Not 'own' variables.
 }
 class Turtle {
   // Initialize a Turtle given its Turtles AgentSet.
-  constructor (agentSet) {
+  constructor () {
     Object.assign(this, turtleVariables)
-    // this.defaults = this
-    // this.agentSet = agentSet
-    // this.model = agentSet.model
-    // this.model.world = agentSet.world
-    // this.turtles = agentSet.baseSet
-
-    // this.sprite = this.turtles.model.spriteSheet.addDrawing('default')
-    // this.sprite = this.turtles.spriteSheet.add('default', 'red')
   }
   die () {
     this.agentSet.removeAgent(this) // remove me from my baseSet and breed
@@ -159,7 +151,7 @@ class Turtle {
   // "direction" is euclidean radians.
   face (agent) { this.theta = this.towards(agent) }
   faceXY (x, y) { this.theta = this.towardsXY(x, y) }
-  patchAhead (distance) { return this.patchAtAngleAndDistance(this.theta, distance) }
+  patchAhead (distance) { return this.patchAtDirectionAndDistance(this.theta, distance) }
   canMove (distance) { return this.patchAhead(distance) != null } // null / undefined
 
   // 6 methods in both Patch & Turtle modules
@@ -177,25 +169,26 @@ class Turtle {
   patchAt (dx, dy) { return this.patches.patch(this.x + dx, this.y + dy) }
   // Note: angle is absolute, w/o regard to existing angle of turtle.
   // Use Left/Right versions below
-  patchAtAngleAndDistance (angle, distance) {
-    return this.patches.patchAtAngleAndDistance(this, angle, distance)
+  patchAtDirectionAndDistance (angle, distance) {
+    return this.patches.patchAtDirectionAndDistance(this, angle, distance)
   }
 
   patchLeftAndAhead (angle, distance) {
-    return this.patchAtAngleAndDistance(angle + this.theta, distance)
+    return this.patchAtDirectionAndDistance(angle + this.theta, distance)
   }
   patchRightAndAhead (angle, distance) {
-    return this.patchAtAngleAndDistance(angle - this.theta, distance)
+    return this.patchAtDirectionAndDistance(angle - this.theta, distance)
   }
-  // Return turtles/breeds within radius from me
-  inRadius (radius, meToo = false) {
-    return this.agentSet.inRadius(this, radius, meToo)
-  }
-  // Return turtles/breeds within cone from me
-  // Note: agentSet rather than turtles to allow for breeds
-  inCone (radius, coneAngle, meToo = false) {
-    return this.agentSet.inCone(this, radius, coneAngle, this.theta, meToo)
-  }
+
+  // // Return turtles/breeds within radius from me
+  // inRadius (radius, meToo = false) {
+  //   return this.agentSet.inRadius(this, radius, meToo)
+  // }
+  // // Return turtles/breeds within cone from me
+  // // Note: agentSet rather than turtles to allow for breeds
+  // inCone (radius, coneAngle, meToo = false) {
+  //   return this.agentSet.inCone(this, radius, coneAngle, this.theta, meToo)
+  // }
 
   // Link methods. Note: this.links returns all links linked to me.
   // See links getter above.
