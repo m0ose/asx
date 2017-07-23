@@ -12,7 +12,9 @@ None
 
 > `constructor (model, AgentClass, name)`
 
-Identical to AgentSet's [constructor](AgentSet?id=constructor). Patches are created in class Model: `new Patches(model, Patch, 'patches')`
+Identical to AgentSet's [constructor](AgentSet?id=constructor).
+
+The model.patches are created by class Model: `new Patches(model, Patch, 'patches')`
 
 In addition, the constructor:
 * Creates its Patch "agents".
@@ -149,14 +151,14 @@ A neighbor4 version of the above.
 
 ## Properties
 
-* pixels: An object for managing pixel data for patch colors:
-  * pixels.ctx: A numX x numY canvas context object, one pixel per patch
-  * pixels.imageData: The ctx's ImageData object
-  * pixels.data8: The ImageData's rgba Uint8Array
-  * pixels.data: A Uint32Array view onto data8. Pixel values.
+* `pixels`: An object for managing pixel data for patch colors:
+  * `pixels.ctx`: A numX * numY canvas context object, one pixel per patch
+  * `pixels.imageData`: The ctx's ImageData object
+  * `pixels.data8`: The ImageData's rgba Uint8Array
+  * `pixels.data`: A Uint32Array view onto data8. Pixel values.
 
-* labels: A collection of patch labels. Not currently implemented.
-* _diffuseNext: A temporary patch variable used by the diffuse, diffuse4 methods.
+* `labels`: A collection of patch labels. Not currently implemented.
+* `_diffuseNext`: A temporary patch variable used by the diffuse, diffuse4 methods.
 
 ## Code
 

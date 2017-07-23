@@ -31,7 +31,7 @@ import Color from './Color.js'
 // The flyweight Patch objects are created via Object.create(protoObject),
 // This lets the new Patch(agentset) obhect be "defaults".
 class Patch {
-  static variables () { // Core variables for patches. Not 'own' variables.
+  static defaultVariables () { // Core variables for patches. Not 'own' variables.
     return {
       // id: null,             // unique id, promoted by agentset's add() method
       // agentSet: null,       // my agentset/breed
@@ -46,7 +46,7 @@ class Patch {
   }
   // Initialize a Patch given its Patches AgentSet.
   constructor () {
-    Object.assign(this, Patch.variables())
+    Object.assign(this, Patch.defaultVariables())
   }
   // Getter for x,y derived from patch id, thus no setter.
   get x () {

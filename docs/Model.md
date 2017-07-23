@@ -85,8 +85,8 @@ Given a string of space-separated names, creates breads of that name. So for tur
 > `patches`, `turtles`, `links`: The three major AgentSets <br />
 > `<breeds>`: The breeds created by the three methods above. <br />
 > `spriteSheet`: A canvas of images used by the renderer. <br />
-> `view`: The renderer. <br />
-> `world`: The object created by the World module. <br />
+> `view`: The renderer created by the constructor. <br />
+> `world`: The class World instance created by the constructor.
 
 ## Code
 

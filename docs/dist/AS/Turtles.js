@@ -5,19 +5,19 @@ import AgentSet from './AgentSet.js'
 // Turtles are the world other agentsets live on. They create a coord system
 // from Model's world values: size, minX, maxX, minY, maxY
 class Turtles extends AgentSet {
-  constructor (model, AgentClass, name, baseSet = null) {
-    // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world & agentProto: new AgentClass
-    super(model, AgentClass, name, baseSet)
-    // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
-
-    // if (typeof model === 'number' || this.isBreedSet()) return
-
-    // this.model.world = model.world
-    // this.labels = [] // sparse array for labels
-    // this.spriteSheet = new SpriteSheet()
-    // this.colorMap = ColorMap.Basic16
-  }
+  // constructor (model, AgentClass, name) {
+  //   // // AgentSet sets these variables:
+  //   // // model, name, baseSet, world: model.world & agentProto: new AgentClass
+  //   super(model, AgentClass, name)
+  //   // // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
+  //   //
+  //   // // if (typeof model === 'number' || this.isBreedSet()) return
+  //   //
+  //   // // this.model.world = model.world
+  //   // // this.labels = [] // sparse array for labels
+  //   // // this.spriteSheet = new SpriteSheet()
+  //   // // this.colorMap = ColorMap.Basic16
+  // }
   create (num = 1, initFcn = (turtle) => {}) {
     return util.repeat(num, (i, a) => {
       const turtle = this.addAgent()

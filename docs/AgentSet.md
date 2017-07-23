@@ -104,7 +104,7 @@ The AgentClass:
 * `setBreed (breed)`: Convert this agent to belong to the breed agentSet
 * `getBreed ()`: Get the breed/agentSet for this agent
 * `isBreed (breed)`: Return true if this agent is a member of the given breed
-* `getter breed`: alias for agent.breed === agent.getBreed()
+* `getter breed`: alias for agent.getBreed()
 
 The agentProto singleton instance of AgentClass:
 * `agentSet`: `this`, the agentSet creating the agent,

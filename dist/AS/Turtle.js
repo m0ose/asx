@@ -9,31 +9,55 @@ import util from './util.js'
 // The core default variables needed by a Turtle.
 // Use turtles.setDefault(name, val) to change
 // Modelers add additional "own variables" as needed.
-const turtleVariables = { // Core variables for patches. Not 'own' variables.
-  x: 0,             // x, y, z in patchSize units.
-  y: 0,             // Use turtles.setDefault('z', num) to change default height
-  z: 0,
-  theta: 0,         // my euclidean direction, radians from x axis, counter-clockwise
-  size: 1,          // size in patches, default to one patch
-
-  // patch: null,   // the patch I'm on .. uses getter below
-  // links: null,   // the links having me as an end point .. lazy promoted below
-  atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
-                    // 'bounce', or a function, see handleEdge() method
-  sprite: null,
-  color: null,
-  shape: null
-
-  // spriteFcn: 'default',
-  // spriteColor: Color.newColor(255, 0, 0),
-
-  // labelOffset: [0, 0],  // text pixel offset from the turtle center
-  // labelColor: Color.newColor(0, 0, 0) // the label color
-}
+// const turtleVariables = { // Core variables for turtles. Not 'own' variables.
+//   x: 0,             // x, y, z in patchSize units.
+//   y: 0,             // Use turtles.setDefault('z', num) to change default height
+//   z: 0,
+//   theta: 0,         // my euclidean direction, radians from x axis, counter-clockwise
+//   size: 1,          // size in patches, default to one patch
+//
+//   // patch: null,   // the patch I'm on .. uses getter below
+//   // links: null,   // the links having me as an end point .. lazy promoted below
+//   atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
+//                     // 'bounce', or a function, see handleEdge() method
+//   sprite: null,
+//   color: null,
+//   shape: null
+//
+//   // spriteFcn: 'default',
+//   // spriteColor: Color.newColor(255, 0, 0),
+//
+//   // labelOffset: [0, 0],  // text pixel offset from the turtle center
+//   // labelColor: Color.newColor(0, 0, 0) // the label color
+// }
 class Turtle {
+  static defaultVariables () {
+    return { // Core variables for turtles. Not 'own' variables.
+      x: 0,             // x, y, z in patchSize units.
+      y: 0,             // Use turtles.setDefault('z', num) to change default height
+      z: 0,
+      theta: 0,         // my euclidean direction, radians from x axis, counter-clockwise
+      size: 1,          // size in patches, default to one patch
+
+      // patch: null,   // the patch I'm on .. uses getter below
+      // links: null,   // the links having me as an end point .. lazy promoted below
+      atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
+                        // 'bounce', or a function, see handleEdge() method
+      sprite: null,
+      color: null,
+      strokeColor: null,
+      shape: null
+
+      // spriteFcn: 'default',
+      // spriteColor: Color.newColor(255, 0, 0),
+
+      // labelOffset: [0, 0],  // text pixel offset from the turtle center
+      // labelColor: Color.newColor(0, 0, 0) // the label color
+    }
+  }
   // Initialize a Turtle given its Turtles AgentSet.
   constructor () {
-    Object.assign(this, turtleVariables)
+    Object.assign(this, Turtle.defaultVariables())
   }
   die () {
     this.agentSet.removeAgent(this) // remove me from my baseSet and breed
@@ -48,7 +72,7 @@ class Turtle {
 
   // Factory: create num new turtles at this turtle's location. The optional init
   // proc is called on the new turtle after inserting in its agentSet.
-  hatch (num = 1, agentSet = this.agentSet, init = () => {}) {
+  hatch (num = 1, agentSet = this.agentSet, init = (turtle) => {}) {
     return agentSet.create(num, (turtle) => {
       turtle.setxy(this.x, this.y)
       // turtle.color = this.color // REMIND: sprite vs color
@@ -61,14 +85,13 @@ class Turtle {
   // Getter for links for this turtle. REMIND: use new AgentSet(0)?
   // Uses lazy evaluation to promote links to instance variables.
   // REMIND: Let links create the array as needed, less "tricky"
-  get links () { // lazy promote neighbors from getter to instance prop.
+  get links () { // lazy promote links from getter to instance prop.
     Object.defineProperty(this, 'links', {value: [], enumerable: true})
     return this.links
   }
   // Getter for the patchs and the patch I'm on. Return null if off-world.
   get patch () { return this.model.patches.patch(this.x, this.y) }
-  // REMIND: promote to default variable(s) if performance issue
-  get patches () { return this.model.patches }
+  // get patches () { return this.model.patches }
 
   // Heading vs Euclidean Angles. Direction for clarity when ambiguity.
   get heading () { return util.heading(this.theta) }
@@ -77,8 +100,9 @@ class Turtle {
   set direction (theta) { this.theta = theta }
 
   // Create my shape via src: sprite, fcn, string, or image/canvas
-  setSprite (src, color = this.color, strokeColor = 'black') {
+  setSprite (src, color = this.color, strokeColor = this.strokeColor) {
     color = color || this.turtles.randomColor()
+    strokeColor = strokeColor || this.turtles.randomColor()
     if (src.sheet) { this.sprite = src; return } // src is a sprite
     const ss = this.model.spriteSheet
     this.sprite = ss.newSprite(src, color, strokeColor)
@@ -151,8 +175,20 @@ class Turtle {
   // "direction" is euclidean radians.
   face (agent) { this.theta = this.towards(agent) }
   faceXY (x, y) { this.theta = this.towardsXY(x, y) }
-  patchAhead (distance) { return this.patchAtDirectionAndDistance(this.theta, distance) }
+
+  // Return the patch ahead of this turtle by distance (patchSize units).
+  // Return undefined if off-world.
+  patchAhead (distance) {
+    return this.patchAtDirectionAndDistance(this.theta, distance)
+  }
+  // Use patchAhead to determine if this turtle can move forward by distance.
   canMove (distance) { return this.patchAhead(distance) != null } // null / undefined
+  patchLeftAndAhead (angle, distance) {
+    return this.patchAtDirectionAndDistance(angle + this.theta, distance)
+  }
+  patchRightAndAhead (angle, distance) {
+    return this.patchAtDirectionAndDistance(angle - this.theta, distance)
+  }
 
   // 6 methods in both Patch & Turtle modules
   // Distance from me to x, y. REMIND: No off-world test done
@@ -166,18 +202,11 @@ class Turtle {
   towardsXY (x, y) { return util.radiansToward(this.x, this.y, x, y) }
   // Return patch w/ given parameters. Return undefined if off-world.
   // Return patch dx, dy from my position.
-  patchAt (dx, dy) { return this.patches.patch(this.x + dx, this.y + dy) }
+  patchAt (dx, dy) { return this.model.patches.patch(this.x + dx, this.y + dy) }
   // Note: angle is absolute, w/o regard to existing angle of turtle.
   // Use Left/Right versions below
-  patchAtDirectionAndDistance (angle, distance) {
-    return this.patches.patchAtDirectionAndDistance(this, angle, distance)
-  }
-
-  patchLeftAndAhead (angle, distance) {
-    return this.patchAtDirectionAndDistance(angle + this.theta, distance)
-  }
-  patchRightAndAhead (angle, distance) {
-    return this.patchAtDirectionAndDistance(angle - this.theta, distance)
+  patchAtDirectionAndDistance (direction, distance) {
+    return this.model.patches.patchAtDirectionAndDistance(this, direction, distance)
   }
 
   // // Return turtles/breeds within radius from me

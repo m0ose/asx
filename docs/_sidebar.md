@@ -1,8 +1,7 @@
 - **Introduction**
   - [AgentScript](AgentScript.md)
   - [Hello World](HelloWorld.md)
-- **Documentation**
-  - [AS.js](AS.md)
+- **Modeling Core**
   - [AgentArray.js](AgentArray.md)
   - [AgentSet.js](AgentSet.md)
   - [Model.js](Model.md)
@@ -11,3 +10,5 @@
   - [Turtles.js](Turtles.md)
   - [Turtle.js](Turtle.md)
   - [World.js](World.md)
+- **Additional Modules**
+  - [AS.js](AS.md)

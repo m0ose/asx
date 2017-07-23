@@ -1,12 +1,12 @@
 # Patch.js
 
-The patches instance of class Patches creates Patch instances and places them in the patches AgentArray. This class itself is an argument to `new Patches(model, Patch, 'patches')`
+The patches AgentSet creates the Patch instances it contains. Class Patch is an argument to `new Patches(model, Patch, 'patches')`
 
 ## Statics
 
-> `static variables ()`
+> `static defaultVariables ()`
 
-Returns an object with defaulted variables for the patch.
+Returns an object with defaulted variables for the patch constructor.
 
 ## Constructor
 
@@ -14,7 +14,7 @@ Returns an object with defaulted variables for the patch.
 
 Called by patches.add(), you won't need this.
 
-Simply does: `Object.assign(this, Patch.variables())`
+Simply does: `Object.assign(this, Patch.defaultVariables())`
 
 Note that the patches [AgentSet adds several properties](AgentSet?id=agentclass-mixin) and methods that are shared by all AgentSet agents.
 
@@ -68,6 +68,7 @@ To delete the label, pass null or undefined, or simply call p.setLabel().
 
 Return the label or undefined if no label set.
 
+> **Note:** the next 6 methods are also in class Turtle. <br />
 > `distanceXY (x, y)`
 
 Distance between this patch and the x, y coordinates. Both must be on-world.
@@ -78,11 +79,11 @@ Same using the agent.x/y values. Agent can be patch or turtle .. both have x,y.
 
 > `towardsXY (x, y)`
 
-Return the direction  from this patch towards the x,y coordinates.
+Return the direction, in radians, from this patch towards the x,y coordinates.
 
 > `towards (agent)`
 
-Ditto for the direction angle from this patch towards the agent (patch or turtle).
+Ditto for the direction from this patch towards the agent (patch or turtle).
 
 > `patchAt (dx, dy)`
 
@@ -92,7 +93,7 @@ Note: this is not the same as patches.patch(x, y) which gives the patch at the *
 
 > `patchAtDirectionAndDistance (direction, distance)`
 
-Return the patch at the given direction and distance from this patch.
+Return the patch at the given direction, in radians, and distance, in patchSize units, from this patch.
 
 > `sprout (num = 1, breed = this.model.turtles, initFcn = (turtle) => {})`
 
@@ -104,7 +105,7 @@ Returns an AgentArray of the new turtles.
 
 > `id`
 
-The unique ID for this patch. Assigned by AgentSet.add(). Is equal to patch's Array index due to patches being fixed length.
+The unique ID for this patch. Assigned by patches.add(). Is equal to patch's Array index due to patches being fixed length.
 
 > `color`
 
@@ -113,6 +114,11 @@ Getter/setter pair for `getColor`, `setColor` methods.
 > `label`
 
 Getter/setter pair for `getLabel`, `setLabel` methods.
+
+> `labelOffset` <br />
+> `labelColor`
+
+Properties for drawing the label for this patch. The offset is from the patch x,y.
 
 > `turtles` (private)
 
