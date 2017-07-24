@@ -6,7 +6,7 @@ The patches AgentSet creates the Patch instances it contains. Class Patch is an 
 
 > `static defaultVariables ()`
 
-Returns an object with defaulted variables for the patch constructor.
+Returns an object with defaulted variables for the Patch constructor.
 
 ## Constructor
 

@@ -6,7 +6,7 @@ The turtles AgentSet creates the Turtle instances it contains. Class Turtle is a
 
 > `static defaultVariables ()`
 
-Returns an object with defaulted variables for the turtle constructor.
+Returns an object with defaulted variables for the Turtle constructor.
 
 ## Constructor
 
@@ -149,7 +149,7 @@ A spriteSheet object with a shape, color and optional strokeColor. Or simply an 
 
 > `color`, `strokeColor`, `shape`
 
-Individual components of a sprite. A renderer may not use these, for example Three Point geometries typically only use a color.
+Individual components of a sprite. A renderer may not use all these, for example Three Point geometries only use `color`.
 
 > `get links ()`
 
@@ -161,7 +161,7 @@ The array the links getter creates.
 
 > `get patch ()`
 
-Getter for the patch I'm on. Return null if off-world.
+Getter for the patch I'm on. Return undefined if off-world.
 
 > `get heading ()` <br />
 > `set heading (heading)`

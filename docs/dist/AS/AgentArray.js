@@ -101,15 +101,15 @@ class AgentArray extends Array {
   // Return n random agents as AgentArray.
   // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
   // for better approach for large n.
-  nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
-    if (n > this.length) throw Error('nOf: n larger than AgentArray')
+  nOf (n) {
+    if (n > this.length)
+      throw Error('nOf: n larger than AgentArray')
     if (n === this.length) return this
     const result = new AgentArray()
     while (result.length < n) {
       const o = this.oneOf()
       if (!(o in result)) result.push(o)
     }
-    // return this.asAgentArray(result)
     return result
   }
   // Return a new AgentArray of the n min/max agents of the value of reporter,

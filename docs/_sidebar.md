@@ -4,6 +4,8 @@
 - **Modeling Core**
   - [AgentArray.js](AgentArray.md)
   - [AgentSet.js](AgentSet.md)
+  - [Links.js](Links.md)
+  - [Link.js](Link.md)
   - [Model.js](Model.md)
   - [Patches.js](Patches.md)
   - [Patch.js](Patch.md)

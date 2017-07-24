@@ -60,7 +60,7 @@ Circle Layout: position the turtles in this breed in an equally spaced circle of
 
 ## Properties
 
-None, inherit AgentArray's.
+None. Inherit AgentSet properties.
 
 ## Code
 

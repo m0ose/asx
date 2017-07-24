@@ -929,15 +929,15 @@ class AgentArray extends Array {
   // Return n random agents as AgentArray.
   // See [Fisher-Yates-Knuth shuffle](https://goo.gl/fWNFf)
   // for better approach for large n.
-  nOf (n) { // I realize this is a bit silly, lets hope random doesn't repeat!
-    if (n > this.length) throw Error('nOf: n larger than AgentArray')
+  nOf (n) {
+    if (n > this.length)
+      throw Error('nOf: n larger than AgentArray')
     if (n === this.length) return this
     const result = new AgentArray();
     while (result.length < n) {
       const o = this.oneOf();
       if (!(o in result)) result.push(o);
     }
-    // return this.asAgentArray(result)
     return result
   }
   // Return a new AgentArray of the n min/max agents of the value of reporter,
@@ -2338,8 +2338,8 @@ class Link {
       // world: null,          // my agent/agentset's world
       // links: null,          // my baseSet
 
-      end0: 0,              // Turtles: end0 & 1 are turtle ends of the link
-      end1: 0,
+      end0: null,              // Turtles: end0 & 1 are turtle ends of the link
+      end1: null,
       color: Color.toColor('yellow'), // Note: links must have A = 255, opaque.
       // z: 1, // possibly a z offset from the turtles?
 
@@ -2367,7 +2367,11 @@ class Link {
 
   bothEnds () { return [this.end0, this.end1] }
   length () { return this.end0.distance(this.end1) }
-  otherEnd (turtle) { return turtle === this.end0 ? this.end1 : this.end0 }
+  otherEnd (turtle) {
+    if (turtle === this.end0) return this.end1
+    if (turtle === this.end1) return this.end0
+    throw Error(`Link.otherEnd: turtle not a link turtle: ${turtle}`)
+  }
 
   // Breed get/set mathods.
   // setBreed (breed) { breed.setBreed(this) }
@@ -2376,15 +2380,15 @@ class Link {
 
 // Links are a collection of all the Link objects between turtles.
 class Links extends AgentSet {
-  constructor (model, AgentClass, name, baseSet = null) {
-    // AgentSet sets these variables:
-    // model, name, baseSet, world: model.world & agentProto: new AgentClass
-    super(model, AgentClass, name, baseSet);
-    // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
-    // if (typeof model === 'number' || this.isBreedSet()) return
-
-    // this.labels = [] // sparse array for labels
-  }
+  // constructor (model, AgentClass, name) {
+  //   // AgentSet sets these variables:
+  //   // model, name, baseSet, world: model.world & agentProto: new AgentClass
+  //   super(model, AgentClass, name)
+  //   // Skip if an basic Array ctor or a breedSet. See AgentSet comments.
+  //   // if (typeof model === 'number' || this.isBreedSet()) return
+  //
+  //   // this.labels = [] // sparse array for labels
+  // }
 
   // Factory: Add 1 or more links from the from turtle to the to turtle(s) which
   // can be a single turtle or an array of turtles. The optional init
