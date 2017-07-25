@@ -52,11 +52,11 @@ As above but returning only turtles of this breed
 
 > `setColor (color)`
 
-Set this patch's color. The color can be any color type, but will be converted to Color.newColor().pixel and stored in a pixel array for fast rendering.
+Set this patch's color. The color can be any color type, but will be converted to Color.color().pixel and stored in a pixel array for fast rendering.
 
 > `getColor (sharedColor = null)`
 
-Return color as a Color.newColor() with the correct pixel value. If a shared newColor is given, it's pixel is simply set. This can be a performance win.
+Return color as a Color.color() with the correct pixel value. If a shared Color.color is given, it's pixel is simply set. This can be a performance win.
 
 > `setLabel (label)` (labels currently unimplemented)
 

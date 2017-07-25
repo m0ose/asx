@@ -20,7 +20,7 @@ import Color from './Color.js'
 //
 //   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
 //   labelOffset: [0, 0],  // text pixel offset from the patch center
-//   labelColor: Color.newColor(0, 0, 0) // the label color
+//   labelColor: Color.color(0, 0, 0) // the label color
 //   // Getter variables: label, color, x, y, neighbors, neighbors4
 // }
 
@@ -40,7 +40,7 @@ class Patch {
 
       turtles: undefined,      // the turtles on me. Laxy evalued, see turtlesHere below
       labelOffset: [0, 0],  // text pixel offset from the patch center
-      labelColor: Color.newColor(0, 0, 0) // the label color
+      labelColor: Color.color(0, 0, 0) // the label color
       // Getter variables: label, color, x, y, neighbors, neighbors4
     }
   }
@@ -84,8 +84,8 @@ class Patch {
 
   // Manage colors by directly setting pixels in Patches pixels object.
   // With getter/setters, slight performance hit.
-  setColor (typedColor) {
-    this.patches.pixels.data[this.id] = Color.toColor(typedColor).getPixel()
+  setColor (anyColor) {
+    this.patches.pixels.data[this.id] = Color.toColor(anyColor).getPixel()
   }
   // Optimization: If shared color provided, sharedColor is modified and
   // returned. Otherwise new color returned.

@@ -1,3 +1,4 @@
+// import Color from './Color.js'
 import util from './util.js'
 
 // Flyweight object creation, see Patch/Patches.
@@ -25,10 +26,10 @@ import util from './util.js'
 //   shape: null
 //
 //   // spriteFcn: 'default',
-//   // spriteColor: Color.newColor(255, 0, 0),
+//   // spriteColor: Color.color(255, 0, 0),
 //
 //   // labelOffset: [0, 0],  // text pixel offset from the turtle center
-//   // labelColor: Color.newColor(0, 0, 0) // the label color
+//   // labelColor: Color.color(0, 0, 0) // the label color
 // }
 class Turtle {
   static defaultVariables () {
@@ -46,13 +47,13 @@ class Turtle {
       sprite: null,
       color: null,
       strokeColor: null,
-      shape: null
+      shape: `default`
 
       // spriteFcn: 'default',
-      // spriteColor: Color.newColor(255, 0, 0),
+      // spriteColor: Color.color(255, 0, 0),
 
       // labelOffset: [0, 0],  // text pixel offset from the turtle center
-      // labelColor: Color.newColor(0, 0, 0) // the label color
+      // labelColor: Color.color(0, 0, 0) // the label color
     }
   }
   // Initialize a Turtle given its Turtles AgentSet.
@@ -98,6 +99,12 @@ class Turtle {
   set heading (heading) { this.theta = util.angle(heading) }
   get direction () { return this.theta }
   set direction (theta) { this.theta = theta }
+
+  // setColor (anyColor) { this.color = Color.toColor(anyColor) }
+  // getColor () {
+  //   if (this.color) return
+  //   return this.color || this.sprite
+  // }
 
   // Create my shape via src: sprite, fcn, string, or image/canvas
   setSprite (src, color = this.color, strokeColor = this.strokeColor) {

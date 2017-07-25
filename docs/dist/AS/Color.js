@@ -25,8 +25,8 @@ const Color = {
   // css color string. Alpha "a" is converted to float in 0-1 for css string.
   // We use alpha in [0-255] to be compatible with TypedArray conventions.
   rgbaString (r, g, b, a = 255) {
-    a = a / 255; const a4 = a.toPrecision(4)
-    return (a === 1) ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a4})`
+    a = a / 255; const a2 = a.toPrecision(2)
+    return (a === 1) ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a2})`
   },
 
   // Convert 4 ints, h,s,l,a, h in [0-360], s,l in [0-100]% a in [0-255] to a
@@ -105,7 +105,7 @@ const Color = {
   // TypedArrays, and css/canvas2d strings.
 
   // Create Color from r,g,b,a. Use `toColor()` below for strings etc.
-  newColor (r, g, b, a = 255) {
+  color (r, g, b, a = 255) {
     const u8array = new Uint8ClampedArray([r, g, b, a])
     u8array.pixelArray = new Uint32Array(u8array.buffer) // one element array
     // Make this an instance of ColorProto
@@ -126,7 +126,7 @@ const Color = {
   // ```
   toColor (any) {
     if (this.isColor(any)) return any
-    const tc = this.newColor(0, 0, 0, 0)
+    const tc = this.color(0, 0, 0, 0)
     if (util.isInteger(any)) tc.setPixel(any)
     else if (typeof any === 'string') tc.setCss(any)
     else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any)
@@ -135,12 +135,12 @@ const Color = {
     return tc
   },
   // Return a random rgb Color, a=255
-  randomTypedColor () {
+  randomColor () {
     const r255 = () => util.randomInt(256) // random int in [0,255]
-    return this.newColor(r255(), r255(), r255())
-  },
+    return this.color(r255(), r255(), r255())
+  }
   // A static transparent color, set at end of file
-  transparent: null
+  // transparent: null
 }
 
 // Prototype for Color. Getters/setters for usability, may be slower.
@@ -223,6 +223,6 @@ const ColorProto = {
   }
 }
 
-Color.transparent = Color.newColor(0, 0, 0, 0)
+// Color.transparent = Color.color(0, 0, 0, 0)
 
 export default Color

@@ -6,7 +6,7 @@ class FireModel extends Model {
     this.patchBreeds('fires embers')
 
     this.fireColorMap = ColorMap.gradientColorMap(6, ['red', [128, 0, 0]])
-    this.treeColor = Color.newColor(0, 255, 0)
+    this.treeColor = Color.color(0, 255, 0)
     this.dirtColor = Color.toColor('yellow')
     this.fireColor = this.fireColorMap[0]
     this.done = false

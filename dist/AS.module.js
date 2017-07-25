@@ -1022,8 +1022,8 @@ const Color = {
   // css color string. Alpha "a" is converted to float in 0-1 for css string.
   // We use alpha in [0-255] to be compatible with TypedArray conventions.
   rgbaString (r, g, b, a = 255) {
-    a = a / 255; const a4 = a.toPrecision(4);
-    return (a === 1) ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a4})`
+    a = a / 255; const a2 = a.toPrecision(2);
+    return (a === 1) ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a2})`
   },
 
   // Convert 4 ints, h,s,l,a, h in [0-360], s,l in [0-100]% a in [0-255] to a
@@ -1102,7 +1102,7 @@ const Color = {
   // TypedArrays, and css/canvas2d strings.
 
   // Create Color from r,g,b,a. Use `toColor()` below for strings etc.
-  newColor (r, g, b, a = 255) {
+  color (r, g, b, a = 255) {
     const u8array = new Uint8ClampedArray([r, g, b, a]);
     u8array.pixelArray = new Uint32Array(u8array.buffer); // one element array
     // Make this an instance of ColorProto
@@ -1123,7 +1123,7 @@ const Color = {
   // ```
   toColor (any) {
     if (this.isColor(any)) return any
-    const tc = this.newColor(0, 0, 0, 0);
+    const tc = this.color(0, 0, 0, 0);
     if (util.isInteger(any)) tc.setPixel(any);
     else if (typeof any === 'string') tc.setCss(any);
     else if (Array.isArray(any) || util.isUintArray(any)) tc.setColor(...any);
@@ -1132,12 +1132,12 @@ const Color = {
     return tc
   },
   // Return a random rgb Color, a=255
-  randomTypedColor () {
+  randomColor () {
     const r255 = () => util.randomInt(256); // random int in [0,255]
-    return this.newColor(r255(), r255(), r255())
-  },
+    return this.color(r255(), r255(), r255())
+  }
   // A static transparent color, set at end of file
-  transparent: null
+  // transparent: null
 };
 
 // Prototype for Color. Getters/setters for usability, may be slower.
@@ -1220,8 +1220,6 @@ const ColorProto = {
   }
 };
 
-Color.transparent = Color.newColor(0, 0, 0, 0);
-
 // A colormap is simply an array of typedColors with several utilities such
 // as randomColor, closestColor etc.
 // This allows the colors to be simple integer indices
@@ -1269,7 +1267,7 @@ const ColorMap = {
     util.step(typedArray.length, 4,
       // Note: can't share subarray as color's typed array:
       // it's buffer is for entire array, not just subarray.
-      (i) => array.push(Color.newColor(...typedArray.subarray(i, i + 4))));
+      (i) => array.push(Color.color(...typedArray.subarray(i, i + 4))));
     array.typedArray = typedArray;
     return array
   },
@@ -1430,7 +1428,7 @@ const ColorMap = {
   },
 
   // Create an hsl map, inputs are arrays to be permutted like rgbColorMap.
-  // Convert the HSL values to typedColors, default to bright hue ramp (L=50).
+  // Convert the HSL values to Color.colors, default to bright hue ramp (L=50).
   hslColorMap (H, S = [100], L = [50]) {
     const hslArray = this.permuteArrays(H, S, L);
     const array = hslArray.map(a => Color.toColor(Color.hslString(...a)));
@@ -2810,7 +2808,7 @@ class Patches extends AgentSet {
 //
 //   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
 //   labelOffset: [0, 0],  // text pixel offset from the patch center
-//   labelColor: Color.newColor(0, 0, 0) // the label color
+//   labelColor: Color.color(0, 0, 0) // the label color
 //   // Getter variables: label, color, x, y, neighbors, neighbors4
 // }
 
@@ -2830,7 +2828,7 @@ class Patch {
 
       turtles: undefined,      // the turtles on me. Laxy evalued, see turtlesHere below
       labelOffset: [0, 0],  // text pixel offset from the patch center
-      labelColor: Color.newColor(0, 0, 0) // the label color
+      labelColor: Color.color(0, 0, 0) // the label color
       // Getter variables: label, color, x, y, neighbors, neighbors4
     }
   }
@@ -2874,8 +2872,8 @@ class Patch {
 
   // Manage colors by directly setting pixels in Patches pixels object.
   // With getter/setters, slight performance hit.
-  setColor (typedColor) {
-    this.patches.pixels.data[this.id] = Color.toColor(typedColor).getPixel();
+  setColor (anyColor) {
+    this.patches.pixels.data[this.id] = Color.toColor(anyColor).getPixel();
   }
   // Optimization: If shared color provided, sharedColor is modified and
   // returned. Otherwise new color returned.
@@ -3051,6 +3049,7 @@ class Turtles extends AgentSet {
   }
 }
 
+// import Color from './Color.js'
 // Flyweight object creation, see Patch/Patches.
 
 // Class Turtle instances represent the dynamic, behavioral element of modeling.
@@ -3076,10 +3075,10 @@ class Turtles extends AgentSet {
 //   shape: null
 //
 //   // spriteFcn: 'default',
-//   // spriteColor: Color.newColor(255, 0, 0),
+//   // spriteColor: Color.color(255, 0, 0),
 //
 //   // labelOffset: [0, 0],  // text pixel offset from the turtle center
-//   // labelColor: Color.newColor(0, 0, 0) // the label color
+//   // labelColor: Color.color(0, 0, 0) // the label color
 // }
 class Turtle {
   static defaultVariables () {
@@ -3097,13 +3096,13 @@ class Turtle {
       sprite: null,
       color: null,
       strokeColor: null,
-      shape: null
+      shape: `default`
 
       // spriteFcn: 'default',
-      // spriteColor: Color.newColor(255, 0, 0),
+      // spriteColor: Color.color(255, 0, 0),
 
       // labelOffset: [0, 0],  // text pixel offset from the turtle center
-      // labelColor: Color.newColor(0, 0, 0) // the label color
+      // labelColor: Color.color(0, 0, 0) // the label color
     }
   }
   // Initialize a Turtle given its Turtles AgentSet.
@@ -3149,6 +3148,12 @@ class Turtle {
   set heading (heading) { this.theta = util.angle(heading); }
   get direction () { return this.theta }
   set direction (theta) { this.theta = theta; }
+
+  // setColor (anyColor) { this.color = Color.toColor(anyColor) }
+  // getColor () {
+  //   if (this.color) return
+  //   return this.color || this.sprite
+  // }
 
   // Create my shape via src: sprite, fcn, string, or image/canvas
   setSprite (src, color = this.color, strokeColor = this.strokeColor) {

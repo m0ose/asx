@@ -48,7 +48,7 @@ const ColorMap = {
     util.step(typedArray.length, 4,
       // Note: can't share subarray as color's typed array:
       // it's buffer is for entire array, not just subarray.
-      (i) => array.push(Color.newColor(...typedArray.subarray(i, i + 4))))
+      (i) => array.push(Color.color(...typedArray.subarray(i, i + 4))))
     array.typedArray = typedArray
     return array
   },
@@ -209,7 +209,7 @@ const ColorMap = {
   },
 
   // Create an hsl map, inputs are arrays to be permutted like rgbColorMap.
-  // Convert the HSL values to typedColors, default to bright hue ramp (L=50).
+  // Convert the HSL values to Color.colors, default to bright hue ramp (L=50).
   hslColorMap (H, S = [100], L = [50]) {
     const hslArray = this.permuteArrays(H, S, L)
     const array = hslArray.map(a => Color.toColor(Color.hslString(...a)))
