@@ -2415,7 +2415,7 @@ class World {
     }
   }
   // Initialize the world w/ defaults overridden w/ options.
-  constructor (options) {
+  constructor (options = {}) {
     Object.assign(this, World.defaultOptions()); // initial this w/ defaults
     Object.assign(this, options); // override defaults with options
     this.setWorld();
@@ -3898,16 +3898,25 @@ class Three {
     // this.spriteSheet.texture = new THREE.CanvasTexture(this.spriteSheet.ctx)
     // this.spriteSheet.setTexture(THREE.CanvasTexture)
 
-    const scene = new THREE.Scene();
-    const camera = orthoView
-      ? new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 1, 1000)
-      : new THREE.PerspectiveCamera(45, clientWidth / clientHeight, 1, 10000);
+    // REMIND: need world.minZ/maxZ
+    const orthographicCam =
+      new THREE.OrthographicCamera(-halfW, halfW, halfH, -halfH, 1, 20 * width);
+    orthographicCam.position.set(0, 0, 10 * width);
+    orthographicCam.up.set(0, 0, 1);
 
-    if (orthoView)
-      camera.position.set(0, 0, 100 * width);
-    else
-      camera.position.set(width, -width, width);
-    camera.up.set(0, 0, 1);
+    const perspectiveCam =
+      new THREE.PerspectiveCamera(45, clientWidth / clientHeight, 1, 10000);
+    perspectiveCam.position.set(width, -width, width);
+    perspectiveCam.up.set(0, 0, 1);
+
+    const scene = new THREE.Scene();
+    const camera = orthoView ? orthographicCam : perspectiveCam;
+
+    // if (orthoView)
+    //   camera.position.set(0, 0, 100 * width)
+    // else
+    //   camera.position.set(width, -width, width)
+    // camera.up.set(0, 0, 1)
 
     const renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -3915,14 +3924,56 @@ class Three {
     renderer.setClearColor(clearColor);
     this.model.div.appendChild(renderer.domElement);
 
-    window.addEventListener('resize', () => {
-      const {clientWidth, clientHeight} = this.model.div;
-      camera.aspect = clientWidth / clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(clientWidth, clientHeight);
-    });
+    // window.addEventListener('resize', () => {
+    //   const {clientWidth, clientHeight} = this.model.div
+    //   camera.aspect = clientWidth / clientHeight
+    //   camera.updateProjectionMatrix()
+    //   renderer.setSize(clientWidth, clientHeight)
+    // })
+    window.addEventListener('resize', () => { this.resize(); });
 
-    Object.assign(this, {scene, camera, renderer});
+    Object.assign(this, {scene, camera, renderer, orthographicCam, perspectiveCam});
+  }
+  resize () {
+    const {clientWidth, clientHeight} = this.model.div;
+    const {width, height} = this.model.world;
+
+    if (this.orthoView) {
+      const zoom = Math.min(clientWidth / width, clientHeight / height);
+      this.renderer.setSize(zoom * width, zoom * height);
+    } else {
+      this.camera.aspect = clientWidth / clientHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(clientWidth, clientHeight);
+    }
+  }
+  toggleCamera () {
+    this.orthoView = !this.orthoView;
+    if (this.orthoView) {
+      this.camera = this.orthographicCam;
+    } else {
+      this.camera = this.perspectiveCam;
+    }
+    this.resize();
+  }
+  // Return a dataURL for the current model step.
+  snapshot (useOrtho = true) {
+    // Don't set camera, can change w/ toggle below
+    const {scene, renderer, model} = this;
+    // const can = renderer.domElement
+    const toggle = useOrtho && this.camera === this.perspectiveCam;
+    // const isStopped = model.anim.stopped
+
+    // if (!isStopped) model.stop()
+    if (toggle) {
+      this.toggleCamera();
+      model.once();
+    }
+    renderer.render(scene, this.camera);
+    const durl = renderer.domElement.toDataURL();
+    // if (!isStopped) model.start()
+    if (toggle) this.toggleCamera();
+    return durl
   }
   initThreeHelpers () {
     const {scene, renderer, camera} = this;
@@ -3941,9 +3992,6 @@ class Three {
     }
     if (useControls) {
       helpers.controls = new THREE.OrbitControls(camera, renderer.domElement);
-      // helpers.controls = OrbitControls // REMIND: legacy vs modules
-      //   ? new OrbitControls(camera, renderer.domElement)
-      //   : new THREE.OrbitControls(camera, renderer.domElement)
     }
     if (useStats) {
       helpers.stats = new Stats();
@@ -4189,4 +4237,4 @@ class RGBDataSet extends DataSet {
 
 /* eslint-disable */
 
-export { AgentSet, Animator, AscDataSet, Color, ColorMap, DataSet, DataSetIO, Int24, Link, Links, Model, Patch, Patches, RGBADataSet, RGBDataSet, SpriteSheet, Three, Meshes as ThreeMeshes, Turtle, Turtles, util };
+export { AgentSet, Animator, AscDataSet, Color, ColorMap, DataSet, DataSetIO, Int24, Link, Links, Model, Patch, Patches, RGBADataSet, RGBDataSet, SpriteSheet, Three, Meshes as ThreeMeshes, Turtle, Turtles, World, util };

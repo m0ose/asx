@@ -13,7 +13,7 @@ class World {
     }
   }
   // Initialize the world w/ defaults overridden w/ options.
-  constructor (options) {
+  constructor (options = {}) {
     Object.assign(this, World.defaultOptions()) // initial this w/ defaults
     Object.assign(this, options) // override defaults with options
     this.setWorld()

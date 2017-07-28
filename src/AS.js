@@ -19,6 +19,7 @@ import Three           from './Three.js'
 import ThreeMeshes     from './ThreeMeshes.js'
 import Turtle          from './Turtle.js'
 import Turtles         from './Turtles.js'
+import World           from './World.js'
 import util            from './util.js'
 /* eslint-enable */
 
@@ -44,5 +45,6 @@ export {
   ThreeMeshes,
   Turtle,
   Turtles,
+  World,
   util
 }
