@@ -3960,18 +3960,11 @@ class Three {
   snapshot (useOrtho = true) {
     // Don't set camera, can change w/ toggle below
     const {scene, renderer, model} = this;
-    // const can = renderer.domElement
     const toggle = useOrtho && this.camera === this.perspectiveCam;
-    // const isStopped = model.anim.stopped
 
-    // if (!isStopped) model.stop()
-    if (toggle) {
-      this.toggleCamera();
-      model.once();
-    }
+    if (toggle) { this.toggleCamera(); model.draw(true); }
     renderer.render(scene, this.camera);
     const durl = renderer.domElement.toDataURL();
-    // if (!isStopped) model.start()
     if (toggle) this.toggleCamera();
     return durl
   }
