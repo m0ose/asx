@@ -1,5 +1,5 @@
 // import SpriteSheet from './SpriteSheet.js'
-// import util from './util.js'
+import util from './util.js'
 import Meshes from './ThreeMeshes'
 
 import THREE from '../dist/three.wrapper.js'
@@ -23,25 +23,23 @@ class Three {
       useGUI: useUIHelpers,         // activate dat.gui UI
       meshes: {
         patches: {
-          meshClass: 'PatchesMesh',
-          z: 1.0
+          meshClass: 'PatchesMesh'
         },
         turtles: {
-          meshClass: 'QuadSpritesMesh',
-          z: 2.0
+          meshClass: 'QuadSpritesMesh'
+          // meshClass: 'PointsMesh'
         },
         links: {
-          meshClass: 'LinksMesh',
-          z: 1.5
+          meshClass: 'LinksMesh'
         }
       }
     }
-    // for (const meshKey in options.meshes) {
-    //   const meshVal = options.meshes[meshKey]
-    //   const Mesh = Meshes[meshVal.meshClass]
-    //   const meshOptions = Mesh.options()
-    //   if (meshOptions) meshVal.options = meshOptions
-    // }
+    util.forEach(options.meshes, (val, key) => {
+      const Mesh = Meshes[val.meshClass]
+      const meshOptions = Mesh.options()
+      val.options = meshOptions
+    })
+
     return options
   }
   static printMeshOptions () {

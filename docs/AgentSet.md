@@ -77,6 +77,8 @@ AgentSets often need a random color. We use a standard shared ColorMap map for t
 
 Set/Get default values for this AgentSet's agents.
 
+Note: if `name` is a color (`name.match(/color$/i)`) then: `value = Color.toColor(value)`.
+
 > `own (varnames)`
 
 Declare variables for an AgentSet's agents, where `varnames` is a string of space separated names. This is mainly used for `setBreed` and may not be needed in the future.

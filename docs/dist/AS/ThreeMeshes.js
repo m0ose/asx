@@ -84,7 +84,7 @@ export class PatchesMesh extends CanvasMesh {
         minFilter: 'NearestFilter',
         magFilter: 'NearestFilter'
       },
-      z: 100
+      z: 1.0
     }
   }
   init (patches) { // REMIND: pass in patches instead of canvas
@@ -180,8 +180,8 @@ export class PointsMesh extends BaseMesh {
   }
   init () {
     if (this.mesh) this.dispose()
-    const {color, z} = this
     const pointSize = this.options.pointSize * this.model.world.patchSize
+    const color = this.options.color ? new THREE.Color(...this.options.color) : null
 
     const geometry = new THREE.BufferGeometry()
     geometry.addAttribute('position',
@@ -191,11 +191,11 @@ export class PointsMesh extends BaseMesh {
         new THREE.BufferAttribute(new Float32Array(), 3))
 
     const material = color
-    ? new THREE.PointsMaterial({size: pointSize, color: new THREE.Color(color)})
+    ? new THREE.PointsMaterial({size: pointSize, color: color})
     : new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors})
 
     this.mesh = new THREE.Points(geometry, material)
-    this.mesh.position.z = z
+    this.mesh.position.z = this.options.z
     this.scene.add(this.mesh)
   }
   // update takes any array of objects with x,y,z,color .. position & color
@@ -209,12 +209,13 @@ export class PointsMesh extends BaseMesh {
     const colors = colorAttrib == null ? null : []
     const patchSize = this.model.world.patchSize
 
-    const red = [1, 0, 0] // REMIND: add color/shape to turtles
+    // const red = [1, 0, 0] // REMIND: add color/shape to turtles
 
     for (let i = 0; i < turtles.length; i++) {
-      const {x, y, z} = turtles[i]
+      const {x, y, z, color} = turtles[i]
       vertices.push(x * patchSize, y * patchSize, z * patchSize)
-      if (colors != null) colors.push(...red)
+      // if (colors != null) colors.push(...red)
+      if (colors != null) colors.push(...color.webgl)
     }
     positionAttrib.setArray(new Float32Array(vertices))
     positionAttrib.needsUpdate = true
@@ -230,19 +231,27 @@ export class PointsMesh extends BaseMesh {
 export class LinksMesh extends BaseMesh {
   static options () {
     return {
-      z: 1.0
+      color: null,
+      z: 1.5
     }
   }
   init () {
     if (this.mesh) this.dispose()
-    const vertices = new Float32Array(0)
-    const colors = new Float32Array(0)
+    const color = this.options.color ? new THREE.Color(...this.options.color) : null
 
     const geometry = new THREE.BufferGeometry()
-    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3))
-    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3))
+    geometry.addAttribute('position',
+      new THREE.BufferAttribute(new Float32Array(), 3))
+    if (color == null)
+      geometry.addAttribute('color',
+        new THREE.BufferAttribute(new Float32Array(), 3))
 
-    const material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors})
+    const material = color
+      ? new THREE.LineBasicMaterial({color: color})
+      : new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors})
+    // const material = color
+    // ? new THREE.PointsMaterial({size: pointSize, color: color})
+    // : new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors})
 
     this.mesh = new THREE.LineSegments(geometry, material)
     this.mesh.position.z = this.options.z
@@ -252,21 +261,24 @@ export class LinksMesh extends BaseMesh {
   // REMIND: optimize by flags for position/uvs need updates
   update (links) {
     const vertices = []
-    const colors = []
+    const colors = this.options.color ? null : []
     for (let i = 0; i < links.length; i++) {
       const {end0, end1, color} = links[i]
       const {x: x0, y: y0, z: z0} = end0
       const {x: x1, y: y1, z: z1} = end1
       const ps = this.model.world.patchSize
       vertices.push(x0 * ps, y0 * ps, z0 * ps, x1 * ps, y1 * ps, z1 * ps)
-      colors.push(...color.webgl, ...color.webgl)
+      if (colors)
+        colors.push(...color.webgl, ...color.webgl)
     }
     const positionAttrib = this.mesh.geometry.getAttribute('position')
-    const colorAttrib = this.mesh.geometry.getAttribute('color')
     positionAttrib.setArray(new Float32Array(vertices))
     positionAttrib.needsUpdate = true
-    colorAttrib.setArray(new Float32Array(colors))
-    colorAttrib.needsUpdate = true
+    if (colors) {
+      const colorAttrib = this.mesh.geometry.getAttribute('color')
+      colorAttrib.setArray(new Float32Array(colors))
+      colorAttrib.needsUpdate = true
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 import AgentArray from './AgentArray.js'
+import Color from './Color.js'
 import ColorMap from './ColorMap.js'
 
 // AgentSets are arrays that are factories for their own agents/objects.
@@ -114,7 +115,12 @@ class AgentSet extends AgentArray {
   randomColor () { return ColorMap.Basic16.randomColor() }
 
   // Get/Set default values for this agentset's agents.
-  setDefault (name, value) { this.agentProto[name] = value }
+  // If name ends with "color", use value = toColor(value)
+  setDefault (name, value) {
+    if (name.match(/color$/i))
+      value = Color.toColor(value)
+    this.agentProto[name] = value
+  }
   getDefault (name) { return this.agentProto[name] }
   // Declare variables of an agent class.
   // `varnames` is a string of space separated names

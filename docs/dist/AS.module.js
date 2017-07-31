@@ -1609,7 +1609,12 @@ class AgentSet extends AgentArray {
   randomColor () { return ColorMap.Basic16.randomColor() }
 
   // Get/Set default values for this agentset's agents.
-  setDefault (name, value) { this.agentProto[name] = value; }
+  // If name ends with "color", use value = toColor(value)
+  setDefault (name, value) {
+    if (name.match(/color$/i))
+      value = Color.toColor(value);
+    this.agentProto[name] = value;
+  }
   getDefault (name) { return this.agentProto[name] }
   // Declare variables of an agent class.
   // `varnames` is a string of space separated names
@@ -2793,25 +2798,6 @@ class Patches extends AgentSet {
 // that are in the patches the turtles live on.  The set of all patches
 // is the world on which the turtles live and the model runs.
 
-// The core variables needed by a Patch. Modelers add additional "own variables"
-// as needed. Surprisingly `label` and `color` are not here, they are managed
-// optimally by the Patches AgentSet. Similarly `x` & `y` are derived from id.
-// The neighbors and neighbors4 variables are initially getters that
-// are "promoted" to instance variables if used.
-// const patchVariables = { // Core variables for patches. Not 'own' variables.
-//   // id: null,             // unique id, promoted by agentset's add() method
-//   // defaults: null,       // pointer to defaults/proto object
-//   // agentSet: null,       // my agentset/breed
-//   // model: null,          // my model
-//   // world: null,          // my agent/agentset's world
-//   // patches: null,        // my patches/baseSet, set by ctor
-//
-//   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
-//   labelOffset: [0, 0],  // text pixel offset from the patch center
-//   labelColor: Color.color(0, 0, 0) // the label color
-//   // Getter variables: label, color, x, y, neighbors, neighbors4
-// }
-
 // Flyweight object creation:
 // Objects within AgentSets use "prototypal inheritance" via Object.create().
 // Here, the Patch class is given to Patches for use creating Proto objects
@@ -3018,19 +3004,19 @@ class Turtles extends AgentSet {
   inPatchRect (turtle, dx, dy = dx, meToo = false) {
     // meToo: true for patches, could have several turtles on patch
     const patches = this.model.patches.inRect(turtle.patch, dx, dy, true);
-    const aSet = this.inPatches(patches);
-    if (!meToo) util.removeItem(aSet, turtle); // don't use aSet.removeAgent: breeds
-    return aSet // this.inPatches(patches)
+    const agents = this.inPatches(patches);
+    if (!meToo) util.removeItem(agents, turtle); // don't use agents.removeAgent: breeds
+    return agents // this.inPatches(patches)
   }
   // Return the members of this agentset that are within radius distance
   // from me, using a patch rect.
   inRadius (turtle, radius, meToo = false) {
-    const aSet = this.inPatchRect(turtle, radius, radius, true);
-    return aSet.inRadius(turtle, radius, meToo)
+    const agents = this.inPatchRect(turtle, radius, radius, true);
+    return agents.inRadius(turtle, radius, meToo)
   }
   inCone (turtle, radius, coneAngle, meToo = false) {
-    const aSet = this.inPatchRect(turtle, radius, radius, true);
-    return aSet.inCone(turtle, radius, coneAngle, turtle.theta, meToo)
+    const agents = this.inPatchRect(turtle, radius, radius, true);
+    return agents.inCone(turtle, radius, coneAngle, turtle.theta, meToo)
   }
 
   // Circle Layout: position the turtles in this breed in an equally
@@ -3056,30 +3042,6 @@ class Turtles extends AgentSet {
 // Each turtle knows the patch it is on, and interacts with that and other
 // patches, as well as other turtles.
 
-// The core default variables needed by a Turtle.
-// Use turtles.setDefault(name, val) to change
-// Modelers add additional "own variables" as needed.
-// const turtleVariables = { // Core variables for turtles. Not 'own' variables.
-//   x: 0,             // x, y, z in patchSize units.
-//   y: 0,             // Use turtles.setDefault('z', num) to change default height
-//   z: 0,
-//   theta: 0,         // my euclidean direction, radians from x axis, counter-clockwise
-//   size: 1,          // size in patches, default to one patch
-//
-//   // patch: null,   // the patch I'm on .. uses getter below
-//   // links: null,   // the links having me as an end point .. lazy promoted below
-//   atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
-//                     // 'bounce', or a function, see handleEdge() method
-//   sprite: null,
-//   color: null,
-//   shape: null
-//
-//   // spriteFcn: 'default',
-//   // spriteColor: Color.color(255, 0, 0),
-//
-//   // labelOffset: [0, 0],  // text pixel offset from the turtle center
-//   // labelColor: Color.color(0, 0, 0) // the label color
-// }
 class Turtle {
   static defaultVariables () {
     return { // Core variables for turtles. Not 'own' variables.
@@ -3626,7 +3588,7 @@ class PatchesMesh extends CanvasMesh {
         minFilter: 'NearestFilter',
         magFilter: 'NearestFilter'
       },
-      z: 100
+      z: 1.0
     }
   }
   init (patches) { // REMIND: pass in patches instead of canvas
@@ -3722,8 +3684,8 @@ class PointsMesh extends BaseMesh {
   }
   init () {
     if (this.mesh) this.dispose();
-    const {color, z} = this;
     const pointSize = this.options.pointSize * this.model.world.patchSize;
+    const color = this.options.color ? new THREE.Color(...this.options.color) : null;
 
     const geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position',
@@ -3733,11 +3695,11 @@ class PointsMesh extends BaseMesh {
         new THREE.BufferAttribute(new Float32Array(), 3));
 
     const material = color
-    ? new THREE.PointsMaterial({size: pointSize, color: new THREE.Color(color)})
+    ? new THREE.PointsMaterial({size: pointSize, color: color})
     : new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors});
 
     this.mesh = new THREE.Points(geometry, material);
-    this.mesh.position.z = z;
+    this.mesh.position.z = this.options.z;
     this.scene.add(this.mesh);
   }
   // update takes any array of objects with x,y,z,color .. position & color
@@ -3751,12 +3713,13 @@ class PointsMesh extends BaseMesh {
     const colors = colorAttrib == null ? null : [];
     const patchSize = this.model.world.patchSize;
 
-    const red = [1, 0, 0]; // REMIND: add color/shape to turtles
+    // const red = [1, 0, 0] // REMIND: add color/shape to turtles
 
     for (let i = 0; i < turtles.length; i++) {
-      const {x, y, z} = turtles[i];
+      const {x, y, z, color} = turtles[i];
       vertices.push(x * patchSize, y * patchSize, z * patchSize);
-      if (colors != null) colors.push(...red);
+      // if (colors != null) colors.push(...red)
+      if (colors != null) colors.push(...color.webgl);
     }
     positionAttrib.setArray(new Float32Array(vertices));
     positionAttrib.needsUpdate = true;
@@ -3772,19 +3735,27 @@ class PointsMesh extends BaseMesh {
 class LinksMesh extends BaseMesh {
   static options () {
     return {
-      z: 1.0
+      color: null,
+      z: 1.5
     }
   }
   init () {
     if (this.mesh) this.dispose();
-    const vertices = new Float32Array(0);
-    const colors = new Float32Array(0);
+    const color = this.options.color ? new THREE.Color(...this.options.color) : null;
 
     const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.addAttribute('position',
+      new THREE.BufferAttribute(new Float32Array(), 3));
+    if (color == null)
+      geometry.addAttribute('color',
+        new THREE.BufferAttribute(new Float32Array(), 3));
 
-    const material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
+    const material = color
+      ? new THREE.LineBasicMaterial({color: color})
+      : new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors});
+    // const material = color
+    // ? new THREE.PointsMaterial({size: pointSize, color: color})
+    // : new THREE.PointsMaterial({size: pointSize, vertexColors: THREE.VertexColors})
 
     this.mesh = new THREE.LineSegments(geometry, material);
     this.mesh.position.z = this.options.z;
@@ -3794,21 +3765,24 @@ class LinksMesh extends BaseMesh {
   // REMIND: optimize by flags for position/uvs need updates
   update (links) {
     const vertices = [];
-    const colors = [];
+    const colors = this.options.color ? null : [];
     for (let i = 0; i < links.length; i++) {
       const {end0, end1, color} = links[i];
       const {x: x0, y: y0, z: z0} = end0;
       const {x: x1, y: y1, z: z1} = end1;
       const ps = this.model.world.patchSize;
       vertices.push(x0 * ps, y0 * ps, z0 * ps, x1 * ps, y1 * ps, z1 * ps);
-      colors.push(...color.webgl, ...color.webgl);
+      if (colors)
+        colors.push(...color.webgl, ...color.webgl);
     }
     const positionAttrib = this.mesh.geometry.getAttribute('position');
-    const colorAttrib = this.mesh.geometry.getAttribute('color');
     positionAttrib.setArray(new Float32Array(vertices));
     positionAttrib.needsUpdate = true;
-    colorAttrib.setArray(new Float32Array(colors));
-    colorAttrib.needsUpdate = true;
+    if (colors) {
+      const colorAttrib = this.mesh.geometry.getAttribute('color');
+      colorAttrib.setArray(new Float32Array(colors));
+      colorAttrib.needsUpdate = true;
+    }
   }
 }
 
@@ -3822,7 +3796,6 @@ var Meshes = {
 };
 
 // import SpriteSheet from './SpriteSheet.js'
-// import util from './util.js'
 window.Meshes = Meshes; // REMIND
 
 class Three {
@@ -3839,25 +3812,23 @@ class Three {
       useGUI: useUIHelpers,         // activate dat.gui UI
       meshes: {
         patches: {
-          meshClass: 'PatchesMesh',
-          z: 1.0
+          meshClass: 'PatchesMesh'
         },
         turtles: {
-          meshClass: 'QuadSpritesMesh',
-          z: 2.0
+          meshClass: 'QuadSpritesMesh'
+          // meshClass: 'PointsMesh'
         },
         links: {
-          meshClass: 'LinksMesh',
-          z: 1.5
+          meshClass: 'LinksMesh'
         }
       }
     };
-    // for (const meshKey in options.meshes) {
-    //   const meshVal = options.meshes[meshKey]
-    //   const Mesh = Meshes[meshVal.meshClass]
-    //   const meshOptions = Mesh.options()
-    //   if (meshOptions) meshVal.options = meshOptions
-    // }
+    util.forEach(options.meshes, (val, key) => {
+      const Mesh = Meshes[val.meshClass];
+      const meshOptions = Mesh.options();
+      val.options = meshOptions;
+    });
+
     return options
   }
   static printMeshOptions () {
@@ -4011,6 +3982,9 @@ class Model {
   static defaultRenderer () {
     return Three.defaultOptions()
   }
+  static printViewOptions () {
+    Three.printMeshOptions();
+  }
 
   // The Model constructor takes a DOM div and model and renderer options.
   // Default values are given for all constructor arguments.
@@ -4031,7 +4005,7 @@ class Model {
     this.meshes = {};
     util.forEach(rendererOptions.meshes, (val, key) => {
       const options = Meshes[val.meshClass].options(); // default options
-      Object.assign(options, val); // override by user's
+      Object.assign(options, val.options); // override by user's
       this.meshes[key] = new Meshes[val.meshClass](this.view, options);
     });
 

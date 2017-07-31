@@ -23,6 +23,9 @@ class Model {
   static defaultRenderer () {
     return Three.defaultOptions()
   }
+  static printViewOptions () {
+    Three.printMeshOptions()
+  }
 
   // The Model constructor takes a DOM div and model and renderer options.
   // Default values are given for all constructor arguments.
@@ -43,7 +46,7 @@ class Model {
     this.meshes = {}
     util.forEach(rendererOptions.meshes, (val, key) => {
       const options = Meshes[val.meshClass].options() // default options
-      Object.assign(options, val) // override by user's
+      Object.assign(options, val.options) // override by user's
       this.meshes[key] = new Meshes[val.meshClass](this.view, options)
     })
 

@@ -5,25 +5,6 @@ import Color from './Color.js'
 // that are in the patches the turtles live on.  The set of all patches
 // is the world on which the turtles live and the model runs.
 
-// The core variables needed by a Patch. Modelers add additional "own variables"
-// as needed. Surprisingly `label` and `color` are not here, they are managed
-// optimally by the Patches AgentSet. Similarly `x` & `y` are derived from id.
-// The neighbors and neighbors4 variables are initially getters that
-// are "promoted" to instance variables if used.
-// const patchVariables = { // Core variables for patches. Not 'own' variables.
-//   // id: null,             // unique id, promoted by agentset's add() method
-//   // defaults: null,       // pointer to defaults/proto object
-//   // agentSet: null,       // my agentset/breed
-//   // model: null,          // my model
-//   // world: null,          // my agent/agentset's world
-//   // patches: null,        // my patches/baseSet, set by ctor
-//
-//   turtles: null,        // the turtles on me. Laxy evalued, see turtlesHere below
-//   labelOffset: [0, 0],  // text pixel offset from the patch center
-//   labelColor: Color.color(0, 0, 0) // the label color
-//   // Getter variables: label, color, x, y, neighbors, neighbors4
-// }
-
 // Flyweight object creation:
 // Objects within AgentSets use "prototypal inheritance" via Object.create().
 // Here, the Patch class is given to Patches for use creating Proto objects

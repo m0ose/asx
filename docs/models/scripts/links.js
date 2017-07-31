@@ -21,11 +21,10 @@ class LinksModel extends Model {
       t.speed = util.randomFloat2(0.01, 0.05) // 0.5 + Math.random()
     })
 
-    this.linksCmap = ColorMap.Basic16 // Basic css named colors
     util.repeat(100, (i, a) => {
       const turtles = this.turtles.nOf(2)
       this.links.create(turtles[0], turtles[1], (link) => {
-        link.color = this.linksCmap.randomColor()
+        link.color = this.links.randomColor()
       })
     })
   }

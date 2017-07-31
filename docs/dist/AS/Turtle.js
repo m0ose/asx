@@ -7,30 +7,6 @@ import util from './util.js'
 // Each turtle knows the patch it is on, and interacts with that and other
 // patches, as well as other turtles.
 
-// The core default variables needed by a Turtle.
-// Use turtles.setDefault(name, val) to change
-// Modelers add additional "own variables" as needed.
-// const turtleVariables = { // Core variables for turtles. Not 'own' variables.
-//   x: 0,             // x, y, z in patchSize units.
-//   y: 0,             // Use turtles.setDefault('z', num) to change default height
-//   z: 0,
-//   theta: 0,         // my euclidean direction, radians from x axis, counter-clockwise
-//   size: 1,          // size in patches, default to one patch
-//
-//   // patch: null,   // the patch I'm on .. uses getter below
-//   // links: null,   // the links having me as an end point .. lazy promoted below
-//   atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
-//                     // 'bounce', or a function, see handleEdge() method
-//   sprite: null,
-//   color: null,
-//   shape: null
-//
-//   // spriteFcn: 'default',
-//   // spriteColor: Color.color(255, 0, 0),
-//
-//   // labelOffset: [0, 0],  // text pixel offset from the turtle center
-//   // labelColor: Color.color(0, 0, 0) // the label color
-// }
 class Turtle {
   static defaultVariables () {
     return { // Core variables for turtles. Not 'own' variables.
