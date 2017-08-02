@@ -8,7 +8,7 @@ util.toWindow({ ColorMap, Model, util })
 class FlockModel extends Model {
   setVision (vision) {
     this.vision = vision
-    // this.patches.cacheRect(vision, true)
+    this.patches.cacheRect(vision)
   }
   setMaxTurn (maxTurnDegrees) {
     this.maxTurn = util.radians(maxTurnDegrees)

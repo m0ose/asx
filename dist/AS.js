@@ -89,6 +89,18 @@ const util = {
 
 // ### Debug
 
+  // Print a message just once.
+  logOnce (msg) {
+    if (!this.logOnceMsgSet) this.logOnceMsgSet = new Set();
+    if (!this.logOnceMsgSet.has(msg)) {
+      console.log(msg);
+      this.logOnceMsgSet.add(msg);
+    }
+  },
+  warn (msg) {
+    this.logOnce('Warning: ' + msg);
+  },
+
   // Use chrome/ffox/ie console.time()/timeEnd() performance functions
   timeit (f, runs = 1e5, name = 'test') {
     console.time(name);
@@ -2595,7 +2607,7 @@ class Patches extends AgentSet {
   // `useNearest`: true for fast rounding to nearest; false for bi-linear.
   importDataSet (dataSet, patchVar, useNearest = false) {
     if (this.isBreedSet()) { // REMIND: error
-      console.log('warning: exportDataSet called with breed, using patches');
+      util.warn('Patches: exportDataSet called with breed, using patches');
       this.baseSet.importDataSet(dataSet, patchVar, useNearest);
     }
     const {numX, numY} = this.model.world;
@@ -2606,7 +2618,7 @@ class Patches extends AgentSet {
   }
   exportDataSet (patchVar, Type = Array) {
     if (this.isBreedSet()) {
-      console.log('warning: exportDataSet called with breed, using patches');
+      util.warn('Patches: exportDataSet called with breed, using patches');
       this.baseSet.exportDataSet(patchVar, Type);
     }
     const {numX, numY} = this.model.world;
@@ -2669,7 +2681,9 @@ class Patches extends AgentSet {
     // Return cached rect if one exists.
     // if (p.pRect && p.pRect.length === dx * dy) return p.pRect
     if (p.rectCache) {
-      const rect = p.rectCache[dx * dy + meToo ? 0 : -1];
+      const index = this.cacheIndex(dx, dy, meToo);
+      const rect = p.rectCache[index];
+      // const rect = p.rectCache[this.cacheIndex(dx, dy, meToo)]
       if (rect) return rect
     }
     const rect = new AgentArray();
@@ -2687,13 +2701,19 @@ class Patches extends AgentSet {
     return rect
   }
 
-  // Performance: create a cached rect of this size.
+  // Performance: create a cached rect of this size in sparse array.
+  // Index of cached rect is dx * dy + meToo ? 0 : -1.
+  // This works for edge rects that are not that full size.
   // patchRect will use this if matches dx, dy, meToo.
-  cacheRect (dx, dy = dx, meToo = true) {
+  cacheIndex (dx, dy = dx, meToo = true) {
+    return (2 * dx + 1) * (2 * dy + 1) + (meToo ? 0 : -1)
+  }
+  cacheRect (dx, dy = dx, meToo = true, clear = true) {
+    const index = this.cacheIndex(dx, dy, meToo);
     this.ask(p => {
-      if (!p.rectCache) p.rectCache = [];
+      if (!p.rectCache || clear) p.rectCache = [];
       const rect = this.inRect(p, dx, dy, meToo);
-      p.rectCache[rect.length] = rect;
+      p.rectCache[index] = rect;
     });
   }
 
@@ -3119,13 +3139,13 @@ class Turtle {
   //   return this.color || this.sprite
   // }
 
-  // Create my shape via src: sprite, fcn, string, or image/canvas
-  setSprite (src, color = this.color, strokeColor = this.strokeColor) {
+  // Create my sprite via shape: sprite, fcn, string, or image/canvas
+  setSprite (shape = this.shape, color = this.color, strokeColor = this.strokeColor) {
     color = color || this.turtles.randomColor();
-    strokeColor = strokeColor || this.turtles.randomColor();
-    if (src.sheet) { this.sprite = src; return } // src is a sprite
+    // strokeColor = strokeColor || this.turtles.randomColor()
+    if (shape.sheet) { this.sprite = shape; return } // src is a sprite
     const ss = this.model.spriteSheet;
-    this.sprite = ss.newSprite(src, color, strokeColor);
+    this.sprite = ss.newSprite(shape, color, strokeColor);
   }
   setSize (size) { this.size = size; } // * this.model.world.patchSize }
   // setDrawSprite (fcn, color, color2) {
@@ -3287,7 +3307,7 @@ class SpriteSheet {
     // Normalize color names to hex
     if (fillColor) fillColor = Color.toColor(fillColor);
     if (strokeColor) strokeColor = Color.toColor(strokeColor);
-    const name = this.spriteName(src, fillColor);
+    const name = this.spriteName(src, fillColor, strokeColor);
 
     if (this.sprites[name]) return this.sprites[name]
     const sprite = util.isImageable(src)
@@ -3310,7 +3330,7 @@ class SpriteSheet {
 
   // Make a unique, normalized sprite name. See note on src, colors above.
   // Color names are hex css formats, see newSprite's name transformation.
-  spriteName (src, fillColor) {
+  spriteName (src, fillColor, strokeColor) {
     // If src is an image, construct a name.
     if (util.isImageable(src)) {
       let name = src.src;
@@ -3320,7 +3340,7 @@ class SpriteSheet {
     }
     // ditto for draw function or name of function in paths obj below
     const name = src.name || src;
-    return `${name}${fillColor.css}` // REMIND: strokeColor too if given?
+    return `${name}${fillColor.css}${strokeColor ? strokeColor.css : ''}`
   }
 
   // Add an image/canvas to sprite sheet.
@@ -3370,10 +3390,11 @@ class SpriteSheet {
   //
   // If not using helpers, ctx.canvas.width/height is the size of drawing,
   // top/left canvas coordinates.
-  createFcnCanvas (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
+  createFcnCanvas (drawFcn, fillColor, strokeColor, useHelpers = true) {
     const ctx = util.createCtx(this.spriteSize, this.spriteSize);
     ctx.fillStyle = fillColor.css || fillColor;
-    ctx.strokeStyle = strokeColor.css || strokeColor;
+    if (strokeColor)
+      ctx.strokeStyle = strokeColor.css || strokeColor;
     if (useHelpers) {
       ctx.scale(this.spriteSize / 2, this.spriteSize / 2);
       ctx.translate(1, 1);
@@ -3456,6 +3477,10 @@ const paths = {
       [[1, 0], [0, 1], [0, 0.4], [-1, 0.4], [-1, -0.4], [0, -0.4], [0, -1]]);
   },
   bug (ctx) {
+    ctx.strokeStyle = ctx.fillStyle;
+    this.bug2(ctx);
+  },
+  bug2 (ctx) {
     ctx.lineWidth = 0.1;
     this.poly(ctx, [[0.8, 0.45], [0.4, 0], [0.8, -0.45]]);
     ctx.stroke();
@@ -3518,6 +3543,13 @@ class BaseMesh { // static options(): https://goo.gl/sKdxoY
     const { scene, model } = view;
     Object.assign(this, { scene, model, view, options });
     this.mesh = null;
+  }
+  isMonochrome () {
+    return this.options.color != null
+  }
+  useSprites () {
+    // return this.mesh.geometry.attributes.uv != null
+    return this.constructor.name.match(/sprites/i) != null
   }
   dispose () {
     if (!this.mesh) return
@@ -3647,6 +3679,7 @@ class QuadSpritesMesh extends BaseMesh {
 
     for (let i = 0; i < turtles.length; i++) {
       const turtle = turtles[i];
+      if (!turtle.sprite) turtle.sprite = turtle.setSprite();
       const size = turtle.size; // * patchSize
       const theta = turtle.theta;
       const cos = Math.cos(theta);
@@ -4048,6 +4081,10 @@ class Model {
   //   return {vertices, indices}
   // }
   // (Re)initialize the model. REMIND: not quite right
+  setAgentSetViewProps (agentSet, mesh) {
+    agentSet.isMonochrome = mesh.isMonochrome();
+    agentSet.useSprites = mesh.useSprites();
+  }
   reset (restart = false) {
     this.anim.reset();
     this.world.setWorld();
@@ -4057,16 +4094,19 @@ class Model {
     // Breeds handled by setup
     this.patches = new Patches(this, Patch, 'patches');
     this.meshes.patches.init(this.patches);
+    this.setAgentSetViewProps(this.patches, this.meshes.patches);
     // this.patchesMesh.init(0, this.patches.pixels.ctx.canvas)
 
     this.turtles = new Turtles(this, Turtle, 'turtles');
     // this.turtlesMesh.init(1, 1, new THREE.Color(1, 1, 0))
     // this.turtlesMesh.init(1, 1)
     this.meshes.turtles.init(this.turtles);
+    this.setAgentSetViewProps(this.turtles, this.meshes.turtles);
 
     this.links = new Links(this, Link, 'links');
     // this.linksMesh.init(0.9)
     this.meshes.links.init(this.links);
+    this.setAgentSetViewProps(this.links, this.meshes.links);
 
     this.setup();
     if (restart) this.start();

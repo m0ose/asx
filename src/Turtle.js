@@ -82,13 +82,13 @@ class Turtle {
   //   return this.color || this.sprite
   // }
 
-  // Create my shape via src: sprite, fcn, string, or image/canvas
-  setSprite (src, color = this.color, strokeColor = this.strokeColor) {
+  // Create my sprite via shape: sprite, fcn, string, or image/canvas
+  setSprite (shape = this.shape, color = this.color, strokeColor = this.strokeColor) {
     color = color || this.turtles.randomColor()
-    strokeColor = strokeColor || this.turtles.randomColor()
-    if (src.sheet) { this.sprite = src; return } // src is a sprite
+    // strokeColor = strokeColor || this.turtles.randomColor()
+    if (shape.sheet) { this.sprite = shape; return } // src is a sprite
     const ss = this.model.spriteSheet
-    this.sprite = ss.newSprite(src, color, strokeColor)
+    this.sprite = ss.newSprite(shape, color, strokeColor)
   }
   setSize (size) { this.size = size } // * this.model.world.patchSize }
   // setDrawSprite (fcn, color, color2) {

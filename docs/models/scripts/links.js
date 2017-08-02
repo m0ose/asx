@@ -9,7 +9,7 @@ class LinksModel extends Model {
   setup () {
     this.turtles.own('speed')
     this.turtles.setDefault('atEdge', 'bounce')
-    this.turtles.setDefault('z', 0.1)
+    // this.turtles.setDefault('z', 0.1)
 
     this.patchesCmap = ColorMap.grayColorMap(200, 255) // light gray map
     this.patches.ask(p => {
@@ -21,12 +21,20 @@ class LinksModel extends Model {
       t.speed = util.randomFloat2(0.01, 0.05) // 0.5 + Math.random()
     })
 
-    util.repeat(100, (i, a) => {
-      const turtles = this.turtles.nOf(2)
-      this.links.create(turtles[0], turtles[1], (link) => {
-        link.color = this.links.randomColor()
-      })
+    this.turtles.ask(turtle => {
+      const other = this.turtles.otherOneOf(turtle)
+      if (turtle.links.length === 0 || other.links.length === 0)
+        this.links.create(turtle, other, (link) => {
+          link.color = this.links.randomColor()
+        })
     })
+
+    // util.repeat(100, (i, a) => {
+    //   const turtles = this.turtles.nOf(2)
+    //   this.links.create(turtles[0], turtles[1], (link) => {
+    //     link.color = this.links.randomColor()
+    //   })
+    // })
   }
   step () {
     // REMIND: Three mouse picking

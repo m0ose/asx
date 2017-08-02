@@ -40,7 +40,7 @@ class SpriteSheet {
     // Normalize color names to hex
     if (fillColor) fillColor = Color.toColor(fillColor)
     if (strokeColor) strokeColor = Color.toColor(strokeColor)
-    const name = this.spriteName(src, fillColor)
+    const name = this.spriteName(src, fillColor, strokeColor)
 
     if (this.sprites[name]) return this.sprites[name]
     const sprite = util.isImageable(src)
@@ -63,7 +63,7 @@ class SpriteSheet {
 
   // Make a unique, normalized sprite name. See note on src, colors above.
   // Color names are hex css formats, see newSprite's name transformation.
-  spriteName (src, fillColor) {
+  spriteName (src, fillColor, strokeColor) {
     // If src is an image, construct a name.
     if (util.isImageable(src)) {
       let name = src.src
@@ -73,7 +73,7 @@ class SpriteSheet {
     }
     // ditto for draw function or name of function in paths obj below
     const name = src.name || src
-    return `${name}${fillColor.css}` // REMIND: strokeColor too if given?
+    return `${name}${fillColor.css}${strokeColor ? strokeColor.css : ''}`
   }
 
   // Add an image/canvas to sprite sheet.
@@ -123,10 +123,11 @@ class SpriteSheet {
   //
   // If not using helpers, ctx.canvas.width/height is the size of drawing,
   // top/left canvas coordinates.
-  createFcnCanvas (drawFcn, fillColor, strokeColor = 'black', useHelpers = true) {
+  createFcnCanvas (drawFcn, fillColor, strokeColor, useHelpers = true) {
     const ctx = util.createCtx(this.spriteSize, this.spriteSize)
     ctx.fillStyle = fillColor.css || fillColor
-    ctx.strokeStyle = strokeColor.css || strokeColor
+    if (strokeColor)
+      ctx.strokeStyle = strokeColor.css || strokeColor
     if (useHelpers) {
       ctx.scale(this.spriteSize / 2, this.spriteSize / 2)
       ctx.translate(1, 1)
@@ -209,6 +210,10 @@ const paths = {
       [[1, 0], [0, 1], [0, 0.4], [-1, 0.4], [-1, -0.4], [0, -0.4], [0, -1]])
   },
   bug (ctx) {
+    ctx.strokeStyle = ctx.fillStyle
+    this.bug2(ctx)
+  },
+  bug2 (ctx) {
     ctx.lineWidth = 0.1
     this.poly(ctx, [[0.8, 0.45], [0.4, 0], [0.8, -0.45]])
     ctx.stroke()

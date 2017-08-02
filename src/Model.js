@@ -7,7 +7,7 @@ import Links from './Links.js'
 import Link from './Link.js'
 import Animator from './Animator.js'
 import SpriteSheet from './SpriteSheet.js'
-import Three from './Three.js'
+import Three from './ThreeView.js'
 import Meshes from './ThreeMeshes.js'
 import util from './util.js'
 
@@ -87,6 +87,10 @@ class Model {
   //   return {vertices, indices}
   // }
   // (Re)initialize the model. REMIND: not quite right
+  setAgentSetViewProps (agentSet, mesh) {
+    agentSet.isMonochrome = mesh.isMonochrome()
+    agentSet.useSprites = mesh.useSprites()
+  }
   reset (restart = false) {
     this.anim.reset()
     this.world.setWorld()
@@ -96,16 +100,19 @@ class Model {
     // Breeds handled by setup
     this.patches = new Patches(this, Patch, 'patches')
     this.meshes.patches.init(this.patches)
+    this.setAgentSetViewProps(this.patches, this.meshes.patches)
     // this.patchesMesh.init(0, this.patches.pixels.ctx.canvas)
 
     this.turtles = new Turtles(this, Turtle, 'turtles')
     // this.turtlesMesh.init(1, 1, new THREE.Color(1, 1, 0))
     // this.turtlesMesh.init(1, 1)
     this.meshes.turtles.init(this.turtles)
+    this.setAgentSetViewProps(this.turtles, this.meshes.turtles)
 
     this.links = new Links(this, Link, 'links')
     // this.linksMesh.init(0.9)
     this.meshes.links.init(this.links)
+    this.setAgentSetViewProps(this.links, this.meshes.links)
 
     this.setup()
     if (restart) this.start()

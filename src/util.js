@@ -81,6 +81,18 @@ const util = {
 
 // ### Debug
 
+  // Print a message just once.
+  logOnce (msg) {
+    if (!this.logOnceMsgSet) this.logOnceMsgSet = new Set()
+    if (!this.logOnceMsgSet.has(msg)) {
+      console.log(msg)
+      this.logOnceMsgSet.add(msg)
+    }
+  },
+  warn (msg) {
+    this.logOnce('Warning: ' + msg)
+  },
+
   // Use chrome/ffox/ie console.time()/timeEnd() performance functions
   timeit (f, runs = 1e5, name = 'test') {
     console.time(name)

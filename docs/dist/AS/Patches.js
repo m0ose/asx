@@ -154,7 +154,7 @@ class Patches extends AgentSet {
   // `useNearest`: true for fast rounding to nearest; false for bi-linear.
   importDataSet (dataSet, patchVar, useNearest = false) {
     if (this.isBreedSet()) { // REMIND: error
-      console.log('warning: exportDataSet called with breed, using patches')
+      util.warn('Patches: exportDataSet called with breed, using patches')
       this.baseSet.importDataSet(dataSet, patchVar, useNearest)
     }
     const {numX, numY} = this.model.world
@@ -165,7 +165,7 @@ class Patches extends AgentSet {
   }
   exportDataSet (patchVar, Type = Array) {
     if (this.isBreedSet()) {
-      console.log('warning: exportDataSet called with breed, using patches')
+      util.warn('Patches: exportDataSet called with breed, using patches')
       this.baseSet.exportDataSet(patchVar, Type)
     }
     const {numX, numY} = this.model.world
@@ -228,7 +228,9 @@ class Patches extends AgentSet {
     // Return cached rect if one exists.
     // if (p.pRect && p.pRect.length === dx * dy) return p.pRect
     if (p.rectCache) {
-      const rect = p.rectCache[dx * dy + meToo ? 0 : -1]
+      const index = this.cacheIndex(dx, dy, meToo)
+      const rect = p.rectCache[index]
+      // const rect = p.rectCache[this.cacheIndex(dx, dy, meToo)]
       if (rect) return rect
     }
     const rect = new AgentArray()
@@ -246,13 +248,19 @@ class Patches extends AgentSet {
     return rect
   }
 
-  // Performance: create a cached rect of this size.
+  // Performance: create a cached rect of this size in sparse array.
+  // Index of cached rect is dx * dy + meToo ? 0 : -1.
+  // This works for edge rects that are not that full size.
   // patchRect will use this if matches dx, dy, meToo.
-  cacheRect (dx, dy = dx, meToo = true) {
+  cacheIndex (dx, dy = dx, meToo = true) {
+    return (2 * dx + 1) * (2 * dy + 1) + (meToo ? 0 : -1)
+  }
+  cacheRect (dx, dy = dx, meToo = true, clear = true) {
+    const index = this.cacheIndex(dx, dy, meToo)
     this.ask(p => {
-      if (!p.rectCache) p.rectCache = []
+      if (!p.rectCache || clear) p.rectCache = []
       const rect = this.inRect(p, dx, dy, meToo)
-      p.rectCache[rect.length] = rect
+      p.rectCache[index] = rect
     })
   }
 
