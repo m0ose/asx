@@ -21,23 +21,30 @@ class Three {
       useControls: useThreeHelpers, // navigation. REMIND: control name?
       useStats: useUIHelpers,       // show fps widget
       useGUI: useUIHelpers,         // activate dat.gui UI
-      meshes: {
-        patches: {
-          meshClass: 'PatchesMesh'
-        },
-        turtles: {
-          meshClass: 'QuadSpritesMesh'
-          // meshClass: 'PointsMesh'
-        },
-        links: {
-          meshClass: 'LinksMesh'
-        }
+      // meshes: {
+      patches: {
+        meshClass: 'PatchesMesh'
+      },
+      turtles: {
+        meshClass: 'QuadSpritesMesh'
+        // meshClass: 'PointsMesh'
+      },
+      links: {
+        meshClass: 'LinksMesh'
       }
+      // }
     }
-    util.forEach(options.meshes, (val, key) => {
-      const Mesh = Meshes[val.meshClass]
-      const meshOptions = Mesh.options()
-      val.options = meshOptions
+    // util.forEach(options.meshes, (val, key) => {
+    //   const Mesh = Meshes[val.meshClass]
+    //   const meshOptions = Mesh.options()
+    //   val.options = meshOptions
+    // })
+    util.forEach(options, (val, key) => {
+      if (val.meshClass) {
+        const Mesh = Meshes[val.meshClass]
+        const meshOptions = Mesh.options()
+        val.options = meshOptions
+      }
     })
 
     return options
@@ -52,8 +59,8 @@ class Three {
         }
       }
     }
-    const json = JSON.stringify(obj, null, '  ')
-    console.log(json.replace(/ {2}"/g, '  ').replace(/": /g, ': '))
+    const str = util.objectToString(obj)
+    console.log(str)
   }
 
   constructor (model, options = {}) {

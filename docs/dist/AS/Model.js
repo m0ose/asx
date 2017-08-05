@@ -1,4 +1,5 @@
 import World from './World.js'
+import Color from './Color.js'
 import Patches from './Patches.js'
 import Patch from './Patch.js'
 import Turtles from './Turtles.js'
@@ -23,7 +24,7 @@ class Model {
   static defaultRenderer () {
     return Three.defaultOptions()
   }
-  static printViewOptions () {
+  static printDefaultViewOptions () {
     Three.printMeshOptions()
   }
 
@@ -44,10 +45,13 @@ class Model {
 
     // Initialize meshes.
     this.meshes = {}
-    util.forEach(rendererOptions.meshes, (val, key) => {
-      const options = Meshes[val.meshClass].options() // default options
-      Object.assign(options, val.options) // override by user's
-      this.meshes[key] = new Meshes[val.meshClass](this.view, options)
+    util.forEach(rendererOptions, (val, key) => {
+      if (val.meshClass) {
+        const Mesh = Meshes[val.meshClass]
+        const options = Mesh.options() // default options
+        Object.assign(options, val.options) // override by user's
+        this.meshes[key] = new Meshes[val.meshClass](this.view, options)
+      }
     })
 
     // Create animator to handle draw/step.
@@ -87,9 +91,28 @@ class Model {
   //   return {vertices, indices}
   // }
   // (Re)initialize the model. REMIND: not quite right
-  setAgentSetViewProps (agentSet, mesh) {
-    agentSet.isMonochrome = mesh.isMonochrome()
-    agentSet.useSprites = mesh.useSprites()
+  // setAgentSetViewProps (agentSet, mesh) {
+  //   agentSet.isMonochrome = mesh.isMonochrome()
+  //   agentSet.useSprites = mesh.useSprites()
+  // }
+  initAgentSet (name, AgentsetClass, AgentClass) {
+    const agentset = new AgentsetClass(this, AgentClass, name)
+    const mesh = this.meshes[name]
+    // const meshName = mesh.constructor.name
+    this[name] = agentset
+    // agentset.setDefault('renderer', mesh)
+    agentset.renderer = mesh
+    if (mesh.fixedColor) {
+      const color = new Float32Array(mesh.fixedColor)
+      agentset.setDefault('color', Color.toColor(color))
+    }
+    if (mesh.fixedShape) agentset.setDefault('shape', mesh.fixedShape)
+    // this.agentset.fixedColor = agentset.renderer.options.color
+    // agentset.useSprites = meshName in ['PointSpritesMesh', 'QuadSpritesMesh']
+    // agentset.fixedColor = agentset.renderer.options.color
+    // agentset.useSprites = meshName in ['PointSpritesMesh', 'QuadSpritesMesh']
+    // agentset.fixedShape =
+    mesh.init(agentset)
   }
   reset (restart = false) {
     this.anim.reset()
@@ -98,21 +121,23 @@ class Model {
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true
 
     // Breeds handled by setup
-    this.patches = new Patches(this, Patch, 'patches')
-    this.meshes.patches.init(this.patches)
-    this.setAgentSetViewProps(this.patches, this.meshes.patches)
-    // this.patchesMesh.init(0, this.patches.pixels.ctx.canvas)
-
-    this.turtles = new Turtles(this, Turtle, 'turtles')
-    // this.turtlesMesh.init(1, 1, new THREE.Color(1, 1, 0))
-    // this.turtlesMesh.init(1, 1)
-    this.meshes.turtles.init(this.turtles)
-    this.setAgentSetViewProps(this.turtles, this.meshes.turtles)
-
-    this.links = new Links(this, Link, 'links')
-    // this.linksMesh.init(0.9)
-    this.meshes.links.init(this.links)
-    this.setAgentSetViewProps(this.links, this.meshes.links)
+    this.initAgentSet('patches', Patches, Patch)
+    this.initAgentSet('turtles', Turtles, Turtle)
+    this.initAgentSet('links', Links, Link)
+    // this.patches = new Patches(this, Patch, 'patches')
+    // this.patches.renderer = this.meshes.patches
+    // this.meshes.patches.init(this.patches)
+    // this.setAgentSetViewProps(this.patches, this.meshes.patches)
+    //
+    // this.turtles = new Turtles(this, Turtle, 'turtles')
+    // this.turtles.renderer = this.meshes.turtles
+    // this.meshes.turtles.init(this.turtles)
+    // this.setAgentSetViewProps(this.turtles, this.meshes.turtles)
+    //
+    // this.links = new Links(this, Link, 'links')
+    // this.turtles.links = this.meshes.links
+    // this.meshes.links.init(this.links)
+    // this.setAgentSetViewProps(this.links, this.meshes.links)
 
     this.setup()
     if (restart) this.start()
@@ -156,22 +181,15 @@ class Model {
     if (this.div) {
       if (force || this.refreshPatches) {
         if (this.patches.length > 0)
-          // this.patchesMesh.update(this.patches)
-          this.meshes.patches.update(this.patches)
-        // this.view.updatePatchesMesh(this.patches)
+          this.patches.renderer.update(this.patches)
       }
       if (force || this.refreshTurtles) {
         if (this.turtles.length > 0)
-          // this.view.updateTurtlesMesh(this.turtles)
-          // this.turtlesMesh.update(this.turtles)
-          this.meshes.turtles.update(this.turtles)
-          // this.view.updatePointsMesh('turtlesMesh', this.turtles)
+          this.turtles.renderer.update(this.turtles)
       }
       if (force || this.refreshLinks) {
         if (this.links.length > 0)
-          // this.view.updateLinksMesh(this.links)
-          // this.linksMesh.update(this.links)
-          this.meshes.links.update(this.links)
+          this.links.renderer.update(this.links)
       }
 
       // REMIND: generalize.

@@ -237,12 +237,27 @@ const paths = {
     ctx.fillStyle = ctx.strokeStyle
     ctx.fillRect(-1 + inset, -1 + inset, 2 - (2 * inset), 2 - (2 * inset))
   },
+  // person (ctx) {
+  //   this.poly(ctx, [ [0.3, -0.4], [0.6, 0], [0.25, 0.2], [0.25, -0.1],
+  //   [0.2, 0.3], [0.5, 1], [0.1, 1], [0, 0.5],
+  //   [-0.1, 1], [-0.5, 1], [-0.2, 0.3], [-0.25, -0.1],
+  //   [-0.25, 0.2], [-0.6, 0], [-0.3, -0.4]])
+  //   ctx.closePath()
+  //   ctx.arc(0, -0.7, 0.3, 0, 2 * Math.PI)
+  // },
   person (ctx) {
+    ctx.strokeStyle = ctx.fillStyle
+    this.person2(ctx)
+  },
+  person2 (ctx) {
     this.poly(ctx, [ [0.3, -0.4], [0.6, 0], [0.25, 0.2], [0.25, -0.1],
     [0.2, 0.3], [0.5, 1], [0.1, 1], [0, 0.5],
     [-0.1, 1], [-0.5, 1], [-0.2, 0.3], [-0.25, -0.1],
     [-0.25, 0.2], [-0.6, 0], [-0.3, -0.4]])
     ctx.closePath()
+    ctx.fill()
+    ctx.beginPath()
+    ctx.fillStyle = ctx.strokeStyle
     ctx.arc(0, -0.7, 0.3, 0, 2 * Math.PI)
   },
   ring (ctx) { // transparent

@@ -23,11 +23,15 @@ class Turtles extends AgentSet {
       const turtle = this.addAgent()
       turtle.theta = util.randomFloat(Math.PI * 2)
       initFcn(turtle)
-      if (!turtle.sprite) {
+      if (this.renderer.useSprites && !turtle.sprite) {
         const shape = turtle.shape || 'default'
-        turtle.setSprite(shape, this.randomColor())
+        const color = turtle.color || this.randomColor()
+        const strokeColor = turtle.strokeColor || this.randomColor()
+        turtle.setSprite(shape, color, strokeColor)
         // console.log('sprite color', turtle.sprite.color.css)
       }
+      if (!this.color) this.color = this.randomColor()
+      if (!this.shape) this.shape = `default`
       a.push(turtle)
     })
   }

@@ -12,14 +12,27 @@ export class BaseMesh { // static options(): https://goo.gl/sKdxoY
     const { scene, model } = view
     Object.assign(this, { scene, model, view, options })
     this.mesh = null
+    this.name = this.constructor.name
+    this.fixedColor = options.color
+    this.useSprites = this.name.match(/sprites/i) != null
+    this.fixedShape =
+      (this.name === 'PatchesMesh') ? 'Patch'
+      : (this.name === 'PointsMesh') ? 'Point'
+      : (this.name === 'LinksMesh') ? 'Link' : undefined
+    // BaseMesh,
+    // CanvasMesh,
+    // PatchesMesh,
+    // QuadSpritesMesh,
+    // PointsMesh,
+    // LinksMesh
   }
-  isMonochrome () {
-    return this.options.color != null
-  }
-  useSprites () {
-    // return this.mesh.geometry.attributes.uv != null
-    return this.constructor.name.match(/sprites/i) != null
-  }
+  // isMonochrome () {
+  //   return this.options.color != null
+  // }
+  // useSprites () {
+  //   // return this.mesh.geometry.attributes.uv != null
+  //   return this.constructor.name.match(/sprites/i) != null
+  // }
   dispose () {
     if (!this.mesh) return
     if (this.mesh.parent !== this.scene) console.log('mesh parent not scene')

@@ -2412,6 +2412,7 @@ class Links extends AgentSet {
       const link = this.addAgent();
       link.init(from, t);
       initFcn(link);
+      if (!this.color) this.color = this.randomColor();
       return link
     }) // REMIND: return single link if to not an array?
   }
@@ -2990,11 +2991,15 @@ class Turtles extends AgentSet {
       const turtle = this.addAgent();
       turtle.theta = util.randomFloat(Math.PI * 2);
       initFcn(turtle);
-      if (!turtle.sprite) {
+      if (this.renderer.useSprites && !turtle.sprite) {
         const shape = turtle.shape || 'default';
-        turtle.setSprite(shape, this.randomColor());
+        const color = turtle.color || this.randomColor();
+        const strokeColor = turtle.strokeColor || this.randomColor();
+        turtle.setSprite(shape, color, strokeColor);
         // console.log('sprite color', turtle.sprite.color.css)
       }
+      if (!this.color) this.color = this.randomColor();
+      if (!this.shape) this.shape = `default`;
       a.push(turtle);
     })
   }
@@ -3502,12 +3507,27 @@ const paths = {
     ctx.fillStyle = ctx.strokeStyle;
     ctx.fillRect(-1 + inset, -1 + inset, 2 - (2 * inset), 2 - (2 * inset));
   },
+  // person (ctx) {
+  //   this.poly(ctx, [ [0.3, -0.4], [0.6, 0], [0.25, 0.2], [0.25, -0.1],
+  //   [0.2, 0.3], [0.5, 1], [0.1, 1], [0, 0.5],
+  //   [-0.1, 1], [-0.5, 1], [-0.2, 0.3], [-0.25, -0.1],
+  //   [-0.25, 0.2], [-0.6, 0], [-0.3, -0.4]])
+  //   ctx.closePath()
+  //   ctx.arc(0, -0.7, 0.3, 0, 2 * Math.PI)
+  // },
   person (ctx) {
+    ctx.strokeStyle = ctx.fillStyle;
+    this.person2(ctx);
+  },
+  person2 (ctx) {
     this.poly(ctx, [ [0.3, -0.4], [0.6, 0], [0.25, 0.2], [0.25, -0.1],
     [0.2, 0.3], [0.5, 1], [0.1, 1], [0, 0.5],
     [-0.1, 1], [-0.5, 1], [-0.2, 0.3], [-0.25, -0.1],
     [-0.25, 0.2], [-0.6, 0], [-0.3, -0.4]]);
     ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = ctx.strokeStyle;
     ctx.arc(0, -0.7, 0.3, 0, 2 * Math.PI);
   },
   ring (ctx) { // transparent
@@ -3541,14 +3561,27 @@ class BaseMesh { // static options(): https://goo.gl/sKdxoY
     const { scene, model } = view;
     Object.assign(this, { scene, model, view, options });
     this.mesh = null;
+    this.name = this.constructor.name;
+    this.fixedColor = options.color;
+    this.useSprites = this.name.match(/sprites/i) != null;
+    this.fixedShape =
+      (this.name === 'PatchesMesh') ? 'Patch'
+      : (this.name === 'PointsMesh') ? 'Point'
+      : (this.name === 'LinksMesh') ? 'Link' : undefined;
+    // BaseMesh,
+    // CanvasMesh,
+    // PatchesMesh,
+    // QuadSpritesMesh,
+    // PointsMesh,
+    // LinksMesh
   }
-  isMonochrome () {
-    return this.options.color != null
-  }
-  useSprites () {
-    // return this.mesh.geometry.attributes.uv != null
-    return this.constructor.name.match(/sprites/i) != null
-  }
+  // isMonochrome () {
+  //   return this.options.color != null
+  // }
+  // useSprites () {
+  //   // return this.mesh.geometry.attributes.uv != null
+  //   return this.constructor.name.match(/sprites/i) != null
+  // }
   dispose () {
     if (!this.mesh) return
     if (this.mesh.parent !== this.scene) console.log('mesh parent not scene');
@@ -3843,23 +3876,30 @@ class Three {
       useControls: useThreeHelpers, // navigation. REMIND: control name?
       useStats: useUIHelpers,       // show fps widget
       useGUI: useUIHelpers,         // activate dat.gui UI
-      meshes: {
-        patches: {
-          meshClass: 'PatchesMesh'
-        },
-        turtles: {
-          meshClass: 'QuadSpritesMesh'
-          // meshClass: 'PointsMesh'
-        },
-        links: {
-          meshClass: 'LinksMesh'
-        }
+      // meshes: {
+      patches: {
+        meshClass: 'PatchesMesh'
+      },
+      turtles: {
+        meshClass: 'QuadSpritesMesh'
+        // meshClass: 'PointsMesh'
+      },
+      links: {
+        meshClass: 'LinksMesh'
       }
+      // }
     };
-    util.forEach(options.meshes, (val, key) => {
-      const Mesh = Meshes[val.meshClass];
-      const meshOptions = Mesh.options();
-      val.options = meshOptions;
+    // util.forEach(options.meshes, (val, key) => {
+    //   const Mesh = Meshes[val.meshClass]
+    //   const meshOptions = Mesh.options()
+    //   val.options = meshOptions
+    // })
+    util.forEach(options, (val, key) => {
+      if (val.meshClass) {
+        const Mesh = Meshes[val.meshClass];
+        const meshOptions = Mesh.options();
+        val.options = meshOptions;
+      }
     });
 
     return options
@@ -3874,8 +3914,8 @@ class Three {
         };
       }
     }
-    const json = JSON.stringify(obj, null, '  ');
-    console.log(json.replace(/ {2}"/g, '  ').replace(/": /g, ': '));
+    const str = util.objectToString(obj);
+    console.log(str);
   }
 
   constructor (model, options = {}) {
@@ -4015,7 +4055,7 @@ class Model {
   static defaultRenderer () {
     return Three.defaultOptions()
   }
-  static printViewOptions () {
+  static printDefaultViewOptions () {
     Three.printMeshOptions();
   }
 
@@ -4036,10 +4076,13 @@ class Model {
 
     // Initialize meshes.
     this.meshes = {};
-    util.forEach(rendererOptions.meshes, (val, key) => {
-      const options = Meshes[val.meshClass].options(); // default options
-      Object.assign(options, val.options); // override by user's
-      this.meshes[key] = new Meshes[val.meshClass](this.view, options);
+    util.forEach(rendererOptions, (val, key) => {
+      if (val.meshClass) {
+        const Mesh = Meshes[val.meshClass];
+        const options = Mesh.options(); // default options
+        Object.assign(options, val.options); // override by user's
+        this.meshes[key] = new Meshes[val.meshClass](this.view, options);
+      }
     });
 
     // Create animator to handle draw/step.
@@ -4079,9 +4122,28 @@ class Model {
   //   return {vertices, indices}
   // }
   // (Re)initialize the model. REMIND: not quite right
-  setAgentSetViewProps (agentSet, mesh) {
-    agentSet.isMonochrome = mesh.isMonochrome();
-    agentSet.useSprites = mesh.useSprites();
+  // setAgentSetViewProps (agentSet, mesh) {
+  //   agentSet.isMonochrome = mesh.isMonochrome()
+  //   agentSet.useSprites = mesh.useSprites()
+  // }
+  initAgentSet (name, AgentsetClass, AgentClass) {
+    const agentset = new AgentsetClass(this, AgentClass, name);
+    const mesh = this.meshes[name];
+    // const meshName = mesh.constructor.name
+    this[name] = agentset;
+    // agentset.setDefault('renderer', mesh)
+    agentset.renderer = mesh;
+    if (mesh.fixedColor) {
+      const color = new Float32Array(mesh.fixedColor);
+      agentset.setDefault('color', Color.toColor(color));
+    }
+    if (mesh.fixedShape) agentset.setDefault('shape', mesh.fixedShape);
+    // this.agentset.fixedColor = agentset.renderer.options.color
+    // agentset.useSprites = meshName in ['PointSpritesMesh', 'QuadSpritesMesh']
+    // agentset.fixedColor = agentset.renderer.options.color
+    // agentset.useSprites = meshName in ['PointSpritesMesh', 'QuadSpritesMesh']
+    // agentset.fixedShape =
+    mesh.init(agentset);
   }
   reset (restart = false) {
     this.anim.reset();
@@ -4090,21 +4152,23 @@ class Model {
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true;
 
     // Breeds handled by setup
-    this.patches = new Patches(this, Patch, 'patches');
-    this.meshes.patches.init(this.patches);
-    this.setAgentSetViewProps(this.patches, this.meshes.patches);
-    // this.patchesMesh.init(0, this.patches.pixels.ctx.canvas)
-
-    this.turtles = new Turtles(this, Turtle, 'turtles');
-    // this.turtlesMesh.init(1, 1, new THREE.Color(1, 1, 0))
-    // this.turtlesMesh.init(1, 1)
-    this.meshes.turtles.init(this.turtles);
-    this.setAgentSetViewProps(this.turtles, this.meshes.turtles);
-
-    this.links = new Links(this, Link, 'links');
-    // this.linksMesh.init(0.9)
-    this.meshes.links.init(this.links);
-    this.setAgentSetViewProps(this.links, this.meshes.links);
+    this.initAgentSet('patches', Patches, Patch);
+    this.initAgentSet('turtles', Turtles, Turtle);
+    this.initAgentSet('links', Links, Link);
+    // this.patches = new Patches(this, Patch, 'patches')
+    // this.patches.renderer = this.meshes.patches
+    // this.meshes.patches.init(this.patches)
+    // this.setAgentSetViewProps(this.patches, this.meshes.patches)
+    //
+    // this.turtles = new Turtles(this, Turtle, 'turtles')
+    // this.turtles.renderer = this.meshes.turtles
+    // this.meshes.turtles.init(this.turtles)
+    // this.setAgentSetViewProps(this.turtles, this.meshes.turtles)
+    //
+    // this.links = new Links(this, Link, 'links')
+    // this.turtles.links = this.meshes.links
+    // this.meshes.links.init(this.links)
+    // this.setAgentSetViewProps(this.links, this.meshes.links)
 
     this.setup();
     if (restart) this.start();
@@ -4148,22 +4212,15 @@ class Model {
     if (this.div) {
       if (force || this.refreshPatches) {
         if (this.patches.length > 0)
-          // this.patchesMesh.update(this.patches)
-          this.meshes.patches.update(this.patches);
-        // this.view.updatePatchesMesh(this.patches)
+          this.patches.renderer.update(this.patches);
       }
       if (force || this.refreshTurtles) {
         if (this.turtles.length > 0)
-          // this.view.updateTurtlesMesh(this.turtles)
-          // this.turtlesMesh.update(this.turtles)
-          this.meshes.turtles.update(this.turtles);
-          // this.view.updatePointsMesh('turtlesMesh', this.turtles)
+          this.turtles.renderer.update(this.turtles);
       }
       if (force || this.refreshLinks) {
         if (this.links.length > 0)
-          // this.view.updateLinksMesh(this.links)
-          // this.linksMesh.update(this.links)
-          this.meshes.links.update(this.links);
+          this.links.renderer.update(this.links);
       }
 
       // REMIND: generalize.
