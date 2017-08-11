@@ -122,6 +122,9 @@ class AgentSet extends AgentArray {
     this.agentProto[name] = value
   }
   getDefault (name) { return this.agentProto[name] }
+  // Used when getter/setter's need to know if get/set default
+  settingDefault (agent) { return agent.id == null }
+
   // Declare variables of an agent class.
   // `varnames` is a string of space separated names
   own (varnames) {

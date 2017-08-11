@@ -113,7 +113,7 @@ const Color = {
     return u8array
   },
   isColor (color) {
-    return color.constructor === Uint8ClampedArray && color.pixelArray
+    return color && color.constructor === Uint8ClampedArray && color.pixelArray
   },
   // Create a Color from a css string, pixel, JavaScript or Typed Array.
   // Returns `any` if is Color already. Useful for
@@ -208,6 +208,7 @@ const ColorProto = {
   },
   // Return true if color is same value as myself, comparing pixels
   equals (color) { return this.getPixel() === color.getPixel() },
+  toString () { return `[${Array.from(this).toString()}]` },
   // Return a [distance metric](
   // http://www.compuphase.com/cmetric.htm) between two colors.
   // Max distance is roughly 765 (3*255), for black & white.

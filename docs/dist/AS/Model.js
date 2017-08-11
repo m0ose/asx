@@ -50,6 +50,8 @@ class Model {
         const Mesh = Meshes[val.meshClass]
         const options = Mesh.options() // default options
         Object.assign(options, val.options) // override by user's
+        if (options.color) // convert options.color rgb array to Color.
+          options.color = Color.toColor(new Float32Array(options.color))
         this.meshes[key] = new Meshes[val.meshClass](this.view, options)
       }
     })
@@ -102,10 +104,8 @@ class Model {
     this[name] = agentset
     // agentset.setDefault('renderer', mesh)
     agentset.renderer = mesh
-    if (mesh.fixedColor) {
-      const color = new Float32Array(mesh.fixedColor)
-      agentset.setDefault('color', Color.toColor(color))
-    }
+    if (mesh.fixedColor) agentset.setDefault('color', mesh.fixedColor)
+    // REMIND: Turtles only?
     if (mesh.fixedShape) agentset.setDefault('shape', mesh.fixedShape)
     // this.agentset.fixedColor = agentset.renderer.options.color
     // agentset.useSprites = meshName in ['PointSpritesMesh', 'QuadSpritesMesh']

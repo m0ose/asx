@@ -36,21 +36,30 @@ class SpriteSheet {
   // If src is a canvas, it must have a src string w/o / or . chars.
   // If src is function or name of path below, colors can be css
   // or Color module's Color object.
-  newSprite (src, fillColor, strokeColor) {
-    // Normalize color names to hex
-    if (fillColor) fillColor = Color.toColor(fillColor)
+  newSprite (src, color, strokeColor) {
+    // Normalize color names to Color.color objects
+    if (color) color = Color.toColor(color)
     if (strokeColor) strokeColor = Color.toColor(strokeColor)
-    const name = this.spriteName(src, fillColor, strokeColor)
 
+    // create a normalized name:
+    const name = this.spriteName(src, color, strokeColor)
+    // If sprite of ths name already exists, return it.
     if (this.sprites[name]) return this.sprites[name]
+
+    // Make a new sprite.
     const sprite = util.isImageable(src)
       ? this.addImage(src)
-      : this.addDrawing(src, fillColor, strokeColor)
-      // : this.addDrawing(src, fillColor.css, strokeColor ? strokeColor.css : undefined)
-    if (fillColor) {
-      sprite.color = fillColor
-      sprite.shape = name.replace(/#.*/, '') // drop #xxxxxx from name
-    }
+      : this.addDrawing(src, color, strokeColor)
+    Object.assign(sprite, {src, color, strokeColor, needsUpdate: false})
+
+    // Add normalized colors and shape name to new sprite.
+    // if (color) {
+    //   sprite.color = color
+    //   if (strokeColor) sprite.strokeColor = strokeColor
+    //   sprite.shape = name.replace(/#.*/, '') // drop #xxxxxx from name
+    // }
+
+    // Add sprite to cache and return it.
     this.sprites[name] = sprite
     return sprite
   }
@@ -64,16 +73,19 @@ class SpriteSheet {
   // Make a unique, normalized sprite name. See note on src, colors above.
   // Color names are hex css formats, see newSprite's name transformation.
   spriteName (src, fillColor, strokeColor) {
+    let name
     // If src is an image, construct a name.
     if (util.isImageable(src)) {
-      let name = src.src
+      name = src.src
       name = name.replace(/^.*\//, '') // remove path
       name = name.replace(/\..*/, '.img') // replace .png/jpg/.. w/ ".img"
-      return name
+    } else {
+      // ditto for draw function or name of function in paths obj below
+      name = src.name || src
+      if (!name.endsWith('2')) strokeColor = null
+      name = `${name}${fillColor.css}${strokeColor ? strokeColor.css : ''}`
     }
-    // ditto for draw function or name of function in paths obj below
-    const name = src.name || src
-    return `${name}${fillColor.css}${strokeColor ? strokeColor.css : ''}`
+    return name
   }
 
   // Add an image/canvas to sprite sheet.

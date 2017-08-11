@@ -28,25 +28,17 @@ import Color from './Color.js'
 class Link {
   static defaultVariables () { // Core variables for patches. Not 'own' variables.
     return {
-      // id: null,             // unique id, promoted by agentset's add() method
-      // defaults: null,       // pointer to defaults/proto object
-      // agentSet: null,       // my agentset/breed
-      // model: null,      // my model
-      // world: null,          // my agent/agentset's world
-      // links: null,          // my baseSet
-
-      end0: null,              // Turtles: end0 & 1 are turtle ends of the link
+      end0: null,       // Turtles: end0 & 1 are turtle ends of the link
       end1: null,
-      color: Color.toColor('yellow'), // Note: links must have A = 255, opaque.
-      // z: 1, // possibly a z offset from the turtles?
-
-      // Line width. In Three.js/webgl this is always 1. See
-      // [Drawing Lines is Hard!](https://mattdesl.svbtle.com/drawing-lines-is-hard)
-      width: 1
+      typedColor: null, // A Color.color, converted by getter/setters below
+      width: 1          // THREE: must be 1. Canvas2D (unsupported) has widths.
     }
   }
   // Initialize a Link
   constructor () {
+    // const vars = Link.defaultVariables()
+    // Object.assign(this, vars)
+    // this.color = null // avoid getter/setter used by assign
     Object.assign(this, Link.defaultVariables())
   }
   init (from, to) {
@@ -70,9 +62,22 @@ class Link {
     throw Error(`Link.otherEnd: turtle not a link turtle: ${turtle}`)
   }
 
-  // Breed get/set mathods.
-  // setBreed (breed) { breed.setBreed(this) }
-  // get breed () { return this.agentSet }
+  // Use typedColor as the real color. Amazingly enough, setdefaults
+  // of 'color' ends up calling setter, thus making typedColor the default name.
+  // Whew!
+  setColor (color) {
+    const typedColor = Color.toColor(color) // Convert to Color.color
+    const fixedColor = this.links.renderer.fixedColor // Model set to Color.color
+    if (fixedColor && !typedColor.equals(fixedColor)) {
+      util.warn(`links.setColor: fixedColor != color ${fixedColor.toString()}`)
+    } else {
+      this.typedColor = typedColor
+    }
+  }
+  getColor () { return this.typedColor }
+  set color (color) { this.setColor(color) }
+  get color () { return this.getColor() }
+  // color prop can be used by *must* be Color.colors
 }
 
 export default Link

@@ -380,6 +380,13 @@ const util = {
       .replace(/ {2}"/g, '  ')
       .replace(/": /g, ': ')
   },
+  // Like above, but a single line for small objects.
+  objectToString1 (obj) {
+    return JSON.stringify(obj)
+      .replace(/{"/g, '{')
+      .replace(/,"/g, ',')
+      .replace(/":/g, ':')
+  },
 
   // Create random array of floats between min/max.
   // Array Type allows conversion to Float32Array or integers (Int32Array etc)
@@ -499,7 +506,8 @@ const util = {
   removeItem (array, item, f) {
     const i = this.indexOf(array, item, f);
     if (i !== -1) array.splice(i, 1);
-    else console.log(`util.removeItem: item ${item} not in array ${array}`);
+    else this.warn(`util.removeItem: ${item} not in array ${array.constructor.name}`);
+    // else throw Error(`util.removeItem: item ${item} not in array ${array}`)
   },
   // Insert an item in a sorted array
   insertItem (array, item, f) {
@@ -1122,7 +1130,7 @@ const Color = {
     return u8array
   },
   isColor (color) {
-    return color.constructor === Uint8ClampedArray && color.pixelArray
+    return color && color.constructor === Uint8ClampedArray && color.pixelArray
   },
   // Create a Color from a css string, pixel, JavaScript or Typed Array.
   // Returns `any` if is Color already. Useful for
@@ -1217,6 +1225,7 @@ const ColorProto = {
   },
   // Return true if color is same value as myself, comparing pixels
   equals (color) { return this.getPixel() === color.getPixel() },
+  toString () { return `[${Array.from(this).toString()}]` },
   // Return a [distance metric](
   // http://www.compuphase.com/cmetric.htm) between two colors.
   // Max distance is roughly 765 (3*255), for black & white.
@@ -1628,6 +1637,9 @@ class AgentSet extends AgentArray {
     this.agentProto[name] = value;
   }
   getDefault (name) { return this.agentProto[name] }
+  // Used when getter/setter's need to know if get/set default
+  settingDefault (agent) { return agent.id == null }
+
   // Declare variables of an agent class.
   // `varnames` is a string of space separated names
   own (varnames) {
@@ -2344,25 +2356,17 @@ const Int24 = {
 class Link {
   static defaultVariables () { // Core variables for patches. Not 'own' variables.
     return {
-      // id: null,             // unique id, promoted by agentset's add() method
-      // defaults: null,       // pointer to defaults/proto object
-      // agentSet: null,       // my agentset/breed
-      // model: null,      // my model
-      // world: null,          // my agent/agentset's world
-      // links: null,          // my baseSet
-
-      end0: null,              // Turtles: end0 & 1 are turtle ends of the link
+      end0: null,       // Turtles: end0 & 1 are turtle ends of the link
       end1: null,
-      color: Color.toColor('yellow'), // Note: links must have A = 255, opaque.
-      // z: 1, // possibly a z offset from the turtles?
-
-      // Line width. In Three.js/webgl this is always 1. See
-      // [Drawing Lines is Hard!](https://mattdesl.svbtle.com/drawing-lines-is-hard)
-      width: 1
+      typedColor: null, // A Color.color, converted by getter/setters below
+      width: 1          // THREE: must be 1. Canvas2D (unsupported) has widths.
     }
   }
   // Initialize a Link
   constructor () {
+    // const vars = Link.defaultVariables()
+    // Object.assign(this, vars)
+    // this.color = null // avoid getter/setter used by assign
     Object.assign(this, Link.defaultVariables());
   }
   init (from, to) {
@@ -2386,9 +2390,22 @@ class Link {
     throw Error(`Link.otherEnd: turtle not a link turtle: ${turtle}`)
   }
 
-  // Breed get/set mathods.
-  // setBreed (breed) { breed.setBreed(this) }
-  // get breed () { return this.agentSet }
+  // Use typedColor as the real color. Amazingly enough, setdefaults
+  // of 'color' ends up calling setter, thus making typedColor the default name.
+  // Whew!
+  setColor (color) {
+    const typedColor = Color.toColor(color); // Convert to Color.color
+    const fixedColor = this.links.renderer.fixedColor; // Model set to Color.color
+    if (fixedColor && !typedColor.equals(fixedColor)) {
+      util.warn(`links.setColor: fixedColor != color ${fixedColor.toString()}`);
+    } else {
+      this.typedColor = typedColor;
+    }
+  }
+  getColor () { return this.typedColor }
+  set color (color) { this.setColor(color); }
+  get color () { return this.getColor() }
+  // color prop can be used by *must* be Color.colors
 }
 
 // Links are a collection of all the Link objects between turtles.
@@ -2412,7 +2429,7 @@ class Links extends AgentSet {
       const link = this.addAgent();
       link.init(from, t);
       initFcn(link);
-      if (!this.color) this.color = this.randomColor();
+      if (!link.color) link.color = this.randomColor();
       return link
     }) // REMIND: return single link if to not an array?
   }
@@ -2494,6 +2511,15 @@ class Patches extends AgentSet {
     pixels.imageData = util.ctxImageData(pixels.ctx);
     pixels.data8 = pixels.imageData.data;
     pixels.data = new Uint32Array(pixels.data8.buffer);
+  }
+
+  setDefault (name, value) {
+    if (name === 'color') {
+      this.ask(p => { p.setColor(value); });
+      util.logOnce(`patches.setDefault(color, value): color default not supported. Clearing to value`);
+    } else {
+      super.setDefault(name, value);
+    }
   }
   // Get/Set label. REMIND: not implemented.
   // Set removes label if label is null or undefined.
@@ -2878,9 +2904,9 @@ class Patch {
   // }
 
   // Manage colors by directly setting pixels in Patches pixels object.
-  // With getter/setters, slight performance hit.
-  setColor (anyColor) {
-    this.patches.pixels.data[this.id] = Color.toColor(anyColor).getPixel();
+  // With getter/setters, slight performance hit but worth it!
+  setColor (color) {
+    this.patches.pixels.data[this.id] = Color.toColor(color).getPixel();
   }
   // Optimization: If shared color provided, sharedColor is modified and
   // returned. Otherwise new color returned.
@@ -2893,7 +2919,7 @@ class Patch {
     return Color.toColor(pixel)
   }
   get color () { return this.getColor() }
-  set color (typedColor) { this.setColor(typedColor); }
+  set color (color) { this.setColor(color); }
 
   // Set label. Erase label via setting to undefined.
   setLabel (label) {
@@ -2990,16 +3016,10 @@ class Turtles extends AgentSet {
     return util.repeat(num, (i, a) => {
       const turtle = this.addAgent();
       turtle.theta = util.randomFloat(Math.PI * 2);
+      if (this.renderer.useSprites) // fake sprite for initialization
+        turtle.sprite =
+          {shape: turtle.shapeFcn, color: this.randomColor(), needsUpdate: true};
       initFcn(turtle);
-      if (this.renderer.useSprites && !turtle.sprite) {
-        const shape = turtle.shape || 'default';
-        const color = turtle.color || this.randomColor();
-        const strokeColor = turtle.strokeColor || this.randomColor();
-        turtle.setSprite(shape, color, strokeColor);
-        // console.log('sprite color', turtle.sprite.color.css)
-      }
-      if (!this.color) this.color = this.randomColor();
-      if (!this.shape) this.shape = `default`;
       a.push(turtle);
     })
   }
@@ -3060,7 +3080,6 @@ class Turtles extends AgentSet {
   }
 }
 
-// import Color from './Color.js'
 // Flyweight object creation, see Patch/Patches.
 
 // Class Turtle instances represent the dynamic, behavioral element of modeling.
@@ -3081,9 +3100,9 @@ class Turtle {
       atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
                         // 'bounce', or a function, see handleEdge() method
       sprite: null,
-      color: null,
-      strokeColor: null,
-      shape: `default`
+      typedColor: null,
+      typedStrokeColor: null,
+      shapeFcn: `default`
 
       // spriteFcn: 'default',
       // spriteColor: Color.color(255, 0, 0),
@@ -3144,13 +3163,65 @@ class Turtle {
 
   // Create my sprite via shape: sprite, fcn, string, or image/canvas
   setSprite (shape = this.shape, color = this.color, strokeColor = this.strokeColor) {
-    color = color || this.turtles.randomColor();
-    // strokeColor = strokeColor || this.turtles.randomColor()
     if (shape.sheet) { this.sprite = shape; return } // src is a sprite
     const ss = this.model.spriteSheet;
+    color = color || this.turtles.randomColor();
     this.sprite = ss.newSprite(shape, color, strokeColor);
   }
   setSize (size) { this.size = size; } // * this.model.world.patchSize }
+
+  setColor (color) {
+    // if (this.turtles.settingDefault(this)) console.log(`setting default color ${color}`)
+    // if (!this.id) console.log(`setting default color ${color}`)
+    const typedColor = Color.toColor(color); // Convert to Color.color
+    const fixedColor = this.turtles.renderer.fixedColor; // Model set to Color.color
+    if (fixedColor && !typedColor.equals(fixedColor)) {
+      util.warn(`turtle.setColor: fixedColor != color ${fixedColor.toString()}`);
+    // } else if (this.sprite && !settingDefault) {
+    } else if (this.sprite) { // default sprite should always be null
+      this.sprite.color = typedColor;
+      this.sprite.needsUpdate = true;
+    } else { // will set default color or instance color (if not fixed etc)
+      this.typedColor = typedColor;
+    }
+  }
+  getColor () { return this.sprite ? this.sprite.color : this.typedColor }
+  set color (color) { this.setColor(color); }
+  get color () { return this.getColor() }
+
+  setStrokeColor (color) {
+    const typedColor = Color.toColor(color); // Convert to Color.color
+    const fixedColor = this.turtles.renderer.fixedColor; // Model set to Color.color
+    if (fixedColor) {
+      util.warn(`turtle.setStrokeColor: fixedColor ${fixedColor.toString()}`);
+    } else if (this.sprite) { // default sprite should always be null
+      this.sprite.strokeColor = typedColor;
+      this.sprite.needsUpdate = true;
+    } else { // will set default color or instance color
+      this.typedStrokeColor = typedColor;
+    }
+  }
+  getStrokeColor () {
+    return this.sprite ? this.sprite.strokeColor : this.typedStrokeColor
+  }
+  set strokdColor (color) { this.setStrokeColor(color); }
+  get strokdColor () { return this.getStrokeColor() }
+
+  setShape (shape) {
+    const fixedShape = this.turtles.renderer.fixedShape;
+    if (fixedShape && fixedShape !== shape) {
+      util.warn(`turtle.setShape: fixedShape ${fixedShape}`);
+    } else if (this.sprite) {
+      this.sprite.shape = shape;
+      this.sprite.needsUpdate = true;
+    } else {
+      this.shapeFcn = shape;
+    }
+  }
+  getShape () { return this.sprite ? this.sprite.shape : this.shapeFcn }
+  set shape (shape) { this.setShape(shape); }
+  get shape () { return this.getShape() }
+
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }
@@ -3306,21 +3377,30 @@ class SpriteSheet {
   // If src is a canvas, it must have a src string w/o / or . chars.
   // If src is function or name of path below, colors can be css
   // or Color module's Color object.
-  newSprite (src, fillColor, strokeColor) {
-    // Normalize color names to hex
-    if (fillColor) fillColor = Color.toColor(fillColor);
+  newSprite (src, color, strokeColor) {
+    // Normalize color names to Color.color objects
+    if (color) color = Color.toColor(color);
     if (strokeColor) strokeColor = Color.toColor(strokeColor);
-    const name = this.spriteName(src, fillColor, strokeColor);
 
+    // create a normalized name:
+    const name = this.spriteName(src, color, strokeColor);
+    // If sprite of ths name already exists, return it.
     if (this.sprites[name]) return this.sprites[name]
+
+    // Make a new sprite.
     const sprite = util.isImageable(src)
       ? this.addImage(src)
-      : this.addDrawing(src, fillColor, strokeColor);
-      // : this.addDrawing(src, fillColor.css, strokeColor ? strokeColor.css : undefined)
-    if (fillColor) {
-      sprite.color = fillColor;
-      sprite.shape = name.replace(/#.*/, ''); // drop #xxxxxx from name
-    }
+      : this.addDrawing(src, color, strokeColor);
+    Object.assign(sprite, {src, color, strokeColor, needsUpdate: false});
+
+    // Add normalized colors and shape name to new sprite.
+    // if (color) {
+    //   sprite.color = color
+    //   if (strokeColor) sprite.strokeColor = strokeColor
+    //   sprite.shape = name.replace(/#.*/, '') // drop #xxxxxx from name
+    // }
+
+    // Add sprite to cache and return it.
     this.sprites[name] = sprite;
     return sprite
   }
@@ -3334,16 +3414,19 @@ class SpriteSheet {
   // Make a unique, normalized sprite name. See note on src, colors above.
   // Color names are hex css formats, see newSprite's name transformation.
   spriteName (src, fillColor, strokeColor) {
+    let name;
     // If src is an image, construct a name.
     if (util.isImageable(src)) {
-      let name = src.src;
+      name = src.src;
       name = name.replace(/^.*\//, ''); // remove path
       name = name.replace(/\..*/, '.img'); // replace .png/jpg/.. w/ ".img"
-      return name
+    } else {
+      // ditto for draw function or name of function in paths obj below
+      name = src.name || src;
+      if (!name.endsWith('2')) strokeColor = null;
+      name = `${name}${fillColor.css}${strokeColor ? strokeColor.css : ''}`;
     }
-    // ditto for draw function or name of function in paths obj below
-    const name = src.name || src;
-    return `${name}${fillColor.css}${strokeColor ? strokeColor.css : ''}`
+    return name
   }
 
   // Add an image/canvas to sprite sheet.
@@ -3563,11 +3646,12 @@ class BaseMesh { // static options(): https://goo.gl/sKdxoY
     this.mesh = null;
     this.name = this.constructor.name;
     this.fixedColor = options.color;
-    this.useSprites = this.name.match(/sprites/i) != null;
+    this.fixedSize = options.pointSize;
     this.fixedShape =
       (this.name === 'PatchesMesh') ? 'Patch'
       : (this.name === 'PointsMesh') ? 'Point'
       : (this.name === 'LinksMesh') ? 'Link' : undefined;
+    this.useSprites = this.name.match(/sprites/i) != null;
     // BaseMesh,
     // CanvasMesh,
     // PatchesMesh,
@@ -3575,13 +3659,6 @@ class BaseMesh { // static options(): https://goo.gl/sKdxoY
     // PointsMesh,
     // LinksMesh
   }
-  // isMonochrome () {
-  //   return this.options.color != null
-  // }
-  // useSprites () {
-  //   // return this.mesh.geometry.attributes.uv != null
-  //   return this.constructor.name.match(/sprites/i) != null
-  // }
   dispose () {
     if (!this.mesh) return
     if (this.mesh.parent !== this.scene) console.log('mesh parent not scene');
@@ -3710,7 +3787,7 @@ class QuadSpritesMesh extends BaseMesh {
 
     for (let i = 0; i < turtles.length; i++) {
       const turtle = turtles[i];
-      if (!turtle.sprite) turtle.sprite = turtle.setSprite();
+      if (turtle.sprite.needsUpdate) turtle.setSprite();
       const size = turtle.size; // * patchSize
       const theta = turtle.theta;
       const cos = Math.cos(theta);
@@ -4081,6 +4158,8 @@ class Model {
         const Mesh = Meshes[val.meshClass];
         const options = Mesh.options(); // default options
         Object.assign(options, val.options); // override by user's
+        if (options.color) // convert options.color rgb array to Color.
+          options.color = Color.toColor(new Float32Array(options.color));
         this.meshes[key] = new Meshes[val.meshClass](this.view, options);
       }
     });
@@ -4133,10 +4212,8 @@ class Model {
     this[name] = agentset;
     // agentset.setDefault('renderer', mesh)
     agentset.renderer = mesh;
-    if (mesh.fixedColor) {
-      const color = new Float32Array(mesh.fixedColor);
-      agentset.setDefault('color', Color.toColor(color));
-    }
+    if (mesh.fixedColor) agentset.setDefault('color', mesh.fixedColor);
+    // REMIND: Turtles only?
     if (mesh.fixedShape) agentset.setDefault('shape', mesh.fixedShape);
     // this.agentset.fixedColor = agentset.renderer.options.color
     // agentset.useSprites = meshName in ['PointSpritesMesh', 'QuadSpritesMesh']

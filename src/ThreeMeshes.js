@@ -14,11 +14,12 @@ export class BaseMesh { // static options(): https://goo.gl/sKdxoY
     this.mesh = null
     this.name = this.constructor.name
     this.fixedColor = options.color
-    this.useSprites = this.name.match(/sprites/i) != null
+    this.fixedSize = options.pointSize
     this.fixedShape =
       (this.name === 'PatchesMesh') ? 'Patch'
       : (this.name === 'PointsMesh') ? 'Point'
       : (this.name === 'LinksMesh') ? 'Link' : undefined
+    this.useSprites = this.name.match(/sprites/i) != null
     // BaseMesh,
     // CanvasMesh,
     // PatchesMesh,
@@ -26,13 +27,6 @@ export class BaseMesh { // static options(): https://goo.gl/sKdxoY
     // PointsMesh,
     // LinksMesh
   }
-  // isMonochrome () {
-  //   return this.options.color != null
-  // }
-  // useSprites () {
-  //   // return this.mesh.geometry.attributes.uv != null
-  //   return this.constructor.name.match(/sprites/i) != null
-  // }
   dispose () {
     if (!this.mesh) return
     if (this.mesh.parent !== this.scene) console.log('mesh parent not scene')
@@ -161,7 +155,7 @@ export class QuadSpritesMesh extends BaseMesh {
 
     for (let i = 0; i < turtles.length; i++) {
       const turtle = turtles[i]
-      if (!turtle.sprite) turtle.sprite = turtle.setSprite()
+      if (turtle.sprite.needsUpdate) turtle.setSprite()
       const size = turtle.size // * patchSize
       const theta = turtle.theta
       const cos = Math.cos(theta)

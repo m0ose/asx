@@ -374,6 +374,13 @@ const util = {
       .replace(/ {2}"/g, '  ')
       .replace(/": /g, ': ')
   },
+  // Like above, but a single line for small objects.
+  objectToString1 (obj) {
+    return JSON.stringify(obj)
+      .replace(/{"/g, '{')
+      .replace(/,"/g, ',')
+      .replace(/":/g, ':')
+  },
 
   // Create random array of floats between min/max.
   // Array Type allows conversion to Float32Array or integers (Int32Array etc)
@@ -493,7 +500,8 @@ const util = {
   removeItem (array, item, f) {
     const i = this.indexOf(array, item, f)
     if (i !== -1) array.splice(i, 1)
-    else console.log(`util.removeItem: item ${item} not in array ${array}`)
+    else this.warn(`util.removeItem: ${item} not in array ${array.constructor.name}`)
+    // else throw Error(`util.removeItem: item ${item} not in array ${array}`)
   },
   // Insert an item in a sorted array
   insertItem (array, item, f) {

@@ -1,4 +1,4 @@
-// import Color from './Color.js'
+import Color from './Color.js'
 import util from './util.js'
 
 // Flyweight object creation, see Patch/Patches.
@@ -21,9 +21,9 @@ class Turtle {
       atEdge: 'clamp',  // What to do if I wander off world. Can be 'clamp', 'wrap'
                         // 'bounce', or a function, see handleEdge() method
       sprite: null,
-      color: null,
-      strokeColor: null,
-      shape: `default`
+      typedColor: null,
+      typedStrokeColor: null,
+      shapeFcn: `default`
 
       // spriteFcn: 'default',
       // spriteColor: Color.color(255, 0, 0),
@@ -84,13 +84,65 @@ class Turtle {
 
   // Create my sprite via shape: sprite, fcn, string, or image/canvas
   setSprite (shape = this.shape, color = this.color, strokeColor = this.strokeColor) {
-    color = color || this.turtles.randomColor()
-    // strokeColor = strokeColor || this.turtles.randomColor()
     if (shape.sheet) { this.sprite = shape; return } // src is a sprite
     const ss = this.model.spriteSheet
+    color = color || this.turtles.randomColor()
     this.sprite = ss.newSprite(shape, color, strokeColor)
   }
   setSize (size) { this.size = size } // * this.model.world.patchSize }
+
+  setColor (color) {
+    // if (this.turtles.settingDefault(this)) console.log(`setting default color ${color}`)
+    // if (!this.id) console.log(`setting default color ${color}`)
+    const typedColor = Color.toColor(color) // Convert to Color.color
+    const fixedColor = this.turtles.renderer.fixedColor // Model set to Color.color
+    if (fixedColor && !typedColor.equals(fixedColor)) {
+      util.warn(`turtle.setColor: fixedColor != color ${fixedColor.toString()}`)
+    // } else if (this.sprite && !settingDefault) {
+    } else if (this.sprite) { // default sprite should always be null
+      this.sprite.color = typedColor
+      this.sprite.needsUpdate = true
+    } else { // will set default color or instance color (if not fixed etc)
+      this.typedColor = typedColor
+    }
+  }
+  getColor () { return this.sprite ? this.sprite.color : this.typedColor }
+  set color (color) { this.setColor(color) }
+  get color () { return this.getColor() }
+
+  setStrokeColor (color) {
+    const typedColor = Color.toColor(color) // Convert to Color.color
+    const fixedColor = this.turtles.renderer.fixedColor // Model set to Color.color
+    if (fixedColor) {
+      util.warn(`turtle.setStrokeColor: fixedColor ${fixedColor.toString()}`)
+    } else if (this.sprite) { // default sprite should always be null
+      this.sprite.strokeColor = typedColor
+      this.sprite.needsUpdate = true
+    } else { // will set default color or instance color
+      this.typedStrokeColor = typedColor
+    }
+  }
+  getStrokeColor () {
+    return this.sprite ? this.sprite.strokeColor : this.typedStrokeColor
+  }
+  set strokdColor (color) { this.setStrokeColor(color) }
+  get strokdColor () { return this.getStrokeColor() }
+
+  setShape (shape) {
+    const fixedShape = this.turtles.renderer.fixedShape
+    if (fixedShape && fixedShape !== shape) {
+      util.warn(`turtle.setShape: fixedShape ${fixedShape}`)
+    } else if (this.sprite) {
+      this.sprite.shape = shape
+      this.sprite.needsUpdate = true
+    } else {
+      this.shapeFcn = shape
+    }
+  }
+  getShape () { return this.sprite ? this.sprite.shape : this.shapeFcn }
+  set shape (shape) { this.setShape(shape) }
+  get shape () { return this.getShape() }
+
   // setDrawSprite (fcn, color, color2) {
   //   this.sprite = this.model.spriteSheet.addDrawing(fcn, color)
   // }

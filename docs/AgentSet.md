@@ -97,6 +97,7 @@ General properties:
 * `model`, `AgentClass`, `name`, `baseSet`: Constructor arguments
 * `agentProto`: a singleton instance of AgentClass. The "defaults" layer.
 * `ownVariables`: The variables declared by the `own` method
+* `renderer`: The renderer for this agentset.
 
 ## AgentClass mixin
 
