@@ -44,12 +44,14 @@ class LinksModel extends Model {
     })
   }
 }
-const model = new LinksModel(document.body).start()
-model.whenReady(() => {
-  // debugging
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
-  console.log('links:', model.links.length)
-  const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, model })
-})
+
+const model = new LinksModel(document.body)
+model.setup()
+model.start()
+
+// Debugging
+console.log('patches:', model.patches.length)
+console.log('turtles:', model.turtles.length)
+console.log('links:', model.links.length)
+const {world, patches, turtles, links} = model
+util.toWindow({ world, patches, turtles, links, model })

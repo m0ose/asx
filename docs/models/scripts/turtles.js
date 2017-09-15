@@ -41,11 +41,12 @@ class TurtlesModel extends Model {
 }
 
 const renderOptions = Three.defaultOptions()
-const model = new TurtlesModel(document.body).start()
-model.whenReady(() => {
-  // debugging
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
-  const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, model, renderOptions })
-})
+const model = new TurtlesModel(document.body)
+model.setup()
+model.start()
+
+// Debugging
+console.log('patches:', model.patches.length)
+console.log('turtles:', model.turtles.length)
+const {world, patches, turtles, links} = model
+util.toWindow({ world, patches, turtles, links, model, renderOptions })

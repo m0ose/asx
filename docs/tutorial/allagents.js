@@ -29,13 +29,14 @@ class LinksModel extends Model {
     // })
   }
 }
-const options = Model.defaultOptions(13, 10)
-const model = new LinksModel(document.body, options).start()
-model.whenReady(() => {
-  // debugging
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
-  console.log('links:', model.links.length)
-  const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, model })
-})
+const options = Model.defaultWorld(13, 10)
+const model = new LinksModel(document.body, options)
+model.setup()
+model.start()
+
+// Debugging
+console.log('patches:', model.patches.length)
+console.log('turtles:', model.turtles.length)
+console.log('links:', model.links.length)
+const {world, patches, turtles, links} = model
+util.toWindow({ world, patches, turtles, links, model })

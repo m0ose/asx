@@ -2,9 +2,8 @@
 
 Class Model coordinates the AgentSets and the Renderer into a traditional ABM. It imports most of the AgentScript Modules to do so!
 
-A typical model creates a subclass of Model, which overrides three abstract methods:
-* `startup()`: An [async function](https://hackernoon.com/6-reasons-why-javascripts-async-await-blows-promises-away-tutorial-c7ec10518dd9) used for loading resources, using [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises), just once for the model. For example, you may load images, files, data etc here without having to manage the associated Promises used to fetch them. Our util.js module has several functions creating Promises for you.
-* `setup()`: A method called each time you `reset()` your model. For example, you might `stop()` your model, change the `setup()` method, and then restart using `reset()` it with new behavior, without reloading the page.
+A typical model creates a subclass of class Model, which overrides two abstract methods:
+* `setup()`: A method called to initialize your model.
 * `step()`: A method called every "tick" of the model's animator to advance its logic/state in time.
 
 ## Statics
@@ -30,44 +29,26 @@ The div is the class name or a DOM element in which to place the model
 The World module defines the [default world](World?id=statics).
 Similarly for the renderer options.
 
-To see what these look like, run the [Hello World](http://backspaces.github.io/asx//tutorial/?hello) model, open the console, and enter `Model.defaultWorld()` and `Model.defaultRenderer()`
+To see what these look like, run the [Hello World](tutorial/?hello ":ignore") model, open the console, and enter `Model.defaultWorld()` and `Model.defaultRenderer()`
 
 ## Methods
 
-> `whenReady (fcn)`
-
-As mentioned above describing `startup()`, the initialization of a model is async. So if you need to do more after creating your model, you'd do something like this:
-
-```javascript
-const model = new MyModel().start()
-model.whenReady(() => { // debugging
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
-  console.log('links:', model.links.length)
-  const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, model })
-})
-```
-
-There are two cases of whenReady here:
-* `model.start()`: Internally, start() waits until ready then starts the animator.
-* `model.whenReady()`: Is used to log information and copy to window several objects which would not have been created if we didn't wait.
-
-> `reset (restart = false)`
-
-The `reset()` method is used to both initialize the model and reinitialize it if you make changes and want to start over without reloading the page. It will not call `startup()`, but will call `setup()`. If `restart` is true, it will also call `start()` to immediately start the model running.
-
-> `async startup ()` <br />
 > `setup ()` <br />
 > `step ()`
 
-The three abstract methods you must override in your subclass of class Model.
+The two abstract methods you must override in your subclass of class Model.
 
 > `start ()` <br />
 > `stop ()` <br />
 > `once ()`
 
 Start/stop the model's animator. The once() method will stop the animator if it is running, and "setp" in just once. This is good for debugging and managing a model without using it's builtin animator.
+
+One use of these is to modify your model, and restart it without reloading the page.
+
+To change just your step function: `stop()` your model, change the `step()` method, and then restart using `start()`
+
+To change setup (and step if you'd like): `stop()` your model, change the `setup()` (and `step()`) method, and then restart using `setup(); start()`
 
 > `draw ()`
 

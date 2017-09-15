@@ -88,6 +88,27 @@ export class CanvasMesh extends BaseMesh {
 
 // Several classes for patches, turtles, links, etc.
 
+// ============= DrawingMesh =============
+
+// Drawing meshes are a form of Canvas Mesh
+export class DrawingMesh extends CanvasMesh {
+  static options () {
+    return {
+      textureOptions: {
+        minFilter: 'NearestFilter',
+        magFilter: 'NearestFilter'
+      },
+      z: 1.25
+    }
+  }
+  init (drawing) {
+    super.init(drawing.ctx.canvas)
+  }
+  update () {
+    super.update()
+  }
+}
+
 // ============= PatchesMesh =============
 
 // Patch meshes are a form of Canvas Mesh

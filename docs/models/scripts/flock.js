@@ -107,12 +107,12 @@ class FlockModel extends Model {
   }
 }
 
-const model = new FlockModel(document.body).start()
-model.whenReady(() => {
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
+const model = new FlockModel(document.body)
+model.setup()
+model.start()
 
-  // debugging
-  const {world, patches, turtles} = model
-  util.toWindow({ world, patches, turtles, model })
-})
+// Debugging
+console.log('patches:', model.patches.length)
+console.log('turtles:', model.turtles.length)
+const {world, patches, turtles} = model
+util.toWindow({ world, patches, turtles, model })

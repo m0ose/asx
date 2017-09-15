@@ -1,4 +1,6 @@
-import {ColorMap, Model, util} from 'http://backspaces.github.io/asx/dist/AS.module.js'
+// import {ColorMap, Model, util} from 'http://backspaces.github.io/asx/dist/AS.module.js'
+// Or use locally:
+import {ColorMap, Model, util} from '../dist/AS.module.js'
 
 class Hello extends Model {
   setup () {
@@ -21,5 +23,6 @@ class Hello extends Model {
 }
 
 const model = new Hello()
+model.setup()
 model.start()
 util.toWindow({ ColorMap, Model, util, model })

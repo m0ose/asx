@@ -45,11 +45,12 @@ class DiffuseModel extends Model {
 const options = Model.defaultWorld(2, 100)
 options.minX = 2 * options.minX
 options.maxX = 2 * options.maxY
-const model = new DiffuseModel(document.body, options).start()
-model.whenReady(() => {
-  // debugging
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
-  const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, model })
-})
+const model = new DiffuseModel(document.body, options)
+model.setup()
+model.start()
+
+//  Debugging
+console.log('patches:', model.patches.length)
+console.log('turtles:', model.turtles.length)
+const {world, patches, turtles, links} = model
+util.toWindow({ world, patches, turtles, links, model })

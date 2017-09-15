@@ -126,16 +126,15 @@ options.turtles = turtlesOption
 options.links = linksOption
 
 // Create the model. The "undefinded" says to use the default world options.
-const model = new OptionsModel(document.body, undefined, options).start()
+const model = new OptionsModel(document.body, undefined, options)
+model.setup()
+model.start()
 
-// When the model async options are complete,
+// Debugging
 // - print number of patches, turtles, links
 // - place several variables in the global scope.
-model.whenReady(() => {
-  // debugging
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
-  console.log('links:', model.links.length)
-  const {world, patches, turtles, links} = model
-  util.toWindow({ world, patches, turtles, links, options, model })
-})
+console.log('patches:', model.patches.length)
+console.log('turtles:', model.turtles.length)
+console.log('links:', model.links.length)
+const {world, patches, turtles, links} = model
+util.toWindow({ world, patches, turtles, links, options, model })

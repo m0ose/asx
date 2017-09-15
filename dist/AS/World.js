@@ -33,6 +33,13 @@ class World {
     return (this.minXcor <= x) && (x <= this.maxXcor) &&
            (this.minYcor <= y) && (y <= this.maxYcor)
   }
+  setCtxTransform (ctx) {
+    ctx.canvas.width = this.width
+    ctx.canvas.height = this.height
+    ctx.save()
+    ctx.scale(this.patchSize, -this.patchSize)
+    ctx.translate(-(this.minXcor), -(this.maxYcor))
+  }
 }
 
 export default World

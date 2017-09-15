@@ -14,7 +14,7 @@ For now we'll simply use the defaults.
 
 ## Hello World model: hello.js
 
-Next, we create our first model, [hello world](http://backspaces.github.io/asx//tutorial/?hello).
+Next, we create our first model, [hello world](tutorial/?hello ":ignore").
 
 ![](data/hello.jpg)
 
@@ -130,7 +130,7 @@ step () {
 
 At this point, your model is running. The console is useful for inspecting the model and its parts, and interacting with it.
 
-In the window/tab [the model](http://backspaces.github.io/asx//tutorial/?hello) is running, open the console .. ctl-j for Chrome/Canary, ctl-c for Safari. Or use the menus.
+In the window/tab [the model](tutorial/?hello ":ignore") is running, open the console .. ctl-j for Chrome/Canary, ctl-c for Safari. Or use the menus.
 
 Lets look at the patches, turtles, and links: <br />
 `let {patches, turtles, links} = model`

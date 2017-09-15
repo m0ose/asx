@@ -60,17 +60,18 @@ class Model {
     this.anim = new Animator(this)
 
     // Initialize model calling `startup`, `reset` .. which calls `setup`.
-    this.modelReady = false
-    this.startup().then(() => {
-      // this.reset(); this.setup(); this.modelReady = true
-      this.reset(); this.modelReady = true
-    })
+    // this.modelReady = false
+    // this.startup().then(() => {
+    //   // this.reset(); this.setup(); this.modelReady = true
+    //   this.reset(); this.modelReady = true
+    // })
+    this.reset() // REMIND: Temporary
   }
   // Call fcn(this) when any async
-  whenReady (fcn) {
-    // util.waitPromise(() => this.modelReady).then(fcn())
-    util.waitOn(() => this.modelReady, () => fcn(this))
-  }
+  // whenReady (fcn) {
+  //   // util.waitPromise(() => this.modelReady).then(fcn())
+  //   util.waitOn(() => this.modelReady, () => fcn(this))
+  // }
   // Add additional world variables derived from constructor's `modelOptions`.
   // setWorld () {
   //   const world = this.world
@@ -116,7 +117,7 @@ class Model {
   }
   reset (restart = false) {
     this.anim.reset()
-    this.world.setWorld()
+    this.world.setWorld() // allow world to change?
 
     this.refreshLinks = this.refreshTurtles = this.refreshPatches = true
 
@@ -139,7 +140,7 @@ class Model {
     // this.meshes.links.init(this.links)
     // this.setAgentSetViewProps(this.links, this.meshes.links)
 
-    this.setup()
+    // this.setup()
     if (restart) this.start()
   }
 
@@ -147,20 +148,16 @@ class Model {
   // A user's model is made by subclassing Model and over-riding these
   // three abstract methods. `super` need not be called.
 
-  // Async function to initialize model resources (images, files).
-  async startup () {} // called by constructor.
-  // Initialize your model variables and defaults here.
-  setup () {} // called by constructor (after startup) or by reset()
+  setup () {} // Your initialization code goes here
   // Update/step your model here
   step () {} // called each step of the animation
 
   // Start/stop the animation. Return model for chaining.
   start () {
-    util.waitOn(() => this.modelReady, () => {
-      this.anim.start()
-    })
-    // util.waitPromise(() => this.modelReady)
-    // .then(() => { this.anim.start() })
+    // util.waitOn(() => this.modelReady, () => {
+    //   this.anim.start()
+    // })
+    this.anim.start()
     return this
   }
   stop () { this.anim.stop() }

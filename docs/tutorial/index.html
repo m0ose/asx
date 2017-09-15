@@ -5,6 +5,8 @@
 <body>
   <script type="module">
     import util from 'http://backspaces.github.io/asx/dist/AS/util.js'
+    // Or locally:
+    // import util from '../dist/AS/util.js'
 
     const app = document.location.search.substring(1) || 'hello'
     const loc = `./${app}.js`

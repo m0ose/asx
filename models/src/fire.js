@@ -69,9 +69,10 @@ class FireModel extends Model {
 
 const div = document.body
 const options = Model.defaultWorld(2, 125)
-const model = new FireModel(div, options).start()
+const model = new FireModel(div, options)
+model.setup()
+model.start()
 
-model.whenReady(() => {
-  const {world, patches} = model
-  util.toWindow({ world, patches, p: patches.oneOf(), model })
-})
+// Debugging
+const {world, patches} = model
+util.toWindow({ world, patches, p: patches.oneOf(), model })

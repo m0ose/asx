@@ -81,12 +81,12 @@ class ExitModel extends Model {
 }
 
 const options = Model.defaultWorld(7, 35)
-const model = new ExitModel(document.body, options).start()
-// note that start above also uses so is safe. fine to include below too.
-model.whenReady(() => {
-  // model.start()
-  console.log('patches:', model.patches.length)
-  console.log('turtles:', model.turtles.length)
-  const {world, patches, turtles, links, exits, inside, wall} = model
-  util.toWindow({ world, patches, turtles, links, exits, inside, wall, model })
-})
+const model = new ExitModel(document.body, options)
+model.setup()
+model.start()
+
+// Debugging:
+console.log('patches:', model.patches.length)
+console.log('turtles:', model.turtles.length)
+const {world, patches, turtles, links, exits, inside, wall} = model
+util.toWindow({ world, patches, turtles, links, exits, inside, wall, model })
