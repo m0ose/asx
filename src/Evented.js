@@ -13,9 +13,9 @@ class CallbackReference {
 
 export default class Evented {
   constructor () {
-    this.events = {everything: []}
+    this.events = {}
   }
-  onEvent (eventName = 'everything', callback = () => {}) {
+  onEvent (eventName, callback = () => {}) {
     if (typeof callback !== 'function') return
     if (!this.events.hasOwnProperty(eventName)) {
       this.events[eventName] = []
@@ -31,11 +31,6 @@ export default class Evented {
         setTimeout(() => eh.cb(argument, eventName))
       })
     }
-    // call those who watch everything
-    this.events['everything'] = this.events['everything'].filter((eh) => eh.keepMe)
-    this.events['everything'].forEach((eh) => {
-      setTimeout(() => eh.cb(argument, eventName))
-    })
   }
   fireAll (argument) {
     for (var k in this.events) {
