@@ -1,23 +1,26 @@
 // externals = (id) => id.includes('/libs/')
 function externals (id) { return id.includes('/dist/') }
+function globals (id) {
+  const jsNames = {
+    'stats.wrapper.js': 'Stats',
+    'dat.gui.wrapper.js': 'dat',
+    'three.wrapper.js': 'THREE'
+  }
+  const fileName = id.replace(/^.*\//, '')
+  return jsNames[fileName]
+}
 
 export default {
-  entry: 'src/AS.js',
+  input: 'src/AS.js',
   banner: '/* eslint-disable */',
   external: externals,
-  targets: [
-    { dest: 'dist/AS.js',
+  output: [
+    { file: 'dist/AS.js',
       format: 'iife',
-      globals: { // id: name pairs (import name from id)
-        '/Users/owen/Dropbox/src/asx/dist/stats.wrapper.js': 'Stats',
-        '/Users/owen/Dropbox/src/asx/dist/dat.gui.wrapper.js': 'dat',
-        '/Users/owen/Dropbox/src/asx/dist/three.wrapper.js': 'THREE',
-        // Not currently needed, anonymous (no name) import used:
-        // '/Users/owen/Dropbox/src/asx/dist/OrbitControls.wrapper.js': 'THREE.OrbitControls'
-      },
-      moduleName: 'AS'
+      globals: globals,
+      name: 'AS'
     },
-    { dest: 'dist/AS.module.js',
+    { file: 'dist/AS.module.js',
       format: 'es'
     }
   ]

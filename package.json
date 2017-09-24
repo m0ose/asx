@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "butternut": "^0.4.6",
-    "rollup": "^0.41.6",
+    "rollup": "latest",
     "sane": "^1.6.0"
   }
 }

@@ -1,10 +1,10 @@
 /* eslint-disable */
-(function (exports,THREE,___dist_OrbitControls_wrapper_js,Stats,dat) {
+var AS = (function (exports,THREE,OrbitControls_wrapper_js,Stats,dat) {
 'use strict';
 
-THREE = 'default' in THREE ? THREE['default'] : THREE;
-Stats = 'default' in Stats ? Stats['default'] : Stats;
-dat = 'default' in dat ? dat['default'] : dat;
+THREE = THREE && THREE.hasOwnProperty('default') ? THREE['default'] : THREE;
+Stats = Stats && Stats.hasOwnProperty('default') ? Stats['default'] : Stats;
+dat = dat && dat.hasOwnProperty('default') ? dat['default'] : dat;
 
 // A set of useful misc utils which will eventually move to individual files.
 // Note we use arrow functions one-liners, more likely to be optimized.
@@ -4412,4 +4412,6 @@ exports.Turtles = Turtles;
 exports.World = World;
 exports.util = util;
 
-}((this.AS = this.AS || {}),THREE,null,Stats,dat));
+return exports;
+
+}({},THREE,null,Stats,dat));
