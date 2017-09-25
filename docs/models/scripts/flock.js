@@ -107,9 +107,9 @@ class FlockModel extends Model {
   }
 }
 
-// const options = {patchSize: 2, minX: -110, maxX: -105, minY: 40, maxY: 45}
-// const model = new FlockModel(document.body, options)
-const model = new FlockModel(document.body)
+const options = { minX: -10, maxX: 10, minY: 10, maxY: 30, patchSize: 1 }
+const model = new FlockModel(document.body, options)
+// const model = new FlockModel(document.body)
 model.setup()
 model.start()
 

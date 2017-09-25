@@ -60,7 +60,7 @@ export class CanvasMesh extends BaseMesh {
     if (this.mesh) this.dispose()
     const {textureOptions, z} = this.options
     Object.assign(this, { canvas, z, textureOptions })
-    const {width, height, numX, numY} = this.model.world
+    const {width, height, numX, numY, centerX, centerY} = this.model.world
 
     const texture = new THREE.CanvasTexture(canvas)
     for (const key in textureOptions) {
@@ -68,6 +68,7 @@ export class CanvasMesh extends BaseMesh {
     }
 
     const geometry = new THREE.PlaneGeometry(width, height, numX, numY)
+    geometry.translate(centerX, centerY, 0)
 
     const material = new THREE.MeshBasicMaterial({
       map: texture,

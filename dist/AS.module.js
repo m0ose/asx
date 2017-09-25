@@ -2465,6 +2465,8 @@ class World {
     this.maxXcor = this.maxX + 0.5;
     this.minYcor = this.minY - 0.5;
     this.maxYcor = this.maxY + 0.5;
+    this.centerX = (this.minX + this.maxX) / 2;
+    this.centerY = (this.minY + this.maxY) / 2;
   }
   isOnWorld (x, y) {
     return (this.minXcor <= x) && (x <= this.maxXcor) &&
@@ -3699,7 +3701,7 @@ class CanvasMesh extends BaseMesh {
     if (this.mesh) this.dispose();
     const {textureOptions, z} = this.options;
     Object.assign(this, { canvas, z, textureOptions });
-    const {width, height, numX, numY} = this.model.world;
+    const {width, height, numX, numY, centerX, centerY} = this.model.world;
 
     const texture = new THREE.CanvasTexture(canvas);
     for (const key in textureOptions) {
@@ -3707,6 +3709,7 @@ class CanvasMesh extends BaseMesh {
     }
 
     const geometry = new THREE.PlaneGeometry(width, height, numX, numY);
+    geometry.translate(centerX, centerY, 0);
 
     const material = new THREE.MeshBasicMaterial({
       map: texture,
@@ -4025,6 +4028,7 @@ class Three {
   initThree () {
     const {clientWidth, clientHeight} = this.model.div;
     const {orthoView, clearColor} = this;
+    // const {width, height, centerX, centerY} = this.model.world
     const {width, height} = this.model.world;
     const [halfW, halfH] = [width / 2, height / 2];
 
@@ -4039,10 +4043,13 @@ class Three {
 
     const perspectiveCam =
       new THREE.PerspectiveCamera(45, clientWidth / clientHeight, 1, 10000);
+    // perspectiveCam.position.set(width + centerX, -width - centerY, width)
     perspectiveCam.position.set(width, -width, width);
+    // perspectiveCam.lookAt(new THREE.Vector3(centerX, centerY, 0))
     perspectiveCam.up.set(0, 0, 1);
 
     const scene = new THREE.Scene();
+    // scene.position = new THREE.Vector3(centerX, centerY, 0)
     const camera = orthoView ? orthographicCam : perspectiveCam;
 
     // if (orthoView)

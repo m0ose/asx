@@ -28,6 +28,8 @@ class World {
     this.maxXcor = this.maxX + 0.5
     this.minYcor = this.minY - 0.5
     this.maxYcor = this.maxY + 0.5
+    this.centerX = (this.minX + this.maxX) / 2
+    this.centerY = (this.minY + this.maxY) / 2
   }
   isOnWorld (x, y) {
     return (this.minXcor <= x) && (x <= this.maxXcor) &&
