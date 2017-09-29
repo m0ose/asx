@@ -1,19 +1,19 @@
 // import SpriteSheet from './SpriteSheet.js'
 import util from './util.js'
-import Meshes from './ThreeMeshes'
+import ThreeMeshes from './ThreeMeshes'
 
 import THREE from '../dist/three.wrapper.js'
 import '../dist/OrbitControls.wrapper.js'
 import Stats from '../dist/stats.wrapper.js'
 import dat from '../dist/dat.gui.wrapper.js'
 
-window.Meshes = Meshes // REMIND
+// window.Meshes = Meshes // REMIND
 
-class Three {
+class ThreeView {
   static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {
     const options = {
     // include me in options so Model can instanciate me!
-      Renderer: Three, // REMIND: use string.
+      Renderer: ThreeView, // REMIND: use string.
       orthoView: false,             // 'Perspective', 'Orthographic'
       clearColor: 0x000000,         // clear to black
       useAxes: useThreeHelpers,     // show x,y,z axes
@@ -35,13 +35,13 @@ class Three {
       // }
     }
     // util.forEach(options.meshes, (val, key) => {
-    //   const Mesh = Meshes[val.meshClass]
+    //   const Mesh = ThreeMeshes[val.meshClass]
     //   const meshOptions = Mesh.options()
     //   val.options = meshOptions
     // })
     util.forEach(options, (val, key) => {
       if (val.meshClass) {
-        const Mesh = Meshes[val.meshClass]
+        const Mesh = ThreeMeshes[val.meshClass]
         const meshOptions = Mesh.options()
         val.options = meshOptions
       }
@@ -51,11 +51,11 @@ class Three {
   }
   static printMeshOptions () {
     const obj = {}
-    for (const MeshName in Meshes) {
-      const optionsFcn = Meshes[MeshName].options
+    for (const MeshName in ThreeMeshes) {
+      const optionsFcn = ThreeMeshes[MeshName].options
       if (optionsFcn) {
         obj[MeshName] = {
-          options: Meshes[MeshName].options()
+          options: ThreeMeshes[MeshName].options()
         }
       }
     }
@@ -68,10 +68,10 @@ class Three {
     // this.spriteSheet = model.spriteSheet // REMIND: Temp
 
     // Initialize options
-    Object.assign(this, Three.defaultOptions) // install defaults
+    Object.assign(this, ThreeMeshes.defaultOptions) // install defaults
     Object.assign(this, options) // override defaults
-    if (this.Renderer !== Three)
-      throw Error('Three ctor: Renderer not Three', this.renderer)
+    if (this.Renderer !== ThreeView)
+      throw Error('ThreeView ctor: Renderer not ThreeView', this.renderer)
 
     // Initialize Three.js
     this.initThree()
@@ -192,4 +192,4 @@ class Three {
   }
 }
 
-export default Three
+export default ThreeView

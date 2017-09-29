@@ -15,7 +15,7 @@ import Patches         from './Patches.js'
 import RGBADataSet     from './RGBADataSet.js'
 import RGBDataSet      from './RGBDataSet.js'
 import SpriteSheet     from './SpriteSheet.js'
-import Three           from './ThreeView.js'
+import ThreeView       from './ThreeView.js'
 import ThreeMeshes     from './ThreeMeshes.js'
 import Turtle          from './Turtle.js'
 import Turtles         from './Turtles.js'
@@ -41,7 +41,7 @@ export {
   RGBADataSet,
   RGBDataSet,
   SpriteSheet,
-  Three,
+  ThreeView,
   ThreeMeshes,
   Turtle,
   Turtles,

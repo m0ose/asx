@@ -26,7 +26,7 @@ class Turtles extends AgentSet {
         turtle.sprite =
           {shape: turtle.shapeFcn, color: this.randomColor(), needsUpdate: true}
       initFcn(turtle)
-      a.push(turtle)
+      a.push(turtle) // Return array of new agents. REMIND: should be agentarray?
     })
   }
   // clear () {

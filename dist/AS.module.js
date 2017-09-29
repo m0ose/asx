@@ -3029,7 +3029,7 @@ class Turtles extends AgentSet {
         turtle.sprite =
           {shape: turtle.shapeFcn, color: this.randomColor(), needsUpdate: true};
       initFcn(turtle);
-      a.push(turtle);
+      a.push(turtle); // Return array of new agents. REMIND: should be agentarray?
     })
   }
   // clear () {
@@ -3944,7 +3944,7 @@ class LinksMesh extends BaseMesh {
   }
 }
 
-var Meshes = {
+var ThreeMeshes = {
   BaseMesh,
   CanvasMesh,
   PatchesMesh,
@@ -3954,13 +3954,13 @@ var Meshes = {
 };
 
 // import SpriteSheet from './SpriteSheet.js'
-window.Meshes = Meshes; // REMIND
+// window.Meshes = Meshes // REMIND
 
-class Three {
+class ThreeView {
   static defaultOptions (useThreeHelpers = true, useUIHelpers = true) {
     const options = {
     // include me in options so Model can instanciate me!
-      Renderer: Three, // REMIND: use string.
+      Renderer: ThreeView, // REMIND: use string.
       orthoView: false,             // 'Perspective', 'Orthographic'
       clearColor: 0x000000,         // clear to black
       useAxes: useThreeHelpers,     // show x,y,z axes
@@ -3982,13 +3982,13 @@ class Three {
       // }
     };
     // util.forEach(options.meshes, (val, key) => {
-    //   const Mesh = Meshes[val.meshClass]
+    //   const Mesh = ThreeMeshes[val.meshClass]
     //   const meshOptions = Mesh.options()
     //   val.options = meshOptions
     // })
     util.forEach(options, (val, key) => {
       if (val.meshClass) {
-        const Mesh = Meshes[val.meshClass];
+        const Mesh = ThreeMeshes[val.meshClass];
         const meshOptions = Mesh.options();
         val.options = meshOptions;
       }
@@ -3998,11 +3998,11 @@ class Three {
   }
   static printMeshOptions () {
     const obj = {};
-    for (const MeshName in Meshes) {
-      const optionsFcn = Meshes[MeshName].options;
+    for (const MeshName in ThreeMeshes) {
+      const optionsFcn = ThreeMeshes[MeshName].options;
       if (optionsFcn) {
         obj[MeshName] = {
-          options: Meshes[MeshName].options()
+          options: ThreeMeshes[MeshName].options()
         };
       }
     }
@@ -4015,10 +4015,10 @@ class Three {
     // this.spriteSheet = model.spriteSheet // REMIND: Temp
 
     // Initialize options
-    Object.assign(this, Three.defaultOptions); // install defaults
+    Object.assign(this, ThreeMeshes.defaultOptions); // install defaults
     Object.assign(this, options); // override defaults
-    if (this.Renderer !== Three)
-      throw Error('Three ctor: Renderer not Three', this.renderer)
+    if (this.Renderer !== ThreeView)
+      throw Error('ThreeView ctor: Renderer not ThreeView', this.renderer)
 
     // Initialize Three.js
     this.initThree();
@@ -4147,12 +4147,12 @@ class Model {
   static defaultWorld (size = 13, max = 16) {
     return World.defaultOptions(size, max)
   }
-  // Default renderer is Three.js
+  // Default renderer is ThreeView.js
   static defaultRenderer () {
-    return Three.defaultOptions()
+    return ThreeView.defaultOptions()
   }
   static printDefaultViewOptions () {
-    Three.printMeshOptions();
+    ThreeView.printMeshOptions();
   }
 
   // The Model constructor takes a DOM div and model and renderer options.
@@ -4162,29 +4162,27 @@ class Model {
                rendererOptions = Model.defaultRenderer()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div;
-    this.spriteSheet = new SpriteSheet();
-
     // Create this model's `world` object
     this.world = new World(worldOptions);
+    // Create animator to handle draw/step.
+    this.anim = new Animator(this);
 
+    // View setup.
+    this.spriteSheet = new SpriteSheet();
     // Initialize view
     this.view = new rendererOptions.Renderer(this, rendererOptions);
-
     // Initialize meshes.
     this.meshes = {};
     util.forEach(rendererOptions, (val, key) => {
       if (val.meshClass) {
-        const Mesh = Meshes[val.meshClass];
+        const Mesh = ThreeMeshes[val.meshClass];
         const options = Mesh.options(); // default options
         Object.assign(options, val.options); // override by user's
         if (options.color) // convert options.color rgb array to Color.
           options.color = Color.toColor(new Float32Array(options.color));
-        this.meshes[key] = new Meshes[val.meshClass](this.view, options);
+        this.meshes[key] = new ThreeMeshes[val.meshClass](this.view, options);
       }
     });
-
-    // Create animator to handle draw/step.
-    this.anim = new Animator(this);
 
     // Initialize model calling `startup`, `reset` .. which calls `setup`.
     // this.modelReady = false
@@ -4273,7 +4271,7 @@ class Model {
 
 // ### User Model Creation
   // A user's model is made by subclassing Model and over-riding these
-  // three abstract methods. `super` need not be called.
+  // 3 abstract methods. `super` need not be called.
 
   setup () {} // Your initialization code goes here
   // Update/step your model here
@@ -4394,4 +4392,4 @@ class RGBDataSet extends DataSet {
 
 /* eslint-disable */
 
-export { AgentSet, Animator, AscDataSet, Color, ColorMap, DataSet, DataSetIO, Int24, Link, Links, Model, Patch, Patches, RGBADataSet, RGBDataSet, SpriteSheet, Three, Meshes as ThreeMeshes, Turtle, Turtles, World, util };
+export { AgentSet, Animator, AscDataSet, Color, ColorMap, DataSet, DataSetIO, Int24, Link, Links, Model, Patch, Patches, RGBADataSet, RGBDataSet, SpriteSheet, ThreeView, ThreeMeshes, Turtle, Turtles, World, util };

@@ -1,7 +1,7 @@
 // import ColorMap from '../../dist/AS/ColorMap.js'
 // import Model from '../../dist/AS/Model.js'
 // import util from '../../dist/AS/util.js'
-import {ColorMap, Model, Three, util} from '../../dist/AS.module.js'
+import {ColorMap, Model, ThreeView, util} from '../../dist/AS.module.js'
 
 util.toWindow({ ColorMap, Model, util })
 
@@ -40,7 +40,7 @@ class TurtlesModel extends Model {
   }
 }
 
-const renderOptions = Three.defaultOptions()
+const renderOptions = ThreeView.defaultOptions()
 const model = new TurtlesModel(document.body)
 model.setup()
 model.start()

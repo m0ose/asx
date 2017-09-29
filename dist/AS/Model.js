@@ -8,8 +8,8 @@ import Links from './Links.js'
 import Link from './Link.js'
 import Animator from './Animator.js'
 import SpriteSheet from './SpriteSheet.js'
-import Three from './ThreeView.js'
-import Meshes from './ThreeMeshes.js'
+import ThreeView from './ThreeView.js'
+import ThreeMeshes from './ThreeMeshes.js'
 import util from './util.js'
 
 // Class Model is the primary interface for modelers, integrating
@@ -20,12 +20,12 @@ class Model {
   static defaultWorld (size = 13, max = 16) {
     return World.defaultOptions(size, max)
   }
-  // Default renderer is Three.js
+  // Default renderer is ThreeView.js
   static defaultRenderer () {
-    return Three.defaultOptions()
+    return ThreeView.defaultOptions()
   }
   static printDefaultViewOptions () {
-    Three.printMeshOptions()
+    ThreeView.printMeshOptions()
   }
 
   // The Model constructor takes a DOM div and model and renderer options.
@@ -35,29 +35,27 @@ class Model {
                rendererOptions = Model.defaultRenderer()) {
     // Store and initialize the model's div and contexts.
     this.div = util.isString(div) ? document.getElementById(div) : div
-    this.spriteSheet = new SpriteSheet()
-
     // Create this model's `world` object
     this.world = new World(worldOptions)
+    // Create animator to handle draw/step.
+    this.anim = new Animator(this)
 
+    // View setup.
+    this.spriteSheet = new SpriteSheet()
     // Initialize view
     this.view = new rendererOptions.Renderer(this, rendererOptions)
-
     // Initialize meshes.
     this.meshes = {}
     util.forEach(rendererOptions, (val, key) => {
       if (val.meshClass) {
-        const Mesh = Meshes[val.meshClass]
+        const Mesh = ThreeMeshes[val.meshClass]
         const options = Mesh.options() // default options
         Object.assign(options, val.options) // override by user's
         if (options.color) // convert options.color rgb array to Color.
           options.color = Color.toColor(new Float32Array(options.color))
-        this.meshes[key] = new Meshes[val.meshClass](this.view, options)
+        this.meshes[key] = new ThreeMeshes[val.meshClass](this.view, options)
       }
     })
-
-    // Create animator to handle draw/step.
-    this.anim = new Animator(this)
 
     // Initialize model calling `startup`, `reset` .. which calls `setup`.
     // this.modelReady = false
@@ -146,7 +144,7 @@ class Model {
 
 // ### User Model Creation
   // A user's model is made by subclassing Model and over-riding these
-  // three abstract methods. `super` need not be called.
+  // 3 abstract methods. `super` need not be called.
 
   setup () {} // Your initialization code goes here
   // Update/step your model here
