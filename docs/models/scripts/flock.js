@@ -107,12 +107,22 @@ class FlockModel extends Model {
   }
 }
 
-// const options = { minX: -10, maxX: 10, minY: 10, maxY: 30, patchSize: 1 }
+// const options = { minX: -110, maxX: -105, minY: 40, maxY: 45, patchSize: 4 }
+// const options = { minX: -110, maxX: -105, minY: 40, maxY: 45, patchSize: 1 }
+// const options = { minX: 0, maxX: 10, minY: 0, maxY: 10, patchSize: 1 }
+// const options = { minX: -5, maxX: 5, minY: -5, maxY: 5, patchSize: 1 }
+
 // const options = { minX: -10, maxX: 10, minY: 10, maxY: 30, patchSize: 1 }
 // const options = { minX: 10, maxX: 10, minY: 30, maxY: 30, patchSize: 1 }
-// const options = { minX: 10, maxX: 10, minY: 30, maxY: 30 }
 // const options = { minX: 10, maxX: 11, minY: 30, maxY: 31, patchSize: 1 }
+// const options = Model.defaultWorld(); options.patchSize = 1
+// function shift (size, dx, dy) {
+//   options.patchSize = size
+//   options.minX += dx; options.maxX += dx
+//   options.minY += dy; options.maxY += dy
+// }
 const options = Model.defaultWorld()
+// shift(1, 16, 32)
 const model = new FlockModel(document.body, options)
 // const model = new FlockModel(document.body)
 model.setup()
