@@ -49,15 +49,26 @@ class Turtle {
 
   // Factory: create num new turtles at this turtle's location. The optional init
   // proc is called on the new turtle after inserting in its agentSet.
-  hatch (num = 1, agentSet = this.agentSet, init = (turtle) => {}) {
-    return agentSet.create(num, (turtle) => {
+  hatch (num = 1, breed = this.agentSet, init = (turtle) => {}) {
+    return this.turtles.create(num, (turtle) => {
       turtle.setxy(this.x, this.y)
       // turtle.color = this.color // REMIND: sprite vs color
       // hatched turtle inherits parents' ownVariables
-      for (const key of agentSet.ownVariables)
+      for (const key of breed.ownVariables) {
         if (turtle[key] == null) turtle[key] = this[key]
+      }
+      if (breed !== this.turtles) turtle.setBreed(breed)
       init(turtle)
     })
+    // return agentSet.create(num, (turtle) => {
+    //   turtle.setxy(this.x, this.y)
+    //   // turtle.color = this.color // REMIND: sprite vs color
+    //   // hatched turtle inherits parents' ownVariables
+    //   for (const key of agentSet.ownVariables) {
+    //     if (turtle[key] == null) turtle[key] = this[key]
+    //   }
+    //   init(turtle)
+    // })
   }
   // Getter for links for this turtle. REMIND: use new AgentSet(0)?
   // Uses lazy evaluation to promote links to instance variables.
@@ -151,7 +162,7 @@ class Turtle {
   // Call handleEdge(x, y) if x, y off-world.
   setxy (x, y, z = null) {
     const p0 = this.patch
-    if (z) this.z = z // don't promote z if null, use default z instead.
+    if (z != null) this.z = z // don't promote z if null, use default z instead.
     if (this.model.world.isOnWorld(x, y)) {
       this.x = x
       this.y = y

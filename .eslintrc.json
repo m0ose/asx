@@ -13,7 +13,6 @@
   },
   "globals": {
     "THREE": false,
-    "LZMA": false,
     "dat": false,
     "Stats": false
   }

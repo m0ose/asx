@@ -2,7 +2,6 @@ import util from './util.js'
 import DataSet from './DataSet.js'
 
 class RGBDataSet extends DataSet {
-
   constructor (img, options = {}) {
     super(img.width, img.height, new Float32Array(img.width * img.height))
     Object.assign(this, options)

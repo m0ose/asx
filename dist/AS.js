@@ -1001,8 +1001,9 @@ class AgentArray extends Array {
     const d2 = radius * radius;
     const sqDistance = util.sqDistance; // Local function 2-3x faster, inlined?
     this.ask(a => {
-      if (sqDistance(o.x, o.y, a.x, a.y) <= d2)
+      if (sqDistance(o.x, o.y, a.x, a.y) <= d2) {
         if (meToo || o !== a) agents.push(a);
+      }
     });
     return agents
   }
@@ -1012,8 +1013,9 @@ class AgentArray extends Array {
   inCone (o, radius, coneAngle, direction, meToo = false) {
     const agents = new AgentArray();
     this.ask(a => {
-      if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y))
+      if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y)) {
         if (meToo || o !== a) agents.push(a);
+      }
     });
     return agents
   }
@@ -1789,9 +1791,7 @@ class DataSet {
   constructor (width, height, data) {
     if (data.length !== width * height)
       throw Error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
-    else
-      Object.assign(this, {width, height, data});
-      // [this.width, this.height, this.data] = [width, height, data]
+    Object.assign(this, {width, height, data});
   }
 
   // Get/Set name, useful for storage key.
@@ -1806,7 +1806,7 @@ class DataSet {
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
     if (!this.inBounds(x, y))
-      throw Error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
+      throw Error(`DataSet: x,y out of range: ${x}, ${y}`)
   }
   // true if x,y in dataset bounds
   inBounds (x, y) {
@@ -3000,10 +3000,16 @@ class Patch {
   // isBreed (name) { return this.agentSet.name === name }
 
   sprout (num = 1, breed = this.model.turtles, initFcn = (turtle) => {}) {
-    return breed.create(num, (turtle) => {
+    const turtles = this.model.turtles;
+    return turtles.create(num, (turtle) => {
       turtle.setxy(this.x, this.y);
+      if (breed !== turtles) turtle.setBreed(breed);
       initFcn(turtle);
     })
+    // return breed.create(num, (turtle) => {
+    //   turtle.setxy(this.x, this.y)
+    //   initFcn(turtle)
+    // })
   }
 }
 
@@ -3139,15 +3145,26 @@ class Turtle {
 
   // Factory: create num new turtles at this turtle's location. The optional init
   // proc is called on the new turtle after inserting in its agentSet.
-  hatch (num = 1, agentSet = this.agentSet, init = (turtle) => {}) {
-    return agentSet.create(num, (turtle) => {
+  hatch (num = 1, breed = this.agentSet, init = (turtle) => {}) {
+    return this.turtles.create(num, (turtle) => {
       turtle.setxy(this.x, this.y);
       // turtle.color = this.color // REMIND: sprite vs color
       // hatched turtle inherits parents' ownVariables
-      for (const key of agentSet.ownVariables)
+      for (const key of breed.ownVariables) {
         if (turtle[key] == null) turtle[key] = this[key];
+      }
+      if (breed !== this.turtles) turtle.setBreed(breed);
       init(turtle);
     })
+    // return agentSet.create(num, (turtle) => {
+    //   turtle.setxy(this.x, this.y)
+    //   // turtle.color = this.color // REMIND: sprite vs color
+    //   // hatched turtle inherits parents' ownVariables
+    //   for (const key of agentSet.ownVariables) {
+    //     if (turtle[key] == null) turtle[key] = this[key]
+    //   }
+    //   init(turtle)
+    // })
   }
   // Getter for links for this turtle. REMIND: use new AgentSet(0)?
   // Uses lazy evaluation to promote links to instance variables.
@@ -3241,7 +3258,7 @@ class Turtle {
   // Call handleEdge(x, y) if x, y off-world.
   setxy (x, y, z = null) {
     const p0 = this.patch;
-    if (z) this.z = z; // don't promote z if null, use default z instead.
+    if (z != null) this.z = z; // don't promote z if null, use default z instead.
     if (this.model.world.isOnWorld(x, y)) {
       this.x = x;
       this.y = y;
@@ -4357,7 +4374,6 @@ class RGBADataSet extends DataSet {
 }
 
 class RGBDataSet extends DataSet {
-
   constructor (img, options = {}) {
     super(img.width, img.height, new Float32Array(img.width * img.height));
     Object.assign(this, options);

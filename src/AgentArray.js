@@ -153,8 +153,9 @@ class AgentArray extends Array {
     const d2 = radius * radius
     const sqDistance = util.sqDistance // Local function 2-3x faster, inlined?
     this.ask(a => {
-      if (sqDistance(o.x, o.y, a.x, a.y) <= d2)
+      if (sqDistance(o.x, o.y, a.x, a.y) <= d2) {
         if (meToo || o !== a) agents.push(a)
+      }
     })
     return agents
   }
@@ -164,8 +165,9 @@ class AgentArray extends Array {
   inCone (o, radius, coneAngle, direction, meToo = false) {
     const agents = new AgentArray()
     this.ask(a => {
-      if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y))
+      if (util.inCone(a.x, a.y, radius, coneAngle, direction, o.x, o.y)) {
         if (meToo || o !== a) agents.push(a)
+      }
     })
     return agents
   }

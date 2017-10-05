@@ -22,9 +22,7 @@ class DataSet {
   constructor (width, height, data) {
     if (data.length !== width * height)
       throw Error(`new DataSet length: ${data.length} !== ${width} * ${height}`)
-    else
-      Object.assign(this, {width, height, data})
-      // [this.width, this.height, this.data] = [width, height, data]
+    Object.assign(this, {width, height, data})
   }
 
   // Get/Set name, useful for storage key.
@@ -39,7 +37,7 @@ class DataSet {
   // Checks x,y are within DataSet. Throw error if not.
   checkXY (x, y) {
     if (!this.inBounds(x, y))
-      throw Error(`DataSet.checkXY: x,y out of range: ${x}, ${y}`)
+      throw Error(`DataSet: x,y out of range: ${x}, ${y}`)
   }
   // true if x,y in dataset bounds
   inBounds (x, y) {
